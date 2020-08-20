@@ -32,10 +32,10 @@ namespace sll {
     public:
         int CREATEDELL_API_DU run(std::string command);
     }   command;
-    void CREATEDELL_API_DU regcmd(std::string cmdstr, //æ ¹å‘½ä»¤å­—ç¬¦ä¸²
-        Fp cmdfp,           //å‡½æ•°æŒ‡é’ˆ
-        int argcMin,        //éœ€è¦çš„æœ€å°‘å‚æ•°æ•°é‡
-        int argcMax);       //éœ€è¦çš„æœ€å¤§å‚æ•°æ•°é‡
-                            //è‹¥å‚æ•°æ•°é‡ä¸å¤„äº[argcMin,argcMax]ä¸­å°†ä¼šæŠ¥é”™ã€‚
+    void CREATEDELL_API_DU regcmd(std::string cmdstr, //¸ùÃüÁî×Ö·û´®
+        Fp cmdfp,           //º¯ÊıÖ¸Õë
+        int argcMin,        //ĞèÒªµÄ×îÉÙ²ÎÊıÊıÁ¿
+        int argcMax);       //ĞèÒªµÄ×î´ó²ÎÊıÊıÁ¿
+                            //Èô²ÎÊıÊıÁ¿²»´¦ÓÚ[argcMin,argcMax]ÖĞ½«»á±¨´í¡£
 }
 
