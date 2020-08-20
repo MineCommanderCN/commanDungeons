@@ -2,8 +2,7 @@
 #ifdef CREATEDELL_API_DU
 #else                                                                            
 #define CREATEDELL_API_DU _declspec(dllimport)
-#endif   
-
+#endif
 #include<iostream>
 #include<vector>
 #include<map>
