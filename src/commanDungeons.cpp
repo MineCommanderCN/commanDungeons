@@ -2,7 +2,7 @@
 #include"cmdungeonsLib.hpp"
 #include"cmdLib.hpp"
 int main() {
-	regist_cmd();
+	cmdReg::regist_cmd();
 	
 	while (1) {
 		std::string input;
@@ -10,5 +10,5 @@ int main() {
 		std::getline(std::cin, input);
 		sll::command.run(input);
 	}
-	cdl::enemy.get<std::string>("name");
+	std::string name = cdl::enemy.get_attributes().display_name;
 }

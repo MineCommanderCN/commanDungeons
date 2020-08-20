@@ -6,43 +6,51 @@
 #include"squidCore_lib.hpp"
 #include"cmdungeonsLib.hpp"
 
+const int ERROR_CODE = -65536;
+
 void CREATEDELL_API_DU cdl::character::renew_attributes(int nhealth, int narmor, int nattack_power) {
-	health = max_health = nhealth;
-	armor = narmor;
-	attack_power = nattack_power;
+	attri.health = attri.max_health = nhealth;
+	attri.armor = narmor;
+	attri.attack_power = nattack_power;
 }
 void CREATEDELL_API_DU cdl::character::rename(std::string str_name) {
-	display_name = str_name;
+	attri.display_name = str_name;
 }
-CREATEDELL_API_DU cdl::character::character(int id,std::string str_name, int nhealth, int narmor, int nattack_power, int nlevel)
+CREATEDELL_API_DU cdl::character::character(int id,std::string str_name, int nhealth, int narmor, int nattack_power, int nlevel,int money)
 {
-	mobid = id;
-	display_name = str_name;
-	health = max_health = nhealth;
-	armor = narmor;
-	attack_power = nattack_power;
-	level = nlevel;
-	exp = 0;
+	attri.mobid = id;
+	attri.display_name = str_name;
+	attri.health = attri.max_health = nhealth;
+	attri.armor = narmor;
+	attri.attack_power = nattack_power;
+	attri.level = nlevel;
+	attri.exp = 0;
+	attri.gold = money;
+}
+cdl::chrt_data CREATEDELL_API_DU cdl::character::get_attributes(void) {
+	return attri;
 }
 
-template <class T>
-T CREATEDELL_API_DU cdl::character::get(std::string attribute) {
-	switch (attribute) {
-	case "health":return health; break;
-	case "hp":return health; break;
-	case "max_hp":return max_health; break;
-	case "max_health":return max_health; break;
-	case "armor":return armor; break;
-	case "amr":return armor; break;
-	case "attack_power":return attack_power; break;
-	case "atp":return attack_power; break;
-	case "xp":return exp; break;
-	case "exp":return exp; break;
-	case "lvl":return level; break;
-	case "level":return level; break;
-	case "name":return display_name; break;
-	case "mobid":return mobid; break;
-	case "id":return mobid; break;
-	default:return 0;
-	}
+void CREATEDELL_API_DU cdl::character::attack(cdl::character target, int aq,int dq) {
+	std::cout << attri.display_name << " Attacked the " << target.attri.display_name << "!\n";
+	float apers = 0.2 * aq;
+	float dpers = 0.15 * dq;
+	if (aq == 6) apers *= 1.25;
+	if (dq == 6) dpers *= 1.25;
+	int dd = int(attri.attack_power * apers - target.get_attributes().armor * dpers);
+	std::cout << attri.display_name << " Rolled a " << aq << " AQ.\n";
+	std::cout << target.attri.display_name << " Rolled a " << dq << " DQ.\n";
+	std::cout << attri.display_name << " Dealted " << int(attri.attack_power * apers) << "HP of damage to " << target.attri.display_name << "!\n";
+	std::cout << target.attri.display_name << " Blocked " << int(target.get_attributes().armor * dpers) << "HP of damage.\n";
+	target.dealt_damage(dd);
+}
+bool CREATEDELL_API_DU cdl::character::is_death(void) {
+	if (attri.health <= 0) return true;
+	else return false;
+}
+int CREATEDELL_API_DU cdl::character::dealt_damage(int damage) {
+	if (damage <= 0) return ERROR_CODE;
+	attri.health -= damage;
+	std::cout << attri.display_name << " Suffered " << damage << "HP of damage: " << attri.health << "/" << attri.max_health << std::endl;
+	return attri.health;
 }
