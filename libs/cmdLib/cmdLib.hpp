@@ -14,7 +14,7 @@ namespace cmdReg {
 		player.attack(enemy, rand() % 6 + 1, rand() % 6 + 1);
 		std::cout << "================\n";
 		enemy.attack(player, rand() % 6 + 1, rand() % 6 + 1);
-		
+
 		return 0;
 	}
 
@@ -37,21 +37,31 @@ namespace cmdReg {
 	}
 
 	int CREATEDELL_API_DU visitInfo(const lcmd& args) {
-		if (args[1] == player.get_attributes().display_name || args[1] == "me" || args[1] == "player")
-			std::cout << player.get_attributes().display_name << "'s Info:" << std::endl
-			<< "LV" << player.get_attributes().level << " " << player.get_attributes().exp << "/" << pow(player.get_attributes().level, 2) * 10 + 50
-			<< "\nGold: " << player.get_attributes().gold
-			<< "\nHP: " << player.get_attributes().health << "/" << player.get_attributes().max_health
-			<< "\nAttack Power: " << player.get_attributes().attack_power
-			<< "\nArmor: " << player.get_attributes().armor << std::endl;
-		else if (args[1] == enemy.get_attributes().display_name || args[1] == "enemy")
-			std::cout << enemy.get_attributes().display_name << "'s Info:" << std::endl
-			<< "LV" << enemy.get_attributes().level << "  " << "Gold reward: " << enemy.get_attributes().gold
-			<< "\nHP: " << enemy.get_attributes().health << "/" << enemy.get_attributes().max_health
-			<< "\nAttack Power: " << enemy.get_attributes().attack_power
-			<< "\nArmor: " << enemy.get_attributes().armor << std::endl;
+		if (args[1] == player.get_attributes().display_name || args[1] == "me" || args[1] == "player") {
+			{
+				std::string transbuf = sll::get_trans("cmdungeons.msg.info");
+				if (transbuf.find("%s") != std::string::npos) transbuf.replace(transbuf.find("%s"), 2, player.get_attributes().display_name);
+				std::cout << transbuf << std::endl;
+			}
+			std::cout << "LV" << player.get_attributes().level << " " << player.get_attributes().exp << "/" << pow(player.get_attributes().level, 2) * 10 + 50
+				<< std::endl << player.get_attributes().gold << "G"
+				<< "\nHP: " << player.get_attributes().health << "/" << player.get_attributes().max_health
+				<< "\nATP: " << player.get_attributes().attack_power
+				<< "\nAMR: " << player.get_attributes().armor << std::endl;
+		}
+		else if (args[1] == enemy.get_attributes().display_name || args[1] == "enemy") {
+			{
+				std::string transbuf = sll::get_trans("cmdungeons.msg.info");
+				if (transbuf.find("%s") != std::string::npos) transbuf.replace(transbuf.find("%s"), 2, sll::get_trans(enemy.get_attributes().display_name));
+				std::cout << transbuf << std::endl;
+			}
+			std::cout << "LV" << enemy.get_attributes().level << "  " << enemy.get_attributes().gold << "G " << enemy.get_attributes().exp << "XP"
+				<< "\nHP: " << enemy.get_attributes().health << "/" << enemy.get_attributes().max_health
+				<< "\nATP: " << enemy.get_attributes().attack_power
+				<< "\nARM: " << enemy.get_attributes().armor << std::endl;
+		}
 		else
-			std::cout << "Unknown target\n";
+			std::cout << sll::get_trans("cmdungeons.msg.info.error") << std::endl;
 		return 0;
 	}
 
