@@ -1,0 +1,2 @@
+cmdungeons.enemy.test1.name 1 0 10 1 2 30 5
+cmdungeons.enemy.test2.name 2 1 15 2 3 40 10
