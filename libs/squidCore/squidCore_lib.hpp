@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 #define CREATEDELL_API_DU _declspec(dllexport)
 #include<iostream>
 #include<vector>
@@ -9,6 +9,7 @@
 #include<sstream>
 namespace cdl {
     std::map<std::string, std::string> trans_str;
+    std::map<std::string, std::string> config_keymap;
 }
 typedef std::vector<std::string> lcmd;
 typedef int(*Fp)(const lcmd& args);
@@ -26,6 +27,13 @@ namespace sll {
         int argcMax;
     };
     std::vector<tCmdreg> cmd_register;
+    bool CREATEDELL_API_DU replace_substr(std::string& raw, std::string from, std::string to) {
+        if (raw.find(from) != std::string::npos) {
+            raw.replace(raw.find(from), from.size(), to);
+            return 0;
+        }
+        else return 1;
+    }
     std::string CREATEDELL_API_DU getSysTimeData(void) {
         time_t t = time(0);
         char tmp[64];
@@ -106,9 +114,9 @@ namespace sll {
                         }
                         else {
                             std::string transbuf = get_trans("squidcore.error.incorrect_parameters_count");
-                            if (transbuf.find("%d") != std::string::npos) transbuf.replace(transbuf.find("%d"), 2, atob<int, std::string>(i->size()));
-                            if (transbuf.find("%d") != std::string::npos) transbuf.replace(transbuf.find("%d"), 2, atob<int, std::string>(cf->argcMin));
-                            if (transbuf.find("%d") != std::string::npos) transbuf.replace(transbuf.find("%d"), 2, atob<int, std::string>(cf->argcMax));
+                            sll::replace_substr(transbuf, "%d", atob<int, std::string>(i->size()));
+                            sll::replace_substr(transbuf, "%d", atob<int, std::string>(cf->argcMin));
+                            sll::replace_substr(transbuf, "%d", atob<int, std::string>(cf->argcMax));
                             std::cout << transbuf << std::endl;
                         }
                     }

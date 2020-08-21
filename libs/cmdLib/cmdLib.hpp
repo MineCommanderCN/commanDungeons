@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 #define CREATEDELL_API_DU _declspec(dllexport)
 #include"squidCore_lib.hpp"
 #include"cmdungeonsLib.hpp"
@@ -19,14 +19,29 @@ namespace cmdReg {
 	}
 
 	int CREATEDELL_API_DU loadSave(const lcmd& args) {
+		sll::command.run("save");
+		player.rename(args[1]);
+		//TO DO: Something to load your save
+		{
+			std::string transbuf = sll::get_trans("cmdungeons.msg.load.done");
+			sll::replace_substr(transbuf, "%s", player.get_attributes().display_name);
+			std::cout << transbuf << std::endl;
+		}
 		return 0;
 	}
 
 	int CREATEDELL_API_DU saveIn(const lcmd& args) {
-		return 0;
-	}
-
-	int CREATEDELL_API_DU saveInPath(const lcmd& args) {
+		char* pathvar;
+		pathvar = getenv("APPDATA");
+		std::string savepath = pathvar;
+		savepath += "\\commanDungeons\\saves\\" + player.get_attributes().display_name + ".cmdgnsave";
+		std::ofstream saving(savepath.c_str());
+		saving << "Here is nothing";	//TO DO: Something to save the game
+		{
+			std::string transbuf = sll::get_trans("cmdungeons.msg.save.done");
+			sll::replace_substr(transbuf, "%s", player.get_attributes().display_name);
+			std::cout << transbuf << std::endl;
+		}
 		return 0;
 	}
 
@@ -49,7 +64,7 @@ namespace cmdReg {
 				<< "\nATP: " << player.get_attributes().attack_power
 				<< "\nAMR: " << player.get_attributes().armor << std::endl;
 		}
-		else if (args[1] == enemy.get_attributes().display_name || args[1] == "enemy") {
+		else if (args[1] == sll::get_trans(enemy.get_attributes().display_name) || args[1] == "enemy") {
 			{
 				std::string transbuf = sll::get_trans("cmdungeons.msg.info");
 				if (transbuf.find("%s") != std::string::npos) transbuf.replace(transbuf.find("%s"), 2, sll::get_trans(enemy.get_attributes().display_name));
@@ -73,7 +88,6 @@ namespace cmdReg {
 		sll::regcmd("attack", cmdReg::attack, 1, 1);
 		sll::regcmd("load", cmdReg::loadSave, 2, 2);
 		sll::regcmd("save", cmdReg::saveIn, 1, 1);
-		sll::regcmd("saveas", cmdReg::saveInPath, 2, 2);
 		sll::regcmd("name", cmdReg::inputName, 2, 2);
 		sll::regcmd("info", cmdReg::visitInfo, 2, 2);
 		sll::regcmd("exit", cmdReg::exitGame, 1, 1);

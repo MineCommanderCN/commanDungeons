@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 #define CREATEDELL_API_DU _declspec(dllexport)
 #include<string>
 #include<iostream>
@@ -12,8 +12,6 @@ namespace cdl {
 		std::string display_name;
 		bool hasBeenSetup = false;
 	};
-
-
 	class character {
 	private:
 		chrt_data attri;
@@ -42,8 +40,8 @@ namespace cdl {
 		void CREATEDELL_API_DU attack(character& target, int aq, int dq) {
 			{
 				std::string transbuf = sll::get_trans("cmdungeons.msg.attack");
-				if (transbuf.find("%s") != std::string::npos) transbuf.replace(transbuf.find("%s"), 2, sll::get_trans(attri.display_name));
-				if (transbuf.find("%s") != std::string::npos) transbuf.replace(transbuf.find("%s"), 2, sll::get_trans(target.get_attributes().display_name));
+				sll::replace_substr(transbuf,"%s", sll::get_trans(attri.display_name));
+				sll::replace_substr(transbuf, "%s", sll::get_trans(target.get_attributes().display_name));
 				std::cout << transbuf << std::endl;
 			}
 			float apers = 0.2 * aq;
@@ -54,16 +52,16 @@ namespace cdl {
 			int db = int(target.get_attributes().armor * dpers);
 			{
 				std::string transbuf = sll::get_trans("cmdungeons.msg.roll.aq");
-				if (transbuf.find("%s") != std::string::npos) transbuf.replace(transbuf.find("%s"), 2, sll::get_trans(attri.display_name));
-				if (transbuf.find("%d") != std::string::npos) transbuf.replace(transbuf.find("%d"), 2, sll::atob<int, std::string>(aq));
-				if (transbuf.find("%d") != std::string::npos) transbuf.replace(transbuf.find("%d"), 2, sll::atob<int, std::string>(dd));
+				sll::replace_substr(transbuf, "%s", sll::get_trans(attri.display_name));
+				sll::replace_substr(transbuf, "%d", sll::atob<int, std::string>(aq));
+				sll::replace_substr(transbuf, "%d", sll::atob<int, std::string>(dd));
 				std::cout << transbuf << std::endl;
 			}
 			{
 				std::string transbuf = sll::get_trans("cmdungeons.msg.roll.dq");
-				if (transbuf.find("%s") != std::string::npos) transbuf.replace(transbuf.find("%s"), 2, sll::get_trans(target.get_attributes().display_name));
-				if (transbuf.find("%d") != std::string::npos) transbuf.replace(transbuf.find("%d"), 2, sll::atob<int, std::string>(dq));
-				if (transbuf.find("%d") != std::string::npos) transbuf.replace(transbuf.find("%d"), 2, sll::atob<int, std::string>(db));
+				sll::replace_substr(transbuf, "%s", sll::get_trans(target.get_attributes().display_name));
+				sll::replace_substr(transbuf, "%d", sll::atob<int, std::string>(dq));
+				sll::replace_substr(transbuf, "%d", sll::atob<int, std::string>(db));
 				std::cout << transbuf << std::endl;
 			}
 			target.dealt_damage(dd - db);
@@ -77,19 +75,21 @@ namespace cdl {
 		}
 		void CREATEDELL_API_DU dealt_damage(int damage) {
 			if (damage <= 0) return;
-			attri.health = (attri.health - damage);
+			attri.health -= damage;
 			if (is_death())
 				attri.health = 0;
 			{
 				std::string transbuf = sll::get_trans("cmdungeons.msg.took_damage");
-				if (transbuf.find("%s") != std::string::npos) transbuf.replace(transbuf.find("%s"), 2, sll::get_trans(attri.display_name));
-				if (transbuf.find("%d") != std::string::npos) transbuf.replace(transbuf.find("%d"), 2, sll::atob<int, std::string>(damage));
+				sll::replace_substr(transbuf, "%s", sll::get_trans(attri.display_name));
+				sll::replace_substr(transbuf, "%d", sll::atob<int, std::string>(damage));
+				sll::replace_substr(transbuf, "%d", sll::atob<int, std::string>(attri.health));
+				sll::replace_substr(transbuf, "%d", sll::atob<int, std::string>(attri.max_health));
 				std::cout << transbuf << std::endl;
 			}
 			if (is_death())
 			{
-				std::string transbuf = sll::get_trans("cmdungeons.msg.took_damage");
-				if (transbuf.find("%s") != std::string::npos) transbuf.replace(transbuf.find("%s"), 2, sll::get_trans(attri.display_name));
+				std::string transbuf = sll::get_trans("cmdungeons.msg.death");
+				sll::replace_substr(transbuf, "%s", sll::get_trans(attri.display_name));
 				std::cout << transbuf << std::endl;
 			}
 		}
