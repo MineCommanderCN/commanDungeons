@@ -1,0 +1,20 @@
+{
+    "squidcore.error.unknown_command":"Unknown command '%s'",
+    "squidcore.error.incorrect_parameters_count":"Incorrect parameters count: Detected %d but needed [%d,%d]",
+    "cmdungeons.enemy.test1.name":"test1",
+    "cmdungeons.enemy.test2.name":"test2",
+    "cmdungeons.msg.loading.0":"Loading Data...",
+    "cmdungeons.msg.loading.1":"Ready Soon...",
+    "cmdungeons.msg.loading.done":"Done!\n\nWelcome to CommanDungeons!\nType in \"commands\" or \"help\" for the list of all commands.\nUse \"name <Player Name>\" to create a new character, or \"load <Player Name>\" to load your game progress (if saved).",
+    "cmdungeons.msg.attack":"%s Attacked the %s!",
+    "cmdungeons.msg.roll.aq":"%s rolled a %d AQ, dealted %dHP of damage.",
+    "cmdungeons.msg.roll.dq":"%s rolled a %d DQ, blocked %dHP of damage.",
+    "cmdungeons.msg.took_damage":"%s took %dHP of damage. %d/%d",
+    "cmdungeons.msg.info":"%s's info:",
+    "cmdungeons.msg.info.error":"Unknown target.",
+    "cmdungeons.msg.death":"%s was dead.",
+    "cmdungeons.msg.save.done":"Saved game info of %s.",
+    "cmdungeons.msg.load.done":"Loaded save progress from %s.",
+    "cmdungeons.testlevel1.name":"test level1",
+    "cmdungeons.testlevel1.description":"test level1 description"
+}
