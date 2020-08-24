@@ -3,7 +3,6 @@
 #include"squidCore_lib.hpp"
 #include"cmdungeonsLib.hpp"
 cdl::character player;
-cdl::character enemy;
 #include<cstdlib>
 #include<ctime>
 #include<cmath>
@@ -11,9 +10,9 @@ const int EXIT_MAIN = 65536;
 namespace cmdReg {
 	int CREATEDELL_API_DU attack(const lcmd& args) {
 		srand(time(0));
-		player.attack(enemy, rand() % 6 + 1, rand() % 6 + 1);
+		//player.attack(enemy, rand() % 6 + 1, rand() % 6 + 1);
 		std::cout << "================\n";
-		enemy.attack(player, rand() % 6 + 1, rand() % 6 + 1);
+		//enemy.attack(player, rand() % 6 + 1, rand() % 6 + 1);
 
 		return 0;
 	}
@@ -64,16 +63,16 @@ namespace cmdReg {
 				<< "\nATP: " << player.get_attributes().attack_power
 				<< "\nAMR: " << player.get_attributes().armor << std::endl;
 		}
-		else if (args[1] == sll::get_trans(enemy.get_attributes().display_name) || args[1] == "enemy") {
+		else if (/*args[1] == sll::get_trans(enemy.get_attributes().display_name) ||*/ args[1] == "enemy") {
 			{
 				std::string transbuf = sll::get_trans("cmdungeons.msg.info");
-				if (transbuf.find("%s") != std::string::npos) transbuf.replace(transbuf.find("%s"), 2, sll::get_trans(enemy.get_attributes().display_name));
+				//if (transbuf.find("%s") != std::string::npos) transbuf.replace(transbuf.find("%s"), 2, sll::get_trans(enemy.get_attributes().display_name));
 				std::cout << transbuf << std::endl;
 			}
-			std::cout << "LV" << enemy.get_attributes().level << "  " << enemy.get_attributes().gold << "G " << enemy.get_attributes().exp << "XP"
+			/*std::cout << "LV" << enemy.get_attributes().level << "  " << enemy.get_attributes().gold << "G " << enemy.get_attributes().exp << "XP"
 				<< "\nHP: " << enemy.get_attributes().health << "/" << enemy.get_attributes().max_health
 				<< "\nATP: " << enemy.get_attributes().attack_power
-				<< "\nARM: " << enemy.get_attributes().armor << std::endl;
+				<< "\nARM: " << enemy.get_attributes().armor << std::endl;*/
 		}
 		else
 			std::cout << sll::get_trans("cmdungeons.msg.info.error") << std::endl;

@@ -7,15 +7,31 @@
 #include<fstream>
 #include<string>
 #include<sstream>
+#include<windows.h>
+#include "nlohmannJson.hpp"
 namespace cdl {
-    std::map<std::string, std::string> trans_str;
+    nlohmann::json translate_json;
     std::map<std::string, std::string> config_keymap;
 }
 typedef std::vector<std::string> lcmd;
 typedef int(*Fp)(const lcmd& args);
 namespace sll {
+    std::string CREATEDELL_API_DU utf8_to_ansi(std::string strUTF8) {	//方法来源：https://blog.csdn.net/yuanwow/article/details/98469297
+        UINT nLen = MultiByteToWideChar(CP_UTF8, NULL, strUTF8.c_str(), -1, NULL, NULL);
+        WCHAR* wszBuffer = new WCHAR[nLen + 1];
+        nLen = MultiByteToWideChar(CP_UTF8, NULL, strUTF8.c_str(), -1, wszBuffer, nLen);
+        wszBuffer[nLen] = 0;
+        nLen = WideCharToMultiByte(936, NULL, wszBuffer, -1, NULL, NULL, NULL, NULL);
+        CHAR* szBuffer = new CHAR[nLen + 1];
+        nLen = WideCharToMultiByte(936, NULL, wszBuffer, -1, szBuffer, nLen, NULL, NULL);
+        szBuffer[nLen] = 0;
+        strUTF8 = szBuffer;
+        delete[]szBuffer;
+        delete[]wszBuffer;
+        return strUTF8;
+    }
     std::string CREATEDELL_API_DU get_trans(std::string key) {
-        if (cdl::trans_str.count(key) == 1) return cdl::trans_str[key];
+        if (cdl::translate_json.count(key) == 1) return utf8_to_ansi(cdl::translate_json[key]);
         else return key;
     }
     const int EXIT_MAIN = 65536;

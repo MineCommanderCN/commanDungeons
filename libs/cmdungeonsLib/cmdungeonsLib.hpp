@@ -5,16 +5,16 @@
 #include<map>
 #include<vector>
 #include"squidCore_lib.hpp"
+#include<windows.h>
 namespace cdl {
-
-	struct chrt_data {
+	struct __chrt_data {
 		int max_health = 1, health = 1, armor = 0, attack_power = 0, exp = 0, level = 0, mobid = -1, gold = 0;
 		std::string display_name;
 		bool hasBeenSetup = false;
 	};
 	class character {
 	private:
-		chrt_data attri;
+		__chrt_data attri;
 	public:
 		void CREATEDELL_API_DU setup(int id, std::string name, int nhealth, int narmor, int natp, int lvl, int money, int xp) {
 			if (attri.hasBeenSetup) return;
@@ -66,7 +66,7 @@ namespace cdl {
 			}
 			target.dealt_damage(dd - db);
 		}
-		chrt_data CREATEDELL_API_DU get_attributes(void) {
+		__chrt_data CREATEDELL_API_DU get_attributes(void) {
 			return attri;
 		}
 		bool CREATEDELL_API_DU is_death(void) {
@@ -97,5 +97,13 @@ namespace cdl {
 			attri.mobid = id;
 		}
 	};
-	std::vector<chrt_data> enemy_info;
+
+	struct __dungeon_level_data {
+		std::vector<character> entries;
+		bool looping = false;
+		bool random = false;
+	};
+
+	typedef std::map<std::string, __dungeon_level_data> __dungeon_level;
+	std::vector<__dungeon_level> gamemap;
 }
