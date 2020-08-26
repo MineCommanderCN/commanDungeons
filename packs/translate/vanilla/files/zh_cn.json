@@ -16,5 +16,16 @@
     "cmdungeons.msg.save.done":"成功保存了玩家%s的信息。",
     "cmdungeons.msg.load.done":"成功读取了玩家%s的信息。",
     "cmdungeons.testlevel1.name":"测试关卡1",
-    "cmdungeons.testlevel1.description":"测试关卡1描述"
+    "cmdungeons.testlevel1.description":"测试关卡1描述",
+
+    "generic.attributes.health.name":"HP",
+    "generic.attributes.max_health.name":"HP上限",
+    "generic.attributes.armor.name":"护甲",
+    "generic.attributes.attack_power.name":"攻击力",
+    "generic.attributes.level.name":"等级",
+    "generic.attributes.exp.name":"经验",
+    "generic.attributes.lucky.name":"运气",
+
+    "cmdungeons.effects.fire.name":"灼烧",
+    "cmdungeons.effects.regeneration.name":"生命恢复"
 }

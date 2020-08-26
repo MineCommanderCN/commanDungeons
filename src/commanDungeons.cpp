@@ -2,6 +2,53 @@
 #include "cmdungeonsLib.hpp"
 #include "cmdLib.hpp"
 #include "nlohmannJson.hpp"
+#include<io.h>
+#include<tchar.h>
+#include<windows.h>
+void getFilesAll(std::string path, std::vector<std::string>& files) {
+	//文件句柄
+	long hFile = 0;
+	//文件信息
+	struct _finddata_t fileinfo;
+	std::string p;
+	if ((hFile = _findfirst(p.assign(path).append("\\*").c_str(), &fileinfo)) != -1) {
+		do {
+			if ((fileinfo.attrib & _A_SUBDIR)) {
+				if (strcmp(fileinfo.name, ".") != 0 && strcmp(fileinfo.name, "..") != 0) {
+					//files.push_back(p.assign(path).append("\\").append(fileinfo.name));
+					getFilesAll(p.assign(path).append("\\").append(fileinfo.name), files);
+
+				}
+
+			}
+			else {
+				files.push_back(p.assign(path).append("\\").append(fileinfo.name));
+
+			}
+
+		} while (_findnext(hFile, &fileinfo) == 0);
+		_findclose(hFile);
+
+	}
+}
+std::string WstringToString(const std::wstring str)
+{
+	unsigned len = str.size() * 4;
+	setlocale(LC_CTYPE, "");
+	char* p = new char[len];
+	wcstombs(p, str.c_str(), len);
+	std::string str1(p);
+	delete[] p;
+	return str1;
+}
+std::string getPath(void) {
+	TCHAR szFilePath[MAX_PATH + 1] = { 0 };
+	GetModuleFileName(NULL, szFilePath, MAX_PATH);
+	(_tcsrchr(szFilePath, _T('\\')))[1] = 0;
+	std::wstring str_url = szFilePath;
+	return WstringToString(str_url);
+}
+
 int main() {
 	std::cout << "Loading Config..." << std::endl;
 	std::ifstream loadcfg("config.ini");
@@ -47,42 +94,52 @@ int main() {
 	}
 
 
-	std::cout << "Loading the Translates..." << std::endl;
-	std::ifstream loadtrans(("translate/" + cdl::config_keymap["lang"] + ".json").c_str());
-	if (!loadtrans) {
-		std::cout << "FATAL ERROR: Missing file 'translate/" + cdl::config_keymap["lang"] + ".json'. Please check out your game config or re-install the commanDungeons.\nYour game save will be kept.\n";
-		system("pause");
-		return 0;
-	}
-	
-	loadtrans >> cdl::translate_json;
-	loadtrans.close();
-	
+	std::cout << "Loading the Data Packs..." << std::endl;
+	struct _T_transPack {
+		std::string pack_name;
+		nlohmann::json pack_info;
+		nlohmann::json lang_json;
+	};
+	std::vector<_T_transPack> translates;
+	std::vector<std::string> packPaths;
+	getFilesAll(getPath()+"packs\\translate", packPaths);
 
-	std::cout << sll::get_trans("cmdungeons.msg.loading.0") << std::endl;
+	for (std::vector<std::string>::iterator ii = packPaths.begin(); ii != packPaths.end(); ii++) {
+		sll::replace_substr(*ii, getPath() + "packs\\translate\\", "");
+		if (ii->find("pack_info.meta") != std::string::npos) {
+			_T_transPack buffer;
+			sll::replace_substr(*ii, "\\pack_info.meta", "");
+			buffer.pack_name = *ii;
+			std::cout << "Loaded pack [" << *ii << "](translate)" << std::endl;
+			std::ifstream readInfo(("packs/translate/" + *ii + "/pack_info.meta").c_str());
+			readInfo >> buffer.pack_info;
+			if (!buffer.pack_info["file_format"].empty() && buffer.pack_info["file_format"] != 1) std::cout << "(!) Designed for the legacy version of the game\n";
+			if (buffer.pack_info["description"].empty()
+				|| buffer.pack_info["file_format"].empty()
+				|| buffer.pack_info["creator"].empty()
+				|| buffer.pack_info["pack_version"].empty()) {
+				std::cout << "(!) Invalid pack\n";
+			}
+			else
+				translates.push_back(buffer);
+		}
+	}
+	for (std::vector<std::string>::iterator ii = packPaths.begin(); ii != packPaths.end(); ii++) {
+
+		for (std::vector<_T_transPack>::iterator ia = translates.begin(); ia != translates.end(); ia++) {
+			if (ii->find(ia->pack_name) == 0 && ii->find("\\files\\") == ia->pack_name.size()) {
+				std::ifstream readLang(("packs/translate/" + *ii).c_str());
+				sll::replace_substr(*ii, ia->pack_name + "\\files\\", "");
+				sll::replace_substr(*ii, ".json", "");
+				if (*ii == cdl::config_keymap["lang"]) readLang >> ia->lang_json;
+				cdl::translate_json.merge_patch(ia->lang_json);
+			}
+		}
+	}
+
+
 	cmdReg::regist_cmd();
-	std::cout << sll::get_trans("cmdungeons.msg.loading.1") << std::endl;
-
-	std::ifstream loaddata("data/enemy_info.json");
-	if (!loaddata) {
-		std::cout << "FATAL ERROR: Missing file 'data/enemy_info.json'. Please re-install the commanDungeons.\nYour game save will be kept.\n";
-		system("pause");
-		return 0;
-	}
-	
-	nlohmann::json enemydata_json;
-	loaddata >> enemydata_json;
-	loaddata.close();
-
-
-	
-	int version = enemydata_json["file_format"];
-	if (version != 1) {
-		std::cout << "WARNING: The file 'data/enmy_info.json' you using was designed for the legacy version of commanDungeons.\nThe game will still try to read the file, which may cause many unexpected issue." << std::endl;
-	}
-
-
-	player.setup(0, "Player", 20, 2, 4, 0, 0,0);
+	player.setup("generic:player", "Player", 20, 2, 4, 0, 0,0);
 	std::cout << sll::get_trans("cmdungeons.msg.loading.done") << std::endl;
 	while (1) {
 		std::string input;

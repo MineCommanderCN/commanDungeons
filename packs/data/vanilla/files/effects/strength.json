@@ -1,0 +1,12 @@
+{
+    "debuff": true,
+    "events":[
+        {
+            "attribute_name": "generic:attack_power",
+            "operation": 0,
+            "amount": 2.0,
+            "affect_by_level": true,
+            "fixed": true
+        }
+    ]
+}

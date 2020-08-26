@@ -1,0 +1,47 @@
+{
+    "attributes": {
+        "health": 15,
+        "armor": 1,
+        "attack_power": 2,
+        "level": 0
+    },
+    "rewards": {
+        "gold": 5,
+        "xp": 30,
+        "items": [
+            {
+                "id": "cmdungeons:apple",
+                "count":{
+                    "min": 1,
+                    "max": 2
+                }
+            }
+        ]
+    },
+    "skills": {
+        "attack": {
+            "events":[
+                {
+                    "to": "self",
+                    "type": "give_effects",
+                    "effect_name": "cmdungeons:strength",
+                    "level": 1,
+                    "time": 1,
+                    "active_immediately": true
+                }
+            ]
+        },
+        "defence": {
+            "events":[
+                {
+                    "to": "self",
+                    "type": "give_effects",
+                    "effect_name": "cmdungeons:regeneration",
+                    "level": 1,
+                    "time": 1,
+                    "active_immediately": true
+                }
+            ]
+        }
+    }
+}

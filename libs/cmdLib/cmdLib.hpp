@@ -19,11 +19,11 @@ namespace cmdReg {
 
 	int CREATEDELL_API_DU loadSave(const lcmd& args) {
 		sll::command.run("save");
-		player.rename(args[1]);
+		player.attri.display_name = args[1];
 		//TO DO: Something to load your save
 		{
 			std::string transbuf = sll::get_trans("cmdungeons.msg.load.done");
-			sll::replace_substr(transbuf, "%s", player.get_attributes().display_name);
+			sll::replace_substr(transbuf, "%s", player.attri.display_name);
 			std::cout << transbuf << std::endl;
 		}
 		return 0;
@@ -33,35 +33,35 @@ namespace cmdReg {
 		char* pathvar;
 		pathvar = getenv("APPDATA");
 		std::string savepath = pathvar;
-		savepath += "\\commanDungeons\\saves\\" + player.get_attributes().display_name + ".cmdgnsave";
+		savepath += "\\commanDungeons\\saves\\" + player.attri.display_name + ".cmdgnsave";
 		std::ofstream saving(savepath.c_str());
 		saving << "Here is nothing";	//TO DO: Something to save the game
 		{
 			std::string transbuf = sll::get_trans("cmdungeons.msg.save.done");
-			sll::replace_substr(transbuf, "%s", player.get_attributes().display_name);
+			sll::replace_substr(transbuf, "%s", player.attri.display_name);
 			std::cout << transbuf << std::endl;
 		}
 		return 0;
 	}
 
 	int CREATEDELL_API_DU inputName(const lcmd& args) {
-		player.rename(args[1]);
+		player.attri.display_name = args[1];
 		std::cout << "Your name has been changed to: " << args[1] << std::endl;
 		return 0;
 	}
 
 	int CREATEDELL_API_DU visitInfo(const lcmd& args) {
-		if (args[1] == player.get_attributes().display_name || args[1] == "me" || args[1] == "player") {
+		if (args[1] == player.attri.display_name || args[1] == "me" || args[1] == "player") {
 			{
 				std::string transbuf = sll::get_trans("cmdungeons.msg.info");
-				if (transbuf.find("%s") != std::string::npos) transbuf.replace(transbuf.find("%s"), 2, player.get_attributes().display_name);
+				if (transbuf.find("%s") != std::string::npos) transbuf.replace(transbuf.find("%s"), 2, player.attri.display_name);
 				std::cout << transbuf << std::endl;
 			}
-			std::cout << "LV" << player.get_attributes().level << " " << player.get_attributes().exp << "/" << pow(player.get_attributes().level, 2) * 10 + 50
-				<< std::endl << player.get_attributes().gold << "G"
-				<< "\nHP: " << player.get_attributes().health << "/" << player.get_attributes().max_health
-				<< "\nATP: " << player.get_attributes().attack_power
-				<< "\nAMR: " << player.get_attributes().armor << std::endl;
+			std::cout << "LV" << player.attri.level << " " << player.attri.exp << "/" << pow(player.attri.level, 2) * 10 + 50
+				<< std::endl << player.attri.gold << "G"
+				<< "\nHP: " << player.attri.health << "/" << player.attri.max_health
+				<< "\nATP: " << player.attri.attack_power
+				<< "\nAMR: " << player.attri.armor << std::endl;
 		}
 		else if (/*args[1] == sll::get_trans(enemy.get_attributes().display_name) ||*/ args[1] == "enemy") {
 			{
