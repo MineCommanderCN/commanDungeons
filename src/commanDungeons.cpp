@@ -49,6 +49,15 @@ std::string getPath(void) {
 	return WstringToString(str_url);
 }
 
+bool valid_datastr(std::string str) {
+	if (str.empty()) return false;
+	for (std::string::iterator ii = str.begin(); ii != str.end(); ii++) {
+		if ((*ii < 'a' || *ii>'z') && (*ii < '0' || *ii>'9') && *ii != '_')
+			return false;
+	}
+	return true;
+}
+
 int main() {
 	std::cout << "Loading Config..." << std::endl;
 	std::ifstream loadcfg("config.ini");
@@ -88,7 +97,7 @@ int main() {
 		}
 	}
 	if (cdl::config_keymap.count("lang")==0) {
-		std::cout << "FATAL ERROR: File 'config.ini' can't be read or was damaged. Please re-install the commanDungeons.\nYour game save will be kept.\n";
+		std::cout << "FATAL ERROR: File 'config.ini' can't be read or was damaged. Please try to re-install the commanDungeons.\nYour game save will be kept.\n";
 		system("pause");
 		return 0;
 	}
@@ -113,14 +122,15 @@ int main() {
 			std::cout << "Loaded pack [" << *ii << "](translate)" << std::endl;
 			std::ifstream readInfo(("packs/translate/" + *ii + "/pack_info.meta").c_str());
 			readInfo >> buffer.pack_info;
-			if (!buffer.pack_info["file_format"].empty() && buffer.pack_info["file_format"] != 1) std::cout << "(!) Designed for the legacy version of the game\n";
+			if (!buffer.pack_info["file_format"].empty() && buffer.pack_info["file_format"] != 1) 
+				std::cout << "(!) This pack was designed for the legacy version of the game\n";
 			if (buffer.pack_info["description"].empty()
 				|| buffer.pack_info["file_format"].empty()
 				|| buffer.pack_info["creator"].empty()
 				|| buffer.pack_info["pack_version"].empty()) {
-				std::cout << "(!) Invalid pack\n";
+				std::cout << "(x) Invalid pack\n";
 			}
-			else
+			else 
 				translates.push_back(buffer);
 		}
 	}
@@ -136,8 +146,56 @@ int main() {
 			}
 		}
 	}
+	struct _T_dataPack {
+		std::string pack_name;
+		nlohmann::json pack_info;
+		typedef std::map<std::string, nlohmann::json> subPaths;
+		subPaths attributes, effects, items, levels, mobs, player_skills;
+	};
+	std::vector<_T_dataPack> datapacks;
+	packPaths.clear();
+	getFilesAll(getPath() + "packs\\data", packPaths);
+	for (std::vector<std::string>::iterator ii = packPaths.begin(); ii != packPaths.end(); ii++) {
+		sll::replace_substr(*ii, getPath() + "packs\\data\\", "");
+		if (ii->find("pack_info.meta") != std::string::npos) {
+			_T_dataPack buffer;
+			sll::replace_substr(*ii, "\\pack_info.meta", "");
+			buffer.pack_name = *ii;
+			std::cout << "Loaded pack [" << *ii << "](data)" << std::endl;
+			std::ifstream readInfo(("packs/data/" + *ii + "/pack_info.meta").c_str());
+			readInfo >> buffer.pack_info;
+			if (!buffer.pack_info["file_format"].empty() && buffer.pack_info["file_format"] != 1)
+				std::cout << "(!) This pack was designed for the legacy version of the game\n";
+			if (buffer.pack_info["description"].empty()
+				|| buffer.pack_info["file_format"].empty()
+				|| buffer.pack_info["creator"].empty()
+				|| buffer.pack_info["pack_version"].empty()
+				|| !valid_datastr(buffer.pack_info["namespace"])) {
+				std::cout << "(x) Invalid pack\n";
+			}
+			else 
+				datapacks.push_back(buffer);
+		}
+	}
 
+	if (cdl::config_keymap["debug"] != "true") {
+		bool vanillaNotLoaded_trans = false, vanillaNotLoaded_data = false;
+		for (std::vector<_T_transPack>::iterator ii = translates.begin(); ii != translates.end(); ii++) {
+			if (ii->pack_name == "vanilla") vanillaNotLoaded_trans = true;
+		}
+		for (std::vector<_T_dataPack>::iterator ii = datapacks.begin(); ii != datapacks.end(); ii++) {
+			if (ii->pack_name == "vanilla") vanillaNotLoaded_data = true;
+		}
 
+		if (!vanillaNotLoaded_trans || !vanillaNotLoaded_data) {
+			std::cout << "FATAL ERROR: Unable to load vanilla data pack, game can not start up.\nPlease try to re-install the commanDungeons. Your game save will be kept.\n";
+			system("pause");
+			return 0;
+		}
+	}
+	else {
+		std::cout << "WARNING: DEBUG mode activated!\nThe game will not check the vanilla data pack and the invaild packs will be FORCED ENABLE.\nSome debugging commands will also be enabled, which may crash the game or destroy your game saves if you use them.\nIf you are not a developer or a pack creator, please TURN OFF the debug mode in the 'config.ini' file!\n";
+	}
 	cmdReg::regist_cmd();
 	player.setup("generic:player", "Player", 20, 2, 4, 0, 0,0);
 	std::cout << sll::get_trans("cmdungeons.msg.loading.done") << std::endl;

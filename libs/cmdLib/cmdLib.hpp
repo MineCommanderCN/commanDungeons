@@ -5,6 +5,7 @@
 cdl::character player;
 #include<cstdlib>
 #include<ctime>
+#include <direct.h>
 #include<cmath>
 const int EXIT_MAIN = 65536;
 namespace cmdReg {
@@ -30,11 +31,8 @@ namespace cmdReg {
 	}
 
 	int CREATEDELL_API_DU saveIn(const lcmd& args) {
-		char* pathvar;
-		pathvar = getenv("APPDATA");
-		std::string savepath = pathvar;
-		savepath += "\\commanDungeons\\saves\\" + player.attri.display_name + ".cmdgnsave";
-		std::ofstream saving(savepath.c_str());
+		std::string savepath = "saves/" + player.attri.display_name + ".cmdgnsave";
+		std::fstream saving(savepath.c_str(), std::ios::out);
 		saving << "Here is nothing";	//TO DO: Something to save the game
 		{
 			std::string transbuf = sll::get_trans("cmdungeons.msg.save.done");
@@ -46,7 +44,9 @@ namespace cmdReg {
 
 	int CREATEDELL_API_DU inputName(const lcmd& args) {
 		player.attri.display_name = args[1];
-		std::cout << "Your name has been changed to: " << args[1] << std::endl;
+		std::string transbuf = sll::get_trans("cmdungeons.msg.rename");
+		sll::replace_substr(transbuf, "%s", args[1]);
+		std::cout << transbuf << std::endl;
 		return 0;
 	}
 
