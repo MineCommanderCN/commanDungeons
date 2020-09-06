@@ -32,7 +32,7 @@ namespace sll {
     }
     std::string CREATEDELL_API_DU get_trans(std::string key) {
         if (cdl::translate_json.count(key) == 1) return utf8_to_ansi(cdl::translate_json[key]);
-        else return key;
+        else return "WARNING: Missing translation key '" + key + "'";
     }
     const int EXIT_MAIN = 65536;
     const int MAXN = 2147483647;

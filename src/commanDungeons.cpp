@@ -104,97 +104,33 @@ int main() {
 
 
 	std::cout << "Loading the Data Packs..." << std::endl;
-	struct _T_transPack {
+	struct _T_Pack {
 		std::string pack_name;
 		nlohmann::json pack_info;
-		nlohmann::json lang_json;
-	};
-	std::vector<_T_transPack> translates;
-	std::vector<std::string> packPaths;
-	getFilesAll(getPath()+"packs\\translate", packPaths);
-
-	for (std::vector<std::string>::iterator ii = packPaths.begin(); ii != packPaths.end(); ii++) {
-		sll::replace_substr(*ii, getPath() + "packs\\translate\\", "");
-		if (ii->find("pack_info.meta") != std::string::npos) {
-			_T_transPack buffer;
-			sll::replace_substr(*ii, "\\pack_info.meta", "");
-			buffer.pack_name = *ii;
-			std::cout << "Loaded pack [" << *ii << "](translate)" << std::endl;
-			std::ifstream readInfo(("packs/translate/" + *ii + "/pack_info.meta").c_str());
-			readInfo >> buffer.pack_info;
-			if (!buffer.pack_info["file_format"].empty() && buffer.pack_info["file_format"] != 1) 
-				std::cout << "(!) This pack was designed for the legacy version of the game\n";
-			if (buffer.pack_info["description"].empty()
-				|| buffer.pack_info["file_format"].empty()
-				|| buffer.pack_info["creator"].empty()
-				|| buffer.pack_info["pack_version"].empty()) {
-				std::cout << "(x) Invalid pack\n";
-			}
-			else 
-				translates.push_back(buffer);
-		}
-	}
-	for (std::vector<std::string>::iterator ii = packPaths.begin(); ii != packPaths.end(); ii++) {
-
-		for (std::vector<_T_transPack>::iterator ia = translates.begin(); ia != translates.end(); ia++) {
-			if (ii->find(ia->pack_name) == 0 && ii->find("\\files\\") == ia->pack_name.size()) {
-				std::ifstream readLang(("packs/translate/" + *ii).c_str());
-				sll::replace_substr(*ii, ia->pack_name + "\\files\\", "");
-				sll::replace_substr(*ii, ".json", "");
-				if (*ii == cdl::config_keymap["lang"]) readLang >> ia->lang_json;
-				cdl::translate_json.merge_patch(ia->lang_json);
-			}
-		}
-	}
-	struct _T_dataPack {
-		std::string pack_name;
-		nlohmann::json pack_info;
+		std::map<std::string,nlohmann::json> lang_json;
 		typedef std::map<std::string, nlohmann::json> subPaths;
 		subPaths attributes, effects, items, levels, mobs, player_skills;
 	};
-	std::vector<_T_dataPack> datapacks;
-	packPaths.clear();
-	getFilesAll(getPath() + "packs\\data", packPaths);
-	for (std::vector<std::string>::iterator ii = packPaths.begin(); ii != packPaths.end(); ii++) {
-		sll::replace_substr(*ii, getPath() + "packs\\data\\", "");
-		if (ii->find("pack_info.meta") != std::string::npos) {
-			_T_dataPack buffer;
-			sll::replace_substr(*ii, "\\pack_info.meta", "");
-			buffer.pack_name = *ii;
-			std::cout << "Loaded pack [" << *ii << "](data)" << std::endl;
-			std::ifstream readInfo(("packs/data/" + *ii + "/pack_info.meta").c_str());
-			readInfo >> buffer.pack_info;
-			if (!buffer.pack_info["file_format"].empty() && buffer.pack_info["file_format"] != 1)
-				std::cout << "(!) This pack was designed for the legacy version of the game\n";
-			if (buffer.pack_info["description"].empty()
-				|| buffer.pack_info["file_format"].empty()
-				|| buffer.pack_info["creator"].empty()
-				|| buffer.pack_info["pack_version"].empty()
-				|| !valid_datastr(buffer.pack_info["namespace"])) {
-				std::cout << "(x) Invalid pack\n";
-			}
-			else 
-				datapacks.push_back(buffer);
-		}
-	}
+	std::vector<_T_Pack> packs;
 
+
+
+	
 	if (cdl::config_keymap["debug"] != "true") {
-		bool vanillaNotLoaded_trans = false, vanillaNotLoaded_data = false;
-		for (std::vector<_T_transPack>::iterator ii = translates.begin(); ii != translates.end(); ii++) {
-			if (ii->pack_name == "vanilla") vanillaNotLoaded_trans = true;
-		}
-		for (std::vector<_T_dataPack>::iterator ii = datapacks.begin(); ii != datapacks.end(); ii++) {
-			if (ii->pack_name == "vanilla") vanillaNotLoaded_data = true;
+		bool vanillaNotLoaded = true;
+		for (std::vector<_T_Pack>::iterator ii = packs.begin(); ii != packs.end(); ii++) {
+			if (ii->pack_name == "vanilla") vanillaNotLoaded = false;
 		}
 
-		if (!vanillaNotLoaded_trans || !vanillaNotLoaded_data) {
+		if (vanillaNotLoaded) {
 			std::cout << "FATAL ERROR: Unable to load vanilla data pack, game can not start up.\nPlease try to re-install the commanDungeons. Your game save will be kept.\n";
 			system("pause");
 			return 0;
 		}
 	}
 	else {
-		std::cout << "WARNING: DEBUG mode activated!\nThe game will not check the vanilla data pack and the invaild packs will be FORCED ENABLE.\nSome debugging commands will also be enabled, which may crash the game or destroy your game saves if you use them.\nIf you are not a developer or a pack creator, please TURN OFF the debug mode in the 'config.ini' file!\n";
+		std::fstream test("_DEBUG_MODE_NO_WARNING");
+		if (!test) std::cout << "WARNING: DEBUG mode activated!\nThe game will not check the vanilla data pack and the invaild packs will be FORCED ENABLE.\nSome debugging commands will also be enabled, which may crash the game or destroy your game saves if you use them.\nIf you are not a developer or a pack creator, please TURN OFF the debug mode in the 'config.ini' file.\n";
 	}
 	cmdReg::regist_cmd();
 	player.setup("generic:player", "Player", 20, 2, 4, 0, 0,0);

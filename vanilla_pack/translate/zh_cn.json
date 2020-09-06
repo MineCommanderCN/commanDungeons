@@ -11,6 +11,7 @@
     "cmdungeons.msg.roll.dq":"%s抽取到了%d DQ，并挡下了%dHP伤害。",
     "cmdungeons.msg.took_damage":"%s受到了%dHP伤害。 %d/%d",
     "cmdungeons.msg.info":"%s的信息：",
+    "cmdungeons.msg.rename":"你的名字已被更改为：%s",
     "cmdungeons.msg.info.error":"未知目标。",
     "cmdungeons.msg.death":"%s死了。",
     "cmdungeons.msg.save.done":"成功保存了玩家%s的信息。",
