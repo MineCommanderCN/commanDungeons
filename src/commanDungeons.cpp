@@ -5,6 +5,9 @@
 #include<io.h>
 #include<tchar.h>
 #include<windows.h>
+#define SetColorWarning SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), FOREGROUND_INTENSITY | FOREGROUND_RED |FOREGROUND_GREEN)
+#define ResetColor SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), FOREGROUND_INTENSITY)
+#define SetColorFError SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), BACKGROUND_RED | FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE)
 void getFilesAll(std::string path, std::vector<std::string>& files) {
 	//文件句柄
 	long hFile = 0;
@@ -59,15 +62,18 @@ bool valid_datastr(std::string str) {
 }
 
 int main() {
+	ResetColor;
 	std::cout << "Loading Config..." << std::endl;
 	std::ifstream loadcfg("config.ini");
 	if (!loadcfg) {
+		SetColorFError;
 		std::cout << "FATAL ERROR: Missing file 'config.ini'. Please re-install the commanDungeons.\nYour game save will be kept.\n";
+		ResetColor;
 		system("pause");
 		return 0;
 	}
 	std::string fullcfgfile;
-	
+
 	{
 		std::stringstream buf;
 		buf << loadcfg.rdbuf();
@@ -96,7 +102,7 @@ int main() {
 			}
 		}
 	}
-	if (cdl::config_keymap.count("lang")==0) {
+	if (cdl::config_keymap.count("lang") == 0) {
 		std::cout << "FATAL ERROR: File 'config.ini' can't be read or was damaged. Please try to re-install the commanDungeons.\nYour game save will be kept.\n";
 		system("pause");
 		return 0;
@@ -107,7 +113,7 @@ int main() {
 	struct _T_Pack {
 		std::string pack_name;
 		nlohmann::json pack_info;
-		std::map<std::string,nlohmann::json> lang_json;
+		std::map<std::string, nlohmann::json> lang_json;
 		typedef std::map<std::string, nlohmann::json> subPaths;
 		subPaths attributes, effects, items, levels, mobs, player_skills;
 	};
@@ -115,7 +121,7 @@ int main() {
 
 
 
-	
+
 	if (cdl::config_keymap["debug"] != "true") {
 		bool vanillaNotLoaded = true;
 		for (std::vector<_T_Pack>::iterator ii = packs.begin(); ii != packs.end(); ii++) {
@@ -133,7 +139,7 @@ int main() {
 		if (!test) std::cout << "WARNING: DEBUG mode activated!\nThe game will not check the vanilla data pack and the invaild packs will be FORCED ENABLE.\nSome debugging commands will also be enabled, which may crash the game or destroy your game saves if you use them.\nIf you are not a developer or a pack creator, please TURN OFF the debug mode in the 'config.ini' file.\n";
 	}
 	cmdReg::regist_cmd();
-	player.setup("generic:player", "Player", 20, 2, 4, 0, 0,0);
+	player.setup("generic:player", "Player", 20, 2, 4, 0, 0, 0);
 	std::cout << sll::get_trans("cmdungeons.msg.loading.done") << std::endl;
 	while (1) {
 		std::string input;

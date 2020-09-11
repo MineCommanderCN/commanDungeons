@@ -9,6 +9,7 @@
 #include<sstream>
 #include<windows.h>
 #include "nlohmannJson.hpp"
+
 namespace cdl {
     nlohmann::json translate_json;
     std::map<std::string, std::string> config_keymap;
