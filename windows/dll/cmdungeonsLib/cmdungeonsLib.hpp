@@ -1,10 +1,11 @@
-﻿#pragma once
+#pragma once
 #define CREATEDELL_API_DU _declspec(dllexport)
 #include<string>
 #include<iostream>
 #include<map>
 #include<vector>
-#include"squidCore_lib.hpp"
+#include"squidCore/squidCore_lib.hpp"
+#pragma comment(lib, "squidCore.lib")
 #include<windows.h>
 namespace cdl {
 	struct _T_chrt_data {
