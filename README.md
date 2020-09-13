@@ -1,6 +1,10 @@
 # commanDungeons
-A command-line RPG game
+- 中文版本请见README-zh.md
 
-wiki&tutorial: [here](https://github.com/MineCommanderCN/commanDungeons/wiki)
+A command-line RPG game written by modern C++, supports Windows/Linux cross platform, mod packs and custom scripts.
 
-download: [here](https://github.com/MineCommanderCN/commanDungeons/releases/latest)
+
+
+- wiki&tutorial: [here](https://github.com/MineCommanderCN/commanDungeons/wiki)
+
+- download: [here](https://github.com/MineCommanderCN/commanDungeons/releases/latest)
