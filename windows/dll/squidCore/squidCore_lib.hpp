@@ -10,8 +10,15 @@
 #include<windows.h>
 #include "nlohmannJson.hpp"
 
+#define ResetColor SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE)
+#define SetColorWarning SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), FOREGROUND_INTENSITY | FOREGROUND_RED |FOREGROUND_GREEN)
+#define SetColorFatal SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), BACKGROUND_RED | FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE)
+#define SetColorError SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), FOREGROUND_RED)
+#define SetColorGreat SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), FOREGROUND_GREEN)
+#define SetColorExellent SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), FOREGROUND_GREEN | FOREGROUND_BLUE)
+
 namespace cdl {
-    nlohmann::json translate_json;
+    nlohmann::json translate_buffer;
     std::map<std::string, std::string> config_keymap;
 }
 typedef std::vector<std::string> lcmd;
@@ -32,8 +39,7 @@ namespace sll {
         return strUTF8;
     }
     std::string CREATEDELL_API_DU get_trans(std::string key) {
-        if (cdl::translate_json.count(key) == 1) return utf8_to_ansi(cdl::translate_json[key]);
-        else return "WARNING: Missing translation key '" + key + "'";
+        return (cdl::translate_buffer.count(key) == 1) ? cdl::translate_buffer[key] : "";
     }
     const int EXIT_MAIN = 65536;
     const int MAXN = 2147483647;
@@ -134,14 +140,14 @@ namespace sll {
                             sll::replace_substr(transbuf, "%d", atob<int, std::string>(i->size()));
                             sll::replace_substr(transbuf, "%d", atob<int, std::string>(cf->argcMin));
                             sll::replace_substr(transbuf, "%d", atob<int, std::string>(cf->argcMax));
-                            std::cout << transbuf << std::endl;
+                            SetColorError; std::cout << transbuf << std::endl; ResetColor;
                         }
                     }
                 }
                 if (!i->empty() && !scfl) {
                     std::string transbuf = get_trans("squidcore.error.unknown_command");
                     if (transbuf.find("%s") != std::string::npos) transbuf.replace(transbuf.find("%s"), 2, (*i)[0]);
-                    std::cout << transbuf << std::endl;
+                    SetColorError; std::cout << transbuf << std::endl; ResetColor;
                 }
             }
             return 0;

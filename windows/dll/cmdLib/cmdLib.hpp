@@ -1,11 +1,12 @@
 ﻿#pragma once
 #define CREATEDELL_API_DU _declspec(dllexport)
-#include"squidCore_lib.hpp"
-#include"cmdungeonsLib.hpp"
+#include"squidCore/squidCore_lib.hpp"
+#include"cmdungeonsLib/cmdungeonsLib.hpp"
+#pragma comment(lib,"squidCore.lib")
+#pragma comment(lib,"cmdungeonsLib.lib")
 cdl::character player;
 #include<cstdlib>
 #include<ctime>
-#include <direct.h>
 #include<cmath>
 const int EXIT_MAIN = 65536;
 namespace cmdReg {
