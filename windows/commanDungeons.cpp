@@ -1,4 +1,4 @@
-﻿#define _CRT_SECURE_NO_WARNINGS
+#define _CRT_SECURE_NO_WARNINGS
 #include "squidCore/squidCore_lib.hpp"
 #include "cmdungeonsLib/cmdungeonsLib.hpp"
 #include "cmdLib/cmdLib.hpp"
@@ -44,7 +44,6 @@ std::string getPath(void) {	//The path that program running in
 	std::wstring str_url = szFilePath;
 	return WstringToString(str_url);
 }
-
 bool valid_datastr(std::string str) {	//Is it a valid name for a item/effect/attribute/enemy/level...?
 	if (str.empty()) return false;
 	for (std::string::iterator ii = str.begin(); ii != str.end(); ii++) {
@@ -70,11 +69,11 @@ int main() {
 		SetColorFatal;
 		std::cout << sll::get_trans("cmdungeons.fatal.missing_config");
 		ResetColor;
+
 		system("pause");
 		return 0;
 	}
 	std::string fullcfgfile;
-
 	{
 		std::stringstream buf;
 		buf << loadcfg.rdbuf();
@@ -154,11 +153,10 @@ int main() {
 	}
 
 
-
-
 	cmdReg::regist_cmd();
 	player.setup("generic:player", "Player", 20, 2, 4, 0, 0, 0);
 	SetColorGreat; std::cout << sll::get_trans("cmdungeons.msg.loading.done") << std::endl; ResetColor;
+
 	while (1) {
 		std::string input;
 		std::cout << ">> ";

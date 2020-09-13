@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 #define CREATEDELL_API_DU _declspec(dllexport)
 #include<string>
 #include<iostream>

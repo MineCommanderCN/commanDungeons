@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 #define CREATEDELL_API_DU _declspec(dllexport)
 #include"squidCore/squidCore_lib.hpp"
 #include"cmdungeonsLib/cmdungeonsLib.hpp"
