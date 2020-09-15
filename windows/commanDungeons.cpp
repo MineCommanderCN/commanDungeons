@@ -1,10 +1,12 @@
 #define _CRT_SECURE_NO_WARNINGS
+//include libs
 #include "squidCore/squidCore_lib.hpp"
 #include "cmdungeonsLib/cmdungeonsLib.hpp"
 #include "cmdLib/cmdLib.hpp"
 #pragma comment(lib,"squidCore.lib")
 #pragma comment(lib,"cmdungeonsLib.lib")
 #pragma comment(lib,"cmdLib.lib")
+//include libs end
 #include<io.h>
 #include<tchar.h>
 #include<windows.h>
