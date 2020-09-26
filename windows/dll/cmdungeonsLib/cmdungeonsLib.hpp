@@ -1,12 +1,9 @@
 #pragma once
 #define CREATEDELL_API_DU _declspec(dllexport)
-#include<string>
-#include<iostream>
-#include<map>
-#include<vector>
 #include"squidCore/squidCore_lib.hpp"
 #pragma comment(lib, "squidCore.lib")
-#include<windows.h>
+#include"baselib/baselib.hpp"
+#pragma comment(lib,"baselib.lib")
 namespace cdl {
 	struct _T_chrt_data {
 		int max_health = 1, health = 1, armor = 0, attack_power = 0, exp = 0, level = 0, gold = 0, lucky = 1;
@@ -98,9 +95,9 @@ namespace cdl {
 		}
 		void CREATEDELL_API_DU attack(character& target, int aq, int dq) {
 			{
-				std::string transbuf = sll::get_trans("cmdungeons.msg.attack");
-				sll::replace_substr(transbuf,"%s", sll::get_trans(attri.display_name));
-				sll::replace_substr(transbuf, "%s", sll::get_trans(target.attri.display_name));
+				std::string transbuf = base::get_trans("cmdungeons.msg.attack");
+				base::replace_substr(transbuf,"%s", base::get_trans(attri.display_name));
+				base::replace_substr(transbuf, "%s", base::get_trans(target.attri.display_name));
 				std::cout << transbuf << std::endl;
 			}
 			float apers = 0.2 * aq;
@@ -110,17 +107,17 @@ namespace cdl {
 			int dd = int(attri.attack_power * apers);
 			int db = int(target.attri.armor * dpers);
 			{
-				std::string transbuf = sll::get_trans("cmdungeons.msg.roll.aq");
-				sll::replace_substr(transbuf, "%s", sll::get_trans(attri.display_name));
-				sll::replace_substr(transbuf, "%d", sll::atob<int, std::string>(aq));
-				sll::replace_substr(transbuf, "%d", sll::atob<int, std::string>(dd));
+				std::string transbuf = base::get_trans("cmdungeons.msg.roll.aq");
+				base::replace_substr(transbuf, "%s", base::get_trans(attri.display_name));
+				base::replace_substr(transbuf, "%d", sqc::atob<int, std::string>(aq));
+				base::replace_substr(transbuf, "%d", sqc::atob<int, std::string>(dd));
 				std::cout << transbuf << std::endl;
 			}
 			{
-				std::string transbuf = sll::get_trans("cmdungeons.msg.roll.dq");
-				sll::replace_substr(transbuf, "%s", sll::get_trans(target.attri.display_name));
-				sll::replace_substr(transbuf, "%d", sll::atob<int, std::string>(dq));
-				sll::replace_substr(transbuf, "%d", sll::atob<int, std::string>(db));
+				std::string transbuf = base::get_trans("cmdungeons.msg.roll.dq");
+				base::replace_substr(transbuf, "%s", base::get_trans(target.attri.display_name));
+				base::replace_substr(transbuf, "%d", sqc::atob<int, std::string>(dq));
+				base::replace_substr(transbuf, "%d", sqc::atob<int, std::string>(db));
 				std::cout << transbuf << std::endl;
 			}
 			target.dealt_damage(dd - db);
@@ -135,17 +132,17 @@ namespace cdl {
 			if (is_death())
 				attri.health = 0;
 			{
-				std::string transbuf = sll::get_trans("cmdungeons.msg.took_damage");
-				sll::replace_substr(transbuf, "%s", sll::get_trans(attri.display_name));
-				sll::replace_substr(transbuf, "%d", sll::atob<int, std::string>(damage));
-				sll::replace_substr(transbuf, "%d", sll::atob<int, std::string>(attri.health));
-				sll::replace_substr(transbuf, "%d", sll::atob<int, std::string>(attri.max_health));
+				std::string transbuf = base::get_trans("cmdungeons.msg.took_damage");
+				base::replace_substr(transbuf, "%s", base::get_trans(attri.display_name));
+				base::replace_substr(transbuf, "%d", sqc::atob<int, std::string>(damage));
+				base::replace_substr(transbuf, "%d", sqc::atob<int, std::string>(attri.health));
+				base::replace_substr(transbuf, "%d", sqc::atob<int, std::string>(attri.max_health));
 				std::cout << transbuf << std::endl;
 			}
 			if (is_death())
 			{
-				std::string transbuf = sll::get_trans("cmdungeons.msg.death");
-				sll::replace_substr(transbuf, "%s", sll::get_trans(attri.display_name));
+				std::string transbuf = base::get_trans("cmdungeons.msg.death");
+				base::replace_substr(transbuf, "%s", base::get_trans(attri.display_name));
 				std::cout << transbuf << std::endl;
 			}
 		}
