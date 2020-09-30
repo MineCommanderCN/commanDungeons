@@ -1,10 +1,37 @@
 #pragma once
+#pragma warning(disable:4996)
 #define CREATEDELL_API_DU _declspec(dllexport)
-#include"squidCore/squidCore_lib.hpp"
-#pragma comment(lib, "squidCore.lib")
-#include"baselib/baselib.hpp"
-#pragma comment(lib,"baselib.lib")
+#include<iostream>
+#include<vector>
+#include<map>
+#include<ctime>
+#include<fstream>
+#include<string>
+#include<sstream>
+#include<windows.h>
+#include<io.h>
+#include<tchar.h>
+#include "nlohmannJson.hpp"
+//Console color font (on Windows)
+#define ResetColor SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE)
+#define SetColorWarning SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), FOREGROUND_INTENSITY | FOREGROUND_RED |FOREGROUND_GREEN)
+#define SetColorFatal SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), BACKGROUND_RED | FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE)
+#define SetColorError SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), FOREGROUND_RED)
+#define SetColorGreat SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), FOREGROUND_GREEN)
+#define SetColorExellent SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), FOREGROUND_GREEN | FOREGROUND_BLUE)
 namespace cdl {
+	nlohmann::json translate_buffer;
+	std::map<std::string, std::string> config_keymap;
+	std::string CREATEDELL_API_DU get_trans(std::string key) {
+		return (cdl::translate_buffer.count(key) == 1) ? cdl::translate_buffer[key] : "";
+	}
+	bool CREATEDELL_API_DU replace_substr(std::string& raw, std::string from, std::string to) {
+		if (raw.find(from) != std::string::npos) {
+			raw.replace(raw.find(from), from.size(), to);
+			return 0;
+		}
+		else return 1;
+	}
 	struct _T_chrt_data {
 		int max_health = 1, health = 1, armor = 0, attack_power = 0, exp = 0, level = 0, gold = 0, lucky = 1;
 		std::string display_name, id;
@@ -71,6 +98,14 @@ namespace cdl {
 
 	std::map<std::string, _T_effect_event> effect_registry;
 	std::map<std::string, _T_item_data> item_registry;
+	template <class Ta, class Tb>
+	Tb atob(const Ta& t) {
+		std::stringstream temp;
+		temp << t;
+		Tb i;
+		temp >> i;
+		return i;
+	}
 	class character {
 	public:
 		std::map<std::string, int> inventory;
@@ -95,9 +130,9 @@ namespace cdl {
 		}
 		void CREATEDELL_API_DU attack(character& target, int aq, int dq) {
 			{
-				std::string transbuf = base::get_trans("cmdungeons.msg.attack");
-				base::replace_substr(transbuf,"%s", base::get_trans(attri.display_name));
-				base::replace_substr(transbuf, "%s", base::get_trans(target.attri.display_name));
+				std::string transbuf = cdl::get_trans("cmdungeons.msg.attack");
+				cdl::replace_substr(transbuf,"%s", cdl::get_trans(attri.display_name));
+				cdl::replace_substr(transbuf, "%s", cdl::get_trans(target.attri.display_name));
 				std::cout << transbuf << std::endl;
 			}
 			float apers = 0.2 * aq;
@@ -107,17 +142,17 @@ namespace cdl {
 			int dd = int(attri.attack_power * apers);
 			int db = int(target.attri.armor * dpers);
 			{
-				std::string transbuf = base::get_trans("cmdungeons.msg.roll.aq");
-				base::replace_substr(transbuf, "%s", base::get_trans(attri.display_name));
-				base::replace_substr(transbuf, "%d", sqc::atob<int, std::string>(aq));
-				base::replace_substr(transbuf, "%d", sqc::atob<int, std::string>(dd));
+				std::string transbuf = cdl::get_trans("cmdungeons.msg.roll.aq");
+				cdl::replace_substr(transbuf, "%s", cdl::get_trans(attri.display_name));
+				cdl::replace_substr(transbuf, "%d", cdl::atob<int, std::string>(aq));
+				cdl::replace_substr(transbuf, "%d", cdl::atob<int, std::string>(dd));
 				std::cout << transbuf << std::endl;
 			}
 			{
-				std::string transbuf = base::get_trans("cmdungeons.msg.roll.dq");
-				base::replace_substr(transbuf, "%s", base::get_trans(target.attri.display_name));
-				base::replace_substr(transbuf, "%d", sqc::atob<int, std::string>(dq));
-				base::replace_substr(transbuf, "%d", sqc::atob<int, std::string>(db));
+				std::string transbuf = cdl::get_trans("cmdungeons.msg.roll.dq");
+				cdl::replace_substr(transbuf, "%s", cdl::get_trans(target.attri.display_name));
+				cdl::replace_substr(transbuf, "%d", cdl::atob<int, std::string>(dq));
+				cdl::replace_substr(transbuf, "%d", cdl::atob<int, std::string>(db));
 				std::cout << transbuf << std::endl;
 			}
 			target.dealt_damage(dd - db);
@@ -132,17 +167,17 @@ namespace cdl {
 			if (is_death())
 				attri.health = 0;
 			{
-				std::string transbuf = base::get_trans("cmdungeons.msg.took_damage");
-				base::replace_substr(transbuf, "%s", base::get_trans(attri.display_name));
-				base::replace_substr(transbuf, "%d", sqc::atob<int, std::string>(damage));
-				base::replace_substr(transbuf, "%d", sqc::atob<int, std::string>(attri.health));
-				base::replace_substr(transbuf, "%d", sqc::atob<int, std::string>(attri.max_health));
+				std::string transbuf = cdl::get_trans("cmdungeons.msg.took_damage");
+				cdl::replace_substr(transbuf, "%s", cdl::get_trans(attri.display_name));
+				cdl::replace_substr(transbuf, "%d", cdl::atob<int, std::string>(damage));
+				cdl::replace_substr(transbuf, "%d", cdl::atob<int, std::string>(attri.health));
+				cdl::replace_substr(transbuf, "%d", cdl::atob<int, std::string>(attri.max_health));
 				std::cout << transbuf << std::endl;
 			}
 			if (is_death())
 			{
-				std::string transbuf = base::get_trans("cmdungeons.msg.death");
-				base::replace_substr(transbuf, "%s", base::get_trans(attri.display_name));
+				std::string transbuf = cdl::get_trans("cmdungeons.msg.death");
+				cdl::replace_substr(transbuf, "%s", cdl::get_trans(attri.display_name));
 				std::cout << transbuf << std::endl;
 			}
 		}
@@ -155,4 +190,64 @@ namespace cdl {
 	};
 
 	std::map<std::string, __dungeon_level_data> dungeon_levels;
+	std::string CREATEDELL_API_DU utf8_to_ansi(std::string strUTF8) {	//方法来源：https://blog.csdn.net/yuanwow/article/details/98469297
+		UINT nLen = MultiByteToWideChar(CP_UTF8, NULL, strUTF8.c_str(), -1, NULL, NULL);
+		WCHAR* wszBuffer = new WCHAR[nLen + 1];
+		nLen = MultiByteToWideChar(CP_UTF8, NULL, strUTF8.c_str(), -1, wszBuffer, nLen);
+		wszBuffer[nLen] = 0;
+		nLen = WideCharToMultiByte(936, NULL, wszBuffer, -1, NULL, NULL, NULL, NULL);
+		CHAR* szBuffer = new CHAR[nLen + 1];
+		nLen = WideCharToMultiByte(936, NULL, wszBuffer, -1, szBuffer, nLen, NULL, NULL);
+		szBuffer[nLen] = 0;
+		strUTF8 = szBuffer;
+		delete[]szBuffer;
+		delete[]wszBuffer;
+		return strUTF8;
+	}
+	
+	
+	const int MAX_NUM = 2147483647;
+	void getFilesAll(std::string path, std::vector<std::string>& files) {	//Gets all file names in the given path (include its sub path)
+		long hFile = 0;
+		struct _finddata_t fileinfo;
+		std::string p;
+		if ((hFile = _findfirst(p.assign(path).append("\\*").c_str(), &fileinfo)) != -1) {
+			do {
+				if ((fileinfo.attrib & _A_SUBDIR)) {
+					if (strcmp(fileinfo.name, ".") != 0 && strcmp(fileinfo.name, "..") != 0) {
+						getFilesAll(p.assign(path).append("\\").append(fileinfo.name), files);
+					}
+				}
+				else {
+					files.push_back(p.assign(path).append("\\").append(fileinfo.name));
+				}
+			} while (_findnext(hFile, &fileinfo) == 0);
+			_findclose(hFile);
+		}
+	}
+	std::string WstringToString(const std::wstring str)	//just wstring to string
+	{
+		unsigned len = str.size() * 4;
+		setlocale(LC_CTYPE, "");
+		char* p = new char[len];
+		wcstombs(p, str.c_str(), len);
+		std::string str1(p);
+		delete[] p;
+		return str1;
+	}
+	std::string getPath(void) {	//The path that program running in
+		TCHAR szFilePath[MAX_PATH + 1] = { 0 };
+		GetModuleFileName(NULL, szFilePath, MAX_PATH);
+		(_tcsrchr(szFilePath, _T('\\')))[1] = 0;
+		std::wstring str_url = szFilePath;
+		return WstringToString(str_url);
+	}
+	bool valid_datastr(std::string str) {	//Is it a valid name for a item/effect/attribute/enemy/level...?
+		if (str.empty()) return false;
+		for (std::string::iterator ii = str.begin(); ii != str.end(); ii++) {
+			if ((*ii < 'a' || *ii>'z') && (*ii < '0' || *ii>'9') && *ii != '_')
+				return false;
+		}
+		return true;
+	}
 }

@@ -1,14 +1,25 @@
-﻿#pragma once
-#include<baselib/baselib.hpp>
-#pragma comment(lib, "baselib.lib")
-
-/*
+﻿/*
 *   SquidCore v0.1.4
 *   Copyright (C) MineCommander 2020, use MIT License
 *   Repo: https://github.com/MineCommanderCN/squidCore
 */
+
+/*
+If you want to use the macro to build squidCore as a .dll file, please make sure:
+  1. You are using Visual Studio as the IDE;
+  2. Your operating system is Windows;
+  3. Using the "Dynamic link library" template to generate the project.
+Then, remove the comment of the following code:
+*/
+      #define SQUIDCORE_EXPORT_AS_DLL true
+
+#ifdef SQUIDCORE_EXPORT_AS_DLL
+    #define USE_DLL _declspec(dllexport)
+#else
+    #define USE_DLL
+#endif
+#pragma warning(disable:4996)
 #pragma once
-#define _CRT_SECURE_NO_WARNINGS
 #include<iostream>
 #include<vector>
 #include<map>
@@ -29,20 +40,20 @@ namespace sqc {
     };
     std::map<std::string, tCmdreg> cmd_register;    //first -> root command, second -> command info
     template <class Ta, class Tb>
-    Tb atob(const Ta& t) {    //strstream-based type conversion (such as std::string->float)
+    Tb USE_DLL atob(const Ta& t) {    //strstream-based type conversion (such as std::string->float)
         std::stringstream temp;
         temp << t;
         Tb i;
         temp >> i;
         return i;
     }
-    double str2num(std::string str) {    //A shortcut of atob<std::string, double>(), which is convenient for most use
+    double USE_DLL str2num(std::string str) {    //A shortcut of atob<std::string, double>(), which is convenient for most use
         return atob<std::string, double>(str);
     }
-    std::string num2str(double num) {    //A shortcut of atob<double, std::string>(), which is convenient for most use
+    std::string USE_DLL num2str(double num) {    //A shortcut of atob<double, std::string>(), which is convenient for most use
         return atob<double, std::string>(num);
     }
-    argsAry compile(std::string str) {
+    argsAry USE_DLL compile(std::string str) {
         str += "\n";
         argsAry tmp;
         std::string strtmp;
@@ -91,7 +102,7 @@ namespace sqc {
     private:
         bool logWithTime = false;
         bool coloringLinuxConsole = false;
-        std::string getSysTime(void) {
+        std::string USE_DLL getSysTime(void) {
             time_t t = time(0);
             char tmp[16];
             strftime(tmp, sizeof(tmp), "[%H:%M:%S] ", localtime(&t));
@@ -103,11 +114,11 @@ namespace sqc {
         const short __ERROR = 3;
         const short __FATAL_ERROR = 4;
         const short __DEBUG = 5;
-        int print(std::string buf) {
+        int USE_DLL print(std::string buf) {
             std::cout << ((logWithTime) ? getSysTime() + buf : buf) << std::endl;
             return 0;
         }
-        int printWithPrefix(std::string buf, short type) {
+        int USE_DLL printWithPrefix(std::string buf, short type) {
             std::string prefix;
             if (coloringLinuxConsole) {
                 switch (type) {
@@ -128,10 +139,10 @@ namespace sqc {
             std::cout << ((logWithTime) ? prefix + getSysTime() + buf : prefix + buf) << ((coloringLinuxConsole) ? "\033[0m" : "") << std::endl;
             return 0;
         }
-        void logWithTheTime(bool option) {
+        void USE_DLL logWithTheTime(bool option) {
             logWithTime = option;
         }
-        void coloringOnLinux(bool option) {
+        void USE_DLL coloringOnLinux(bool option) {
             coloringLinuxConsole = option;
         }
     } io;
@@ -139,20 +150,20 @@ namespace sqc {
     private:
         argsAry args;
     public:
-        cmdContainer operator=(const std::string& str) {
+        cmdContainer USE_DLL operator=(const std::string& str) {
             this->args = compile(str);
             return this->args;
         }
-        cmdContainer() {
+        USE_DLL cmdContainer() {
 
         }
-        cmdContainer(std::string str) {
+        USE_DLL cmdContainer(std::string str) {
             args = compile(str);
         }
-        cmdContainer(argsAry argy) {
+        USE_DLL cmdContainer(argsAry argy) {
             args = argy;
         }
-        int run() {
+        int USE_DLL run() {
             if (cmd_register.count(args[0]) == 1) {
                 if (args.size() >= cmd_register[args[0]].argcMin && args.size() <= cmd_register[args[0]].argcMax) {
                     return cmd_register[args[0]].func(args);
@@ -175,7 +186,7 @@ namespace sqc {
         }
     };
 
-    void regcmd(std::string cmdstr, //root command
+    void USE_DLL regcmd(std::string cmdstr, //root command
         Fp cmdfp,           //function pointer
         int argcMin,        //min argument count
         int argcMax) {      //max argument count

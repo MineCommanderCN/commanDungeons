@@ -1,12 +1,5 @@
-#define _CRT_SECURE_NO_WARNINGS
 //include libs
-#include "squidCore/squidCore_lib.hpp"
-#include "cmdungeonsLib/cmdungeonsLib.hpp"
 #include "cmdLib/cmdLib.hpp"
-#include"baselib/baselib.hpp"
-#pragma comment(lib,"baselib.lib")
-#pragma comment(lib,"squidCore.lib")
-#pragma comment(lib,"cmdungeonsLib.lib")
 #pragma comment(lib,"cmdLib.lib")
 //include libs end
 
@@ -24,7 +17,7 @@ int main() {
 	std::ifstream loadcfg("config.ini");
 	if (!loadcfg) {
 		SetColorFatal;
-		std::cout << base::get_trans("cmdungeons.fatal.missing_config");
+		std::cout << cdl::get_trans("cmdungeons.fatal.missing_config");
 		ResetColor;
 
 		system("pause");
@@ -60,13 +53,13 @@ int main() {
 		}
 	}
 	if (cdl::config_keymap.count("lang") == 0) {
-		SetColorFatal; std::cout << base::get_trans("cmdungeons.fatal.config_damaged"); ResetColor;
+		SetColorFatal; std::cout << cdl::get_trans("cmdungeons.fatal.config_damaged"); ResetColor;
 		system("pause");
 		return 0;
 	}
 
 	//Read datapacks
-	std::cout << base::get_trans("cmdungeons.msg.loading_datapacks") << std::endl;
+	std::cout << cdl::get_trans("cmdungeons.msg.loading_datapacks") << std::endl;
 	struct _T_Pack {
 		std::string pack_name;
 		nlohmann::json pack_info;
@@ -78,11 +71,11 @@ int main() {
 
 	std::vector<std::string> filepath_tmp;
 	std::vector<std::string> packList;
-	base::getFilesAll(base::getPath() + "\packs", filepath_tmp);
+	cdl::getFilesAll(cdl::getPath() + "\\packs", filepath_tmp);
 	for (std::vector<std::string>::iterator ii = filepath_tmp.begin(); ii != filepath_tmp.end(); ii++) {//get all enabled pack names first
 		std::string packname_tmp;
 		if (ii->find("\\pack_info.meta") != std::string::npos) packname_tmp = *ii;
-		base::replace_substr(packname_tmp, "\\pack_info.meta", "");
+		cdl::replace_substr(packname_tmp, "\\pack_info.meta", "");
 		for (int it = packname_tmp.size() - 1; it > 0; it--) {
 			if (packname_tmp[it] == '\\') packname_tmp.erase(0, it + 1);
 		}
@@ -97,7 +90,7 @@ int main() {
 		}
 
 		if (vanillaNotLoaded) {
-			SetColorFatal; std::cout << base::get_trans("cmdungeons.fatal.no_vanilla_pack"); ResetColor;
+			SetColorFatal; std::cout << cdl::get_trans("cmdungeons.fatal.no_vanilla_pack"); ResetColor;
 			system("pause");
 			return 0;
 		}
@@ -105,14 +98,14 @@ int main() {
 	else {
 		std::fstream test("_DEBUG_MODE_NO_WARNING");
 		if (!test) {
-			SetColorWarning; std::cout << base::get_trans("cmdungeons.warning.debug_mode"); ResetColor;
+			SetColorWarning; std::cout << cdl::get_trans("cmdungeons.warning.debug_mode"); ResetColor;
 		}
 	}
 
 
 	cmdReg::regist_cmd();
 	player.setup("generic:player", "Player", 20, 2, 4, 0, 0, 0);
-	SetColorGreat; std::cout << base::get_trans("cmdungeons.msg.loading.done") << std::endl; ResetColor;
+	SetColorGreat; std::cout << cdl::get_trans("cmdungeons.msg.loading.done") << std::endl; ResetColor;
 
 	while (1) {
 		std::string input;
