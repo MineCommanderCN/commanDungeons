@@ -54,15 +54,19 @@ namespace cmdReg {
 	int CREATEDELL_API_DU visitInfo(const sqc::argsAry& args) {
 		if (args[1] == player.attri.display_name || args[1] == "me" || args[1] == "player") {
 			{
+				SetColorExellent;
 				std::string transbuf = cdl::get_trans("cmdungeons.msg.info");
 				if (transbuf.find("%s") != std::string::npos) transbuf.replace(transbuf.find("%s"), 2, player.attri.display_name);
 				std::cout << transbuf << std::endl;
+				ResetColor;
 			}
+			SetColorWarning;
 			std::cout << "LV" << player.attri.level << " " << player.attri.exp << "/" << pow(player.attri.level, 2) * 10 + 50
 				<< std::endl << player.attri.gold << "G"
 				<< "\nHP: " << player.attri.health << "/" << player.attri.max_health
 				<< "\nATP: " << player.attri.attack_power
 				<< "\nAMR: " << player.attri.armor << std::endl;
+			ResetColor;
 		}
 		else if (/*args[1] == cdl::get_trans(enemy.get_attributes().display_name) ||*/ args[1] == "enemy") {
 			{

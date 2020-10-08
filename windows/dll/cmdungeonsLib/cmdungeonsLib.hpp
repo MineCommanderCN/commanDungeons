@@ -11,6 +11,7 @@
 #include<windows.h>
 #include<io.h>
 #include<tchar.h>
+#include<iomanip>
 #include "nlohmannJson.hpp"
 //Console color font (on Windows)
 #define ResetColor SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE)
@@ -20,10 +21,24 @@
 #define SetColorGreat SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), FOREGROUND_GREEN)
 #define SetColorExellent SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), FOREGROUND_GREEN | FOREGROUND_BLUE)
 namespace cdl {
+	std::string CREATEDELL_API_DU utf8_to_ansi(std::string strUTF8) {	//方法来源：https://blog.csdn.net/yuanwow/article/details/98469297
+		UINT nLen = MultiByteToWideChar(CP_UTF8, NULL, strUTF8.c_str(), -1, NULL, NULL);
+		WCHAR* wszBuffer = new WCHAR[nLen + 1];
+		nLen = MultiByteToWideChar(CP_UTF8, NULL, strUTF8.c_str(), -1, wszBuffer, nLen);
+		wszBuffer[nLen] = 0;
+		nLen = WideCharToMultiByte(936, NULL, wszBuffer, -1, NULL, NULL, NULL, NULL);
+		CHAR* szBuffer = new CHAR[nLen + 1];
+		nLen = WideCharToMultiByte(936, NULL, wszBuffer, -1, szBuffer, nLen, NULL, NULL);
+		szBuffer[nLen] = 0;
+		strUTF8 = szBuffer;
+		delete[]szBuffer;
+		delete[]wszBuffer;
+		return strUTF8;
+	}
 	nlohmann::json translate_buffer;
 	std::map<std::string, std::string> config_keymap;
 	std::string CREATEDELL_API_DU get_trans(std::string key) {
-		return (cdl::translate_buffer.count(key) == 1) ? cdl::translate_buffer[key] : "";
+		return (cdl::translate_buffer.count(key) == 1) ? utf8_to_ansi(cdl::translate_buffer[key]) : key;
 	}
 	bool CREATEDELL_API_DU replace_substr(std::string& raw, std::string from, std::string to) {
 		if (raw.find(from) != std::string::npos) {
@@ -190,35 +205,36 @@ namespace cdl {
 	};
 
 	std::map<std::string, __dungeon_level_data> dungeon_levels;
-	std::string CREATEDELL_API_DU utf8_to_ansi(std::string strUTF8) {	//方法来源：https://blog.csdn.net/yuanwow/article/details/98469297
-		UINT nLen = MultiByteToWideChar(CP_UTF8, NULL, strUTF8.c_str(), -1, NULL, NULL);
-		WCHAR* wszBuffer = new WCHAR[nLen + 1];
-		nLen = MultiByteToWideChar(CP_UTF8, NULL, strUTF8.c_str(), -1, wszBuffer, nLen);
-		wszBuffer[nLen] = 0;
-		nLen = WideCharToMultiByte(936, NULL, wszBuffer, -1, NULL, NULL, NULL, NULL);
-		CHAR* szBuffer = new CHAR[nLen + 1];
-		nLen = WideCharToMultiByte(936, NULL, wszBuffer, -1, szBuffer, nLen, NULL, NULL);
-		szBuffer[nLen] = 0;
-		strUTF8 = szBuffer;
-		delete[]szBuffer;
-		delete[]wszBuffer;
-		return strUTF8;
-	}
-	
-	
+
+
 	const int MAX_NUM = 2147483647;
-	void getFilesAll(std::string path, std::vector<std::string>& files) {	//Gets all file names in the given path (include its sub path)
+	void getSubFiles(std::string path, std::vector<std::string>& files) {	//Gets all file names in the given path
+		long   hFile = 0;
+		struct _finddata_t fileinfo;
+		std::string p;
+		if ((hFile = _findfirst(p.assign(path).append("\\*").c_str(), &fileinfo)) != -1)
+		{
+			do
+			{
+				if ((fileinfo.attrib & _A_SUBDIR))
+				{
+
+				}
+				else
+				{
+					files.push_back(p.assign(fileinfo.name));
+				}
+			} while (_findnext(hFile, &fileinfo) == 0);
+			_findclose(hFile);
+		}
+	}
+	void getSubDir(std::string path, std::vector<std::string>& files) {	//Gets all sub forlder in a given path
 		long hFile = 0;
 		struct _finddata_t fileinfo;
 		std::string p;
 		if ((hFile = _findfirst(p.assign(path).append("\\*").c_str(), &fileinfo)) != -1) {
 			do {
 				if ((fileinfo.attrib & _A_SUBDIR)) {
-					if (strcmp(fileinfo.name, ".") != 0 && strcmp(fileinfo.name, "..") != 0) {
-						getFilesAll(p.assign(path).append("\\").append(fileinfo.name), files);
-					}
-				}
-				else {
 					files.push_back(p.assign(path).append("\\").append(fileinfo.name));
 				}
 			} while (_findnext(hFile, &fileinfo) == 0);
@@ -245,7 +261,7 @@ namespace cdl {
 	bool valid_datastr(std::string str) {	//Is it a valid name for a item/effect/attribute/enemy/level...?
 		if (str.empty()) return false;
 		for (std::string::iterator ii = str.begin(); ii != str.end(); ii++) {
-			if ((*ii < 'a' || *ii>'z') && (*ii < '0' || *ii>'9') && *ii != '_')
+			if ((*ii < 'A' || *ii > 'Z') && (*ii < 'a' || *ii > 'z') && (*ii < '0' || *ii > '9') && *ii != '_')
 				return false;
 		}
 		return true;

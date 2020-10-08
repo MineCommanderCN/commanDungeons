@@ -8,11 +8,17 @@ int main() {
 	cdl::translate_buffer["cmdungeons.fatal.missing_config"] = "FATAL ERROR: Missing file 'config.ini'. Please re-install the commanDungeons.\nYour game save will be kept.\n";
 	cdl::translate_buffer["cmdungeons.fatal.config_damaged"] = "FATAL ERROR: File 'config.ini' can't be read or was damaged. Please try to re-install the commanDungeons.\nYour game save will be kept.\n";
 	cdl::translate_buffer["cmdungeons.msg.loading_datapacks"] = "Loading the Data Packs...";
+	cdl::translate_buffer["cmdungeons.msg.loading_config"] = "Loading the config...";
 	cdl::translate_buffer["cmdungeons.fatal.no_vanilla_pack"] = "FATAL ERROR: Unable to load vanilla data pack, game can not start up.\nPlease try to re-install the commanDungeons. Your game save will be kept.\n";
-	cdl::translate_buffer["cmdungeons.warning.debug_mode"] = "WARNING: DEBUG mode activated!\nThe game will not check the vanilla data pack and the invaild packs will be FORCED ENABLE.\nSome debugging commands will also be enabled, which may crash the game or destroy your game saves if you use them.\nIf you are not a developer or a pack creator, please TURN OFF the debug mode in the 'config.ini' file.\n";
+	cdl::translate_buffer["cmdungeons.warning.debug_mode"] = "WARNING: DEBUG mode activated! This feature is for developers only.\nThe pack and script system will be UNSAFE because they are able to MODIFY YOUR SYSTEM now.\nSome debugging commands will also be enabled, which may CRASH the game or DESTROY your game saves if you use them incorrectly.\nIf you are not a developer or a pack creator, please TURN OFF the debug mode in the 'config.ini' file.\n";
+	cdl::translate_buffer["cmdungeons.warning.pack_not_support_language"] = "WARNING: Data pack '%s' does not support your current language '%s', which may cause some content does not display normally.\nYou can try to contact the creator of the pack to solve the problem.";
 
-
+	std::ifstream inBuff("translate_buffer.json");
+	if (inBuff) inBuff >> cdl::translate_buffer;
+	inBuff.close();
 	ResetColor;
+
+	std::cout << cdl::get_trans("cmdungeons.msg.loading_config");
 	//Read config.ini
 	std::ifstream loadcfg("config.ini");
 	if (!loadcfg) {
@@ -59,7 +65,7 @@ int main() {
 	}
 
 	//Read datapacks
-	std::cout << cdl::get_trans("cmdungeons.msg.loading_datapacks") << std::endl;
+	std::cout << cdl::get_trans("cmdungeons.msg.loading_datapacks");
 	struct _T_Pack {
 		std::string pack_name;
 		nlohmann::json pack_info;
@@ -68,20 +74,18 @@ int main() {
 		subPaths attributes, effects, items, levels, mobs, player_skills;
 	};
 	std::map<std::string, _T_Pack> packs;
-
-	std::vector<std::string> filepath_tmp;
 	std::vector<std::string> packList;
-	cdl::getFilesAll(cdl::getPath() + "\\packs", filepath_tmp);
-	for (std::vector<std::string>::iterator ii = filepath_tmp.begin(); ii != filepath_tmp.end(); ii++) {//get all enabled pack names first
-		std::string packname_tmp;
-		if (ii->find("\\pack_info.meta") != std::string::npos) packname_tmp = *ii;
-		cdl::replace_substr(packname_tmp, "\\pack_info.meta", "");
-		for (int it = packname_tmp.size() - 1; it > 0; it--) {
-			if (packname_tmp[it] == '\\') packname_tmp.erase(0, it + 1);
+	cdl::getSubDir(cdl::getPath() + "packs", packList);
+	std::ifstream readInfo;
+	for (std::vector<std::string>::iterator ii = packList.begin(); ii != packList.end(); ii++) {
+		readInfo.open((*ii + "\\pack_info.meta").c_str());
+		if (readInfo) {
+			cdl::replace_substr(*ii, cdl::getPath() + "packs\\", "");
+			readInfo >> packs[*ii].pack_info;
 		}
-		packList.push_back(packname_tmp);
+		//std::cout << *ii << std::endl;
 	}
-
+	readInfo.close();
 
 	if (cdl::config_keymap["debug"] != "true") {
 		bool vanillaNotLoaded = true;
@@ -96,13 +100,28 @@ int main() {
 		}
 	}
 	else {
-		std::fstream test("_DEBUG_MODE_NO_WARNING");
-		if (!test) {
-			SetColorWarning; std::cout << cdl::get_trans("cmdungeons.warning.debug_mode"); ResetColor;
+		SetColorWarning; std::cout << cdl::get_trans("cmdungeons.warning.debug_mode"); ResetColor;
+	}
+
+	//Load translations
+	for (std::map<std::string, _T_Pack>::iterator ii = packs.begin(); ii != packs.end(); ii++) {
+		nlohmann::json language_tmp;
+		std::ifstream readTmp((cdl::getPath() + "packs\\" + ii->first + "\\translate\\" + cdl::config_keymap["lang"] + ".json").c_str());
+		if 
+			(readTmp) readTmp >> language_tmp;
+		else {
+			std::string transbuf = cdl::get_trans("cmdungeons.warning.pack_not_support_language");
+			cdl::replace_substr(transbuf, "%s", ii->first);
+			cdl::replace_substr(transbuf, "%s", cdl::config_keymap["lang"]);
+			std::cout << transbuf;
 		}
+		cdl::translate_buffer.merge_patch(language_tmp);
+		//std::cout << cdl::getPath() + "packs\\" + *ii + "\\translate\\" + cdl::config_keymap["lang"] + ".json" << std::endl;
 	}
 
 
+	std::ofstream outBuff("translate_buffer.json");
+	outBuff << std::setw(4) << cdl::translate_buffer << std::endl;
 	cmdReg::regist_cmd();
 	player.setup("generic:player", "Player", 20, 2, 4, 0, 0, 0);
 	SetColorGreat; std::cout << cdl::get_trans("cmdungeons.msg.loading.done") << std::endl; ResetColor;
