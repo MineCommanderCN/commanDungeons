@@ -1,6 +1,13 @@
 #pragma once
 #pragma warning(disable:4996)
 #define CREATEDELL_API_DU _declspec(dllexport)
+
+#if defined (_DEBUG)
+#pragma comment( lib, "lua5.4.lib" ) // Lua Support
+#else
+#pragma comment( lib, "lua5.4.lib" ) // Lua Support
+#endif
+
 #include<iostream>
 #include<vector>
 #include<map>
@@ -14,12 +21,14 @@
 #include<iomanip>
 #include "nlohmannJson.hpp"
 //Console color font (on Windows)
-#define ResetColor SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE)
+#define ResetColor SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), WORD(FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE))
 #define SetColorWarning SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), FOREGROUND_INTENSITY | FOREGROUND_RED |FOREGROUND_GREEN)
 #define SetColorFatal SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), BACKGROUND_RED | FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE)
 #define SetColorError SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), FOREGROUND_RED)
 #define SetColorGreat SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), FOREGROUND_GREEN)
 #define SetColorExellent SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), FOREGROUND_GREEN | FOREGROUND_BLUE)
+#include "lua/lua.hpp"
+lua_State* lua_state;
 namespace cdl {
 	std::string CREATEDELL_API_DU utf8_to_ansi(std::string strUTF8) {	//方法来源：https://blog.csdn.net/yuanwow/article/details/98469297
 		UINT nLen = MultiByteToWideChar(CP_UTF8, NULL, strUTF8.c_str(), -1, NULL, NULL);

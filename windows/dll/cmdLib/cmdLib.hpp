@@ -3,6 +3,8 @@
 #include"cmdungeonsLib/cmdungeonsLib.hpp"
 #pragma comment(lib,"squidCore.lib")
 #pragma comment(lib,"cmdungeonsLib.lib")
+
+
 cdl::character player;
 #include<cstdlib>
 #include<ctime>
@@ -24,7 +26,7 @@ namespace cmdReg {
 		player.attri.display_name = args[1];
 		//TO DO: Something to load your save
 		{
-			std::string transbuf = cdl::get_trans("cmdungeons.msg.load.done");
+			std::string transbuf = cdl::get_trans("cmdungeons.msg.load_save.done");
 			cdl::replace_substr(transbuf, "%s", player.attri.display_name);
 			std::cout << transbuf << std::endl;
 		}
@@ -45,7 +47,7 @@ namespace cmdReg {
 
 	int CREATEDELL_API_DU inputName(const sqc::argsAry& args) {
 		player.attri.display_name = args[1];
-		std::string transbuf = cdl::get_trans("cmdungeons.msg.rename");
+		SetColorGreat; std::string transbuf = cdl::get_trans("cmdungeons.msg.rename"); ResetColor;
 		cdl::replace_substr(transbuf, "%s", args[1]);
 		std::cout << transbuf << std::endl;
 		return 0;
@@ -56,7 +58,7 @@ namespace cmdReg {
 			{
 				SetColorExellent;
 				std::string transbuf = cdl::get_trans("cmdungeons.msg.info");
-				if (transbuf.find("%s") != std::string::npos) transbuf.replace(transbuf.find("%s"), 2, player.attri.display_name);
+				cdl::replace_substr(transbuf, "%s", player.attri.display_name);
 				std::cout << transbuf << std::endl;
 				ResetColor;
 			}
@@ -79,13 +81,29 @@ namespace cmdReg {
 				<< "\nATP: " << enemy.get_attributes().attack_power
 				<< "\nARM: " << enemy.get_attributes().armor << std::endl;*/
 		}
-		else
-			std::cout << cdl::get_trans("cmdungeons.msg.info.error") << std::endl;
+		else {
+			SetColorError;
+			std::string transbuf = cdl::get_trans("cmdungeons.msg.info.error");
+			cdl::replace_substr(transbuf, "%s", args[1]);
+			std::cout << transbuf << std::endl;
+			ResetColor;
+		}
 		return 0;
 	}
 
 	int CREATEDELL_API_DU exitGame(const sqc::argsAry& args) {
 		return EXIT_MAIN;
+	}
+
+	int CREATEDELL_API_DU directLuaScript(const sqc::argsAry& args) {	//Run a lua script in raw lua feature
+		if (cdl::config_keymap["debug"] != "true") {
+			SetColorError;
+			std::cout << cdl::get_trans("cmdungeons.error.debug_only") << std::endl;
+			ResetColor;
+		}
+		else 
+			return luaL_dofile(lua_state, args[1].c_str());
+		return 0;
 	}
 
 	void CREATEDELL_API_DU regist_cmd(void) {
@@ -95,5 +113,6 @@ namespace cmdReg {
 		sqc::regcmd("name", cmdReg::inputName, 2, 2);
 		sqc::regcmd("info", cmdReg::visitInfo, 2, 2);
 		sqc::regcmd("exit", cmdReg::exitGame, 1, 1);
+		sqc::regcmd("lua-script-direct", cmdReg::directLuaScript, 2, 2);
 	}
 }

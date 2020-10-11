@@ -1,5 +1,5 @@
 ﻿/*
-*   SquidCore v0.1.4
+*   SquidCore v0.1.5
 *   Copyright (C) MineCommander 2020, use MIT License
 *   Repo: https://github.com/MineCommanderCN/squidCore
 */
@@ -32,6 +32,8 @@ namespace sqc {
     typedef std::vector<std::string> argsAry;
     typedef int(*Fp)(const argsAry& args);
     const int EXIT_MAIN = 65536;
+    const int UNKNOWN_COMMAND = 65537;
+    const int ARGUMENT_ERROR = 65538;
     const int MAXN = 2147483647;
     struct tCmdreg {
         Fp func;
@@ -57,25 +59,24 @@ namespace sqc {
         str += "\n";
         argsAry tmp;
         std::string strtmp;
-        int state = 0;
+        int state = 0;  /*  state==0 scanning blank chars (spqce)
+                            state==1 scanning strings between two spaces
+                            state==2 scanning strings between two quotes
+                        */
         for (std::string::iterator ii = str.begin(); ii != str.end(); ii++) {
             if (*ii == '\n') {
                 tmp.push_back(strtmp);
                 return tmp;
             }
-            if (state == 0) {
-                if (*ii == ' ') {
 
-                }
-                else if (*ii == '"') {
-                    state = 2;
-                }
-                else {
-                    state = 1;
-                    strtmp.push_back(*ii);
-                }
-            }
-            else if (state == 1) {
+            switch (state) {
+            case 0:
+                switch (*ii) {
+                case ' ': break;
+                case '"': state = 2; break;
+                default: state = 1; strtmp.push_back(*ii);
+                } break;
+            case 1:
                 if (*ii == ' ') {
                     tmp.push_back(strtmp);
                     strtmp.clear();
@@ -83,69 +84,23 @@ namespace sqc {
                 }
                 else {
                     strtmp.push_back(*ii);
-                }
-            }
-            else if (state == 2) {
+                } break;
+            case 2:
                 if (*ii == '"') {
-                    tmp.push_back(strtmp);
-                    strtmp.clear();
-                    state = 0;
+                    strtmp = "\"" + strtmp;
+                    strtmp.push_back(*ii);
+                    state = 1;
                 }
                 else {
                     strtmp.push_back(*ii);
-                }
+                } break;
+            default:
+                throw "squidCore: Unexpected error at command parsing";
             }
+
         }
         return tmp;
     }
-    class t_ioClass {
-    private:
-        bool logWithTime = false;
-        bool coloringLinuxConsole = false;
-        std::string USE_DLL getSysTime(void) {
-            time_t t = time(0);
-            char tmp[16];
-            strftime(tmp, sizeof(tmp), "[%H:%M:%S] ", localtime(&t));
-            return tmp;
-        }
-    public:
-        const short __INFO = 1;
-        const short __WARNING = 2;
-        const short __ERROR = 3;
-        const short __FATAL_ERROR = 4;
-        const short __DEBUG = 5;
-        int USE_DLL print(std::string buf) {
-            std::cout << ((logWithTime) ? getSysTime() + buf : buf) << std::endl;
-            return 0;
-        }
-        int USE_DLL printWithPrefix(std::string buf, short type) {
-            std::string prefix;
-            if (coloringLinuxConsole) {
-                switch (type) {
-                case 5: prefix += "\033[34m"; break;
-                case 4: prefix += "\033[41m\033[37m"; break;
-                case 3: prefix += "\033[31m"; break;
-                case 2: prefix += "\033[33m"; break;
-                case 1: prefix += "\033[0m"; break;
-                }
-            }
-            switch (type) {
-            case 5: prefix += "[DEBUG]"; break;
-            case 4: prefix += "[FATAL_ERROR]"; break;
-            case 3: prefix += "[ERROR]"; break;
-            case 2: prefix += "[WARNING]"; break;
-            case 1: prefix += "[INFO]"; break;
-            }
-            std::cout << ((logWithTime) ? prefix + getSysTime() + buf : prefix + buf) << ((coloringLinuxConsole) ? "\033[0m" : "") << std::endl;
-            return 0;
-        }
-        void USE_DLL logWithTheTime(bool option) {
-            logWithTime = option;
-        }
-        void USE_DLL coloringOnLinux(bool option) {
-            coloringLinuxConsole = option;
-        }
-    } io;
     class cmdContainer {
     private:
         argsAry args;
@@ -164,24 +119,16 @@ namespace sqc {
             args = argy;
         }
         int USE_DLL run() {
-            if (cmd_register.count(args[0]) == 1) {
-                if (args.size() >= cmd_register[args[0]].argcMin && args.size() <= cmd_register[args[0]].argcMax) {
-                    return cmd_register[args[0]].func(args);
+            if (cmd_register.count(args[0]) == 1) { //if command exist
+                if (args.size() >= cmd_register[args[0]].argcMin && args.size() <= cmd_register[args[0]].argcMax) { //passed the arguments check
+                    return cmd_register[args[0]].func(args);    //run the command
                 }
-                else {
-                    std::stringstream buf;
-                    buf << "Incorrect arguments count: needed ("
-                        << cmd_register[args[0]].argcMin << "," << cmd_register[args[0]].argcMax
-                        << ") but detected " << args.size();
-                    io.printWithPrefix(buf.str(), io.__ERROR);
-                    return 32767;
+                else {  //can not pass the check
+                    return ARGUMENT_ERROR;
                 }
             }
-            else {
-                std::stringstream buf;
-                buf << "Unknown command '" << args[0] << "'";
-                io.printWithPrefix(buf.str(), io.__ERROR);
-                return 32768;
+            else {  //command not exist
+                return UNKNOWN_COMMAND;
             }
         }
     };
