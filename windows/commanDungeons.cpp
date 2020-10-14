@@ -131,6 +131,16 @@ int main() {
 		//std::cout << cdl::getPath() + "packs\\" + *ii + "\\translate\\" + cdl::config_keymap["lang"] + ".json" << std::endl;
 	}
 
+	//Load data
+
+
+
+	//ok got lazy :|
+
+
+
+
+
 
 	std::ofstream outBuff("translate_buffer.json");
 	outBuff << std::setw(4) << cdl::translate_buffer << std::endl;

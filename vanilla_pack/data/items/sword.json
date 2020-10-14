@@ -6,5 +6,6 @@
             "operation": 0,
             "amount": 5.0
         }
-    ]
+    ],
+    "use_event": "null"
 }

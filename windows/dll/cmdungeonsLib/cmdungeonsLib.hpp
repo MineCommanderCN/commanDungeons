@@ -56,63 +56,40 @@ namespace cdl {
 		}
 		else return 1;
 	}
-	struct _T_chrt_data {
-		int max_health = 1, health = 1, armor = 0, attack_power = 0, exp = 0, level = 0, gold = 0, lucky = 1;
-		std::string display_name, id;
-		std::map<std::string, double> custom_attris;
+	struct _T_attribute_modifier {
+		float amount = 0.0;
+		short operation = 0;
+		std::string attribute_name;
 	};
 	struct _T_event_condition {
-		struct _T_random_chance {
-			bool avilable = false;
-			float random_chance = 1;
-		} random_chance;
-		struct _T_attribute {
-			short target = 0;	//0=self 1=enemy
-			bool avilable = false;
-			std::string attri_name;
-			double attri_min = -262144.0, attri_max = 262144.0;
-		};
-		std::vector<_T_attribute> attribute;
-		struct _T_items {
-			bool avilable = false;
-			std::string item_id;
-			int itemcnt_min = -262144, itemcnt_max = 262144;
-		};
-		std::vector<_T_items> has_item;
+
 	};
-	struct _T_attri_modifier {
-		std::string attri_id;
-		short operation = 0;
-		float amount = 0;
+	struct _T_effect_reg {
+		bool debuf = false;
+		std::string event_type;
+		_T_attribute_modifier attribute_modifier;	//modify_attributes
+		float amount;	//modify_health
+		float level_multiplier = 1.0;	//modify_attributes, modify_health
 	};
-	struct _T_effect_event {
-		_T_attri_modifier modifier;
-		bool multy_lvl = false, fixed = false;
-		_T_event_condition conditions;
+	struct _T_event {
+		std::string type;
+		short target = 0;	//0 -> self, 1 -> enemy
+		std::string effect_name;	//give_effect
+		int time;	//give_effect
+		int level;	//give_effect
+		float amount;	//modify_health
+		bool active_immediately = true;	//give_effect
 	};
-	struct _T_adv_event {
-		struct _T_give_effect {
-			short target = 0;	//0=self 1=enemy
-			std::string effect_name;
-			int time = 1, level = 1;
-			bool active_immediately = false;
-		};
-		std::vector<_T_give_effect> give_effect;
-		struct _T_mod_attri {
-			short target = 0;
-			_T_attri_modifier modifier;
-		};
-		std::vector<_T_mod_attri> modify_attris;
-		std::vector<_T_event_condition> conditions;
-	};
+
+
 	struct _T_effect_data {
 		std::string id;
 		int time = 0, level = 0;
 	};
 	struct _T_item_data {
 		std::string equipment;
-		_T_adv_event use_event;
-		std::vector<_T_attri_modifier> equip_effects;
+		std::string use_event;
+		std::vector<_T_attribute_modifier> equip_effects;
 	};
 	struct _T_loot_entry {
 		std::string id;
@@ -120,7 +97,7 @@ namespace cdl {
 		std::vector<_T_event_condition> conditions;
 	};
 
-	std::map<std::string, _T_effect_event> effect_registry;
+	std::map<std::string, _T_effect_reg> effect_registry;
 	std::map<std::string, _T_item_data> item_registry;
 	template <class Ta, class Tb>
 	Tb atob(const Ta& t) {
@@ -135,23 +112,12 @@ namespace cdl {
 		std::map<std::string, int> inventory;
 		std::vector<_T_loot_entry> loot_table;
 		_T_effect_data effects;
-		_T_chrt_data attri;
+		int health = 1, exp = 0, level = 0, gold = 0;
+		std::string display_name, id;
+		std::map<std::string, double> attributes;
 		struct _T_skill {
 			_T_adv_event attack, defence;
-		} mob_skill;
-		std::map<std::string, _T_adv_event> player_attack_skill;
-		std::map<std::string, _T_adv_event> player_defence_skill;
-		void CREATEDELL_API_DU setup(std::string id, std::string name, int nhealth, int narmor, int natp, int lvl, int money, int xp) {
-			attri.id = id;
-			attri.display_name = name;
-			attri.health = nhealth;
-			attri.max_health = nhealth;
-			attri.armor = narmor;
-			attri.attack_power = natp;
-			attri.level = lvl;
-			attri.gold = money;
-			attri.exp = xp;
-		}
+		} skills;
 		void CREATEDELL_API_DU attack(character& target, int aq, int dq) {
 			{
 				std::string transbuf = cdl::get_trans("cmdungeons.msg.attack");

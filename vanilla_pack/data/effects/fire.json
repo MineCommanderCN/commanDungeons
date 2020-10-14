@@ -1,12 +1,10 @@
 {
-    "debuff": true,
+    "debuff": false,
     "events":[
         {
-            "attribute_name": "generic:health",
-            "operation": 0,
+            "event": "modify_health",
             "amount": -2.0,
-            "affect_by_level": true,
-            "fixed": false
+            "level_multiplier": 1.0
         }
     ]
 }

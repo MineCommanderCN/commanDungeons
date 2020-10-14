@@ -1,0 +1,12 @@
+{
+    "events":[
+        {
+            "type": "give_effect",
+            "to": "self",
+            "effect_name": "cmdungeons:regeneration",
+            "time": 2,
+            "level": 1,
+            "active_immediately": true
+        }
+    ]
+}
