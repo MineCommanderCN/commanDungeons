@@ -5,7 +5,7 @@
 #pragma comment(lib,"cmdungeonsLib.lib")
 
 
-cdl::character player;
+cdl::character player("generic:player", "Player", 20, 2, 4, 0, 0, 0);
 #include<cstdlib>
 #include<ctime>
 #include<cmath>

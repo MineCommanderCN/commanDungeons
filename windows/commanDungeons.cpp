@@ -145,7 +145,6 @@ int main() {
 	std::ofstream outBuff("translate_buffer.json");
 	outBuff << std::setw(4) << cdl::translate_buffer << std::endl;
 	cmdReg::regist_cmd();
-	player.setup("generic:player", "Player", 20, 2, 4, 0, 0, 0);
 	SetColorGreat; std::cout << cdl::get_trans("cmdungeons.msg.loading.done") << std::endl; ResetColor;
 	SetColorExellent;  std::cout << cdl::get_trans("cmdungeons.msg.welcome") << std::endl; ResetColor;
 

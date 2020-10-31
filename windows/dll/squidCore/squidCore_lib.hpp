@@ -42,7 +42,7 @@ namespace sqc {
     };
     std::map<std::string, tCmdreg> cmd_register;    //first -> root command, second -> command info
     template <class Ta, class Tb>
-    Tb USE_DLL atob(const Ta& t) {    //strstream-based type conversion (such as std::string->float)
+    Tb USE_DLL atob(const Ta& t) {    //strstream-based type conversion (such as std::string->double)
         std::stringstream temp;
         temp << t;
         Tb i;

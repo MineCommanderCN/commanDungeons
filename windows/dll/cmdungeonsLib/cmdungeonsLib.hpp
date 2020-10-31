@@ -21,7 +21,7 @@
 #include<iomanip>
 #include "nlohmannJson.hpp"
 //Console color font (on Windows)
-#define ResetColor SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), WORD(FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE))
+#define ResetColor SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE)
 #define SetColorWarning SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), FOREGROUND_INTENSITY | FOREGROUND_RED |FOREGROUND_GREEN)
 #define SetColorFatal SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), BACKGROUND_RED | FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE)
 #define SetColorError SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), FOREGROUND_RED)
@@ -57,34 +57,36 @@ namespace cdl {
 		else return 1;
 	}
 	struct _T_attribute_modifier {
-		float amount = 0.0;
+		double amount = 0.0;
 		short operation = 0;
 		std::string attribute_name;
 	};
 	struct _T_event_condition {
-
+		std::string type;
+		double _min, _max;
 	};
 	struct _T_effect_reg {
 		bool debuf = false;
 		std::string event_type;
 		_T_attribute_modifier attribute_modifier;	//modify_attributes
-		float amount;	//modify_health
-		float level_multiplier = 1.0;	//modify_attributes, modify_health
+		double amount;	//modify_health
+		double level_multiplier = 1.0;	//modify_attributes, modify_health
 	};
 	struct _T_event {
 		std::string type;
 		short target = 0;	//0 -> self, 1 -> enemy
 		std::string effect_name;	//give_effect
-		int time;	//give_effect
-		int level;	//give_effect
-		float amount;	//modify_health
+		long long time;	//give_effect
+		long long level;	//give_effect
+		double amount;	//modify_health
 		bool active_immediately = true;	//give_effect
 	};
+	struct _T_skill {
 
+	};
 
 	struct _T_effect_data {
-		std::string id;
-		int time = 0, level = 0;
+		long long time = 0, level = 0;
 	};
 	struct _T_item_data {
 		std::string equipment;
@@ -93,7 +95,7 @@ namespace cdl {
 	};
 	struct _T_loot_entry {
 		std::string id;
-		int count_min = 0, count_max = 0;
+		long long count_min = 0, count_max = 0;
 		std::vector<_T_event_condition> conditions;
 	};
 
@@ -109,65 +111,113 @@ namespace cdl {
 	}
 	class character {
 	public:
-		std::map<std::string, int> inventory;
+		std::map<std::string, long long> inventory;
 		std::vector<_T_loot_entry> loot_table;
-		_T_effect_data effects;
-		int health = 1, exp = 0, level = 0, gold = 0;
+		std::map<std::string, _T_effect_data> effects;
+		long long health = 1, exp = 0, level = 0, gold = 0;
 		std::string display_name, id;
-		std::map<std::string, double> attributes;
-		struct _T_skill {
-			_T_adv_event attack, defence;
+		std::map<std::string, double> attributeBases;
+		struct _T_character_skills {
+			_T_skill *attack, *defence;
 		} skills;
+
+		CREATEDELL_API_DU character(
+			std::string _id,
+			std::string _display_name,
+			long long _health,
+			long long _atk_power,
+			long long _armor,
+			long long _xp,
+			long long _gold,
+			long long _level) {
+			
+			attributeBases["generic:max_health"] = _health;
+			health = _health;
+			attributeBases["generic:attack_power"] = _atk_power;
+			attributeBases["generic:armor"] = _armor;
+			attributeBases["generic:luck"] = 1;
+			display_name = _display_name;
+			id = _id;
+			skills.attack = NULL;
+			skills.defence = NULL;
+		}
+		CREATEDELL_API_DU character(void) {
+			attributeBases["generic:max_health"] = 1;
+			health = 1;
+			attributeBases["generic:attack_power"] = 0;
+			attributeBases["generic:armor"] = 0;
+			attributeBases["generic:luck"] = 1;
+			display_name = "";
+			id = "null";
+			skills.attack = NULL;
+			skills.defence = NULL;
+		}
+
+		double CREATEDELL_API_DU getAttribute(std::string attributeName) {
+			double buf = attributeBases[attributeName];
+			if (effects.count(attributeName) == 1) {
+				if (effect_registry[attributeName].attribute_modifier.attribute_name == attributeName) {
+					switch (effect_registry[attributeName].attribute_modifier.operation) {
+					case 0:
+
+					}
+				}
+			}
+			
+			
+		}
+
+
 		void CREATEDELL_API_DU attack(character& target, int aq, int dq) {
 			{
 				std::string transbuf = cdl::get_trans("cmdungeons.msg.attack");
-				cdl::replace_substr(transbuf,"%s", cdl::get_trans(attri.display_name));
-				cdl::replace_substr(transbuf, "%s", cdl::get_trans(target.attri.display_name));
+				cdl::replace_substr(transbuf,"%s", cdl::get_trans(display_name));
+				cdl::replace_substr(transbuf, "%s", cdl::get_trans(target.display_name));
 				std::cout << transbuf << std::endl;
 			}
-			float apers = 0.2 * aq;
-			float dpers = 0.12 * dq;
+			double apers = 0.2 * aq;
+			double dpers = 0.12 * dq;
 			if (aq == 6) apers *= 1.25;
 			if (dq == 6) dpers *= 1.1;
-			int dd = int(attri.attack_power * apers);
-			int db = int(target.attri.armor * dpers);
+			long long dd = long long(attribute("generic:attack_power") * apers);
+			long long db = long long(target.attribute("generic:armor") * dpers);
 			{
 				std::string transbuf = cdl::get_trans("cmdungeons.msg.roll.aq");
-				cdl::replace_substr(transbuf, "%s", cdl::get_trans(attri.display_name));
-				cdl::replace_substr(transbuf, "%d", cdl::atob<int, std::string>(aq));
-				cdl::replace_substr(transbuf, "%d", cdl::atob<int, std::string>(dd));
+				cdl::replace_substr(transbuf, "%s", cdl::get_trans(display_name));
+				cdl::replace_substr(transbuf, "%d", cdl::atob<long long, std::string>(aq));
+				cdl::replace_substr(transbuf, "%d", cdl::atob<long long, std::string>(dd));
 				std::cout << transbuf << std::endl;
 			}
 			{
 				std::string transbuf = cdl::get_trans("cmdungeons.msg.roll.dq");
-				cdl::replace_substr(transbuf, "%s", cdl::get_trans(target.attri.display_name));
-				cdl::replace_substr(transbuf, "%d", cdl::atob<int, std::string>(dq));
-				cdl::replace_substr(transbuf, "%d", cdl::atob<int, std::string>(db));
+				cdl::replace_substr(transbuf, "%s", cdl::get_trans(target.display_name));
+				cdl::replace_substr(transbuf, "%d", cdl::atob<long long, std::string>(dq));
+				cdl::replace_substr(transbuf, "%d", cdl::atob<long long, std::string>(db));
 				std::cout << transbuf << std::endl;
 			}
 			target.dealt_damage(dd - db);
 		}
 		bool CREATEDELL_API_DU is_death(void) {
-			if (attri.health <= 0) return true;
+			if (health <= 0) return true;
 			else return false;
 		}
-		void CREATEDELL_API_DU dealt_damage(int damage) {
+		void CREATEDELL_API_DU dealt_damage(long long damage) {
 			if (damage <= 0) return;
-			attri.health -= damage;
+			health -= damage;
 			if (is_death())
 				attri.health = 0;
 			{
 				std::string transbuf = cdl::get_trans("cmdungeons.msg.took_damage");
-				cdl::replace_substr(transbuf, "%s", cdl::get_trans(attri.display_name));
-				cdl::replace_substr(transbuf, "%d", cdl::atob<int, std::string>(damage));
-				cdl::replace_substr(transbuf, "%d", cdl::atob<int, std::string>(attri.health));
-				cdl::replace_substr(transbuf, "%d", cdl::atob<int, std::string>(attri.max_health));
+				cdl::replace_substr(transbuf, "%s", cdl::get_trans(display_name));
+				cdl::replace_substr(transbuf, "%d", cdl::atob<long long, std::string>(damage));
+				cdl::replace_substr(transbuf, "%d", cdl::atob<long long, std::string>(health));
+				cdl::replace_substr(transbuf, "%d", cdl::atob<long long, std::string>(attribute(max_health)));
 				std::cout << transbuf << std::endl;
 			}
 			if (is_death())
 			{
 				std::string transbuf = cdl::get_trans("cmdungeons.msg.death");
-				cdl::replace_substr(transbuf, "%s", cdl::get_trans(attri.display_name));
+				cdl::replace_substr(transbuf, "%s", cdl::get_trans(display_name));
 				std::cout << transbuf << std::endl;
 			}
 		}
