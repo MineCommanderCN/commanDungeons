@@ -1,6 +1,0 @@
-*.cs linguist-language=c#
-*.csproj linguist-language=c#
-*.c linguist-language=c
-*.h linguist-language=c
-*.cpp linguist-language=c++
-*.hpp linguist-language=c++
