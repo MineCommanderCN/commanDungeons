@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using CmdungeonsLib;
 using SquidCsharp;
 
 namespace commanDungeons_rebuilt
@@ -12,7 +13,6 @@ namespace commanDungeons_rebuilt
         static void Main(string[] args)
         {
             SquidCoreStates squidCoreMain = new SquidCoreStates();
-            SquidCsharpLib squidCoreLib = new SquidCsharpLib();
             Console.WriteLine("Hello World!");
             while (true)
             {

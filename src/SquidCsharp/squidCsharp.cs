@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 namespace SquidCsharp
 {
     public delegate int FuncDele(List<string> args);
-    public class SquidCsharpLib
+    public static class SquidCsharpLib
     {
         public struct CommandInfo
         {
@@ -17,7 +17,7 @@ namespace SquidCsharp
             public List<string> argPatterns;  //Regular expression check for arguments at corresponding positions
                                               //对于相应位置的参数的正则表达式检查
         }
-        public List<string> Convert(string buf)
+        public static List<string> Convert(string buf)
         {
             buf.Trim();
             buf += "\n";
@@ -103,7 +103,9 @@ namespace SquidCsharp
             = new Dictionary<string, SquidCsharpLib.CommandInfo>();
         //Dictionary of command info
         //命令信息辞典
-        public class SquidCoreRegException : ApplicationException
+
+
+        public class SquidCoreRegException : Exception
         //Command registing exception class
         //命令注册异常类
         {
@@ -159,7 +161,7 @@ namespace SquidCsharp
             {
                 throw new SquidCoreRegException("Minimum count of arguments (" + argcMin + ") is bigger than maximum count (" + argcMax + ")");
             }
-            else if (argcMin <=0 || argcMax <= 0)
+            else if (argcMin <= 0 || argcMax <= 0)
             {
                 throw new SquidCoreRegException("Count of arguments (" + argcMin + " and " + argcMax + ") must greater than 0");
             }
@@ -185,15 +187,14 @@ namespace SquidCsharp
             //Method running exception class (For the method what are used)
             //命令方法运行异常类（供被调用的方法使用）
             {
-                public SquidCoreRunMethodException(string message) : base(message)
+                public SquidCoreRunMethodException(string message, Exception innerException) : base(message, innerException)
                 {
                 }
             }
 
             public CommandContainer(string command)
             {
-                SquidCsharpLib libTmp = new SquidCsharpLib();
-                argList = libTmp.Convert(command);
+                argList = SquidCsharpLib.Convert(command);
             }
             public CommandContainer()
             {
@@ -203,7 +204,7 @@ namespace SquidCsharp
             {
                 if (argList.Count == 0)
                 {
-                    throw new SquidCoreRunException("Empty command");
+                    return -1;
                 }
                 if (commandRegistry.ContainsKey(argList[0]))
                 {
