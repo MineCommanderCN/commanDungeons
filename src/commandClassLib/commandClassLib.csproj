@@ -5,8 +5,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\cmdungeonsLib\cmdungeonsLib.csproj" />
-    <ProjectReference Include="..\SquidCsharp\squidCsharp.csproj" />
+    <ProjectReference Include="..\cmdungeonsLib\CmdungeonsLib.csproj" />
+    <ProjectReference Include="..\SquidCsharp\SquidCsharp.csproj" />
   </ItemGroup>
 
 </Project>

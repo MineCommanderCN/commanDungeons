@@ -4,16 +4,19 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using CmdungeonsLib;
+using CommandClassLib;
+using Newtonsoft.Json;
 using SquidCsharp;
 
-namespace commanDungeons_rebuilt
+namespace CommanDungeonsMain
 {
     class Program
     {
         static void Main(string[] args)
         {
-            SquidCoreStates squidCoreMain = new SquidCoreStates();
-            Console.WriteLine("Hello World!");
+            CommandClassLib.CommandClassLib.RegistCommand();
+
+            Console.WriteLine("CommanDungeons Version dev.20201106\nSquidCsharp demo");
             while (true)
             {
                 Console.Write(">>");

@@ -5,7 +5,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\SquidCsharp\squidCsharp.csproj" />
+    <ProjectReference Include="..\SquidCsharp\SquidCsharp.csproj" />
   </ItemGroup>
 
 </Project>

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
@@ -105,7 +106,7 @@ namespace SquidCsharp
         //命令信息辞典
 
 
-        public class SquidCoreRegException : Exception
+        public class SquidCoreRegException : ApplicationException
         //Command registing exception class
         //命令注册异常类
         {
@@ -219,7 +220,7 @@ namespace SquidCsharp
                     {
                         if (!Regex.IsMatch(elem, commandRegistry[argList[0]].argPatterns[_counter]))
                         {
-                            throw new SquidCoreRunException("Argument \"" + elem + "\"(at " + _counter + ") could not match the regular expression \""
+                            throw new SquidCoreRunException("Argument \"" + elem + "\"(at [" + _counter + "]) could not match the regular expression \""
                                 + commandRegistry[argList[0]].argPatterns[_counter] + "\"");
                         }
                         _counter++;
