@@ -1,19 +1,36 @@
 ﻿using System;
+using System.IO;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using CmdungeonsLib;
+using CommandClassLib;
+using TinyJson;
 using SquidCsharp;
 
-namespace commanDungeons_rebuilt
+namespace CommanDungeonsMain
 {
     class Program
     {
         static void Main(string[] args)
         {
-            SquidCoreStates squidCoreMain = new SquidCoreStates();
-            SquidCsharpLib squidCoreLib = new SquidCsharpLib();
-            Console.WriteLine("Hello World!");
+            try
+            {
+                CmdungeonsLib.CmdungeonsLib.config = File.ReadAllText("config.json").FromJson<Config>();
+
+            }
+            catch
+            {
+                Console.WriteLine("Error: Can not read \"config.json\" file.");
+                return;
+            }
+
+
+
+            CommandClassLib.CommandClassLib.RegistCommand();
+
+            Console.WriteLine("CommanDungeons Version dev.20201106\nSquidCsharp demo");
             while (true)
             {
                 Console.Write(">>");
