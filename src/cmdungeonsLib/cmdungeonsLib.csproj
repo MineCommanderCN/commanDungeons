@@ -6,6 +6,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\SquidCsharp\SquidCsharp.csproj" />
+    <ProjectReference Include="..\TinyJson\json.csproj" />
   </ItemGroup>
 
 </Project>

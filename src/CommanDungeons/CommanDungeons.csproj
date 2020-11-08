@@ -1,12 +1,17 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
+    <OutputType>Exe</OutputType>
     <TargetFramework>netcoreapp3.1</TargetFramework>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <StartupObject></StartupObject>
   </PropertyGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\CmdungeonsLib\CmdungeonsLib.csproj" />
+    <ProjectReference Include="..\CommandClassLib\CommandClassLib.csproj" />
     <ProjectReference Include="..\SquidCsharp\SquidCsharp.csproj" />
+    <ProjectReference Include="..\TinyJson\json.csproj" />
   </ItemGroup>
 
 </Project>

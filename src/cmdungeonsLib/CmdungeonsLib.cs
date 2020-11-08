@@ -1,13 +1,26 @@
 ﻿using System;
+using System.Collections.Generic;
+using TinyJson;
 using SquidCsharp;
 
 namespace CmdungeonsLib
 {
-    public class CmdungeonsLib
+    
+    public class Config
     {
-        public static SquidCoreStates squidCoreMain = new SquidCoreStates();
+        string lang;
+        bool debug;
+        
     }
+    public class Enemy
+    {
 
+    }
+    public class Player
+    {
+        double health;
+        int gold, level, xp;
+    }
     public class Datapack
     {
         public struct packInfo
@@ -18,5 +31,12 @@ namespace CmdungeonsLib
             string creator;
             string pack_version;
         }
+    }
+    public class CmdungeonsLib
+    {
+
+        public static SquidCoreStates squidCoreMain = new SquidCoreStates();
+        public static Config config;
+        
     }
 }
