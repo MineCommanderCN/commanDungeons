@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace SquidCsharp
 {
-    public delegate int FuncDele(List<string> args);
+    public delegate void FuncDele(List<string> args);
     public static class SquidCsharpLib
     {
         public struct CommandInfo
@@ -201,11 +201,11 @@ namespace SquidCsharp
             {
             }
 
-            public int Run()
+            public void Run()
             {
                 if (argList.Count == 0)
                 {
-                    return -1;
+                    return;
                 }
                 if (commandRegistry.ContainsKey(argList[0]))
                 {
@@ -225,8 +225,8 @@ namespace SquidCsharp
                         }
                         _counter++;
                     }
-
-                    return commandRegistry[argList[0]].commandMethod(argList);
+                    commandRegistry[argList[0]].commandMethod(argList);
+                    //return;
                 }
                 else
                 {
