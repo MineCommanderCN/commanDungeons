@@ -2,7 +2,7 @@ FROM gitpod/workspace-dotnet
 
 USER gitpod
 
-RUN wget https://packages.microsoft.com/config/debian/10/packages-microsoft-prod.deb -O packages-microsoft-prob.deb && \
+RUN wget https://packages.microsoft.com/config/debian/10/packages-microsoft-prod.deb -O packages-microsoft-prod.deb && \
     sudo dpkg -i packages-microsoft-prod.deb && \
     sudo apt-get -q update && \
     sudo apt-get install -yq dotnet-sdk-5.0 && \
