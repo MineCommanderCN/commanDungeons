@@ -10,3 +10,7 @@ ports:
 tasks:
   - init: echo 'init script' # runs during prebuild
     command: echo 'start script'
+
+vscode:
+  extensions:
+    - muhammad-sammy.csharp@1.23.6:BePnSiVYh1NffvJF07AGvQ==
