@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.IO;
 using System.Collections.Generic;
 using System.Linq;
@@ -15,9 +15,6 @@ namespace CommanDungeonsMain
     {
         static void Main(string[] args)
         {
-            StaticData.squidCoreMain = new SquidCoreStates();
-            StaticData.packsData = new Dictionary<string, Datapack>();
-
             try
             {
                 StaticData.config = File.ReadAllText("config.json").FromJson<Config>();
@@ -76,7 +73,7 @@ namespace CommanDungeonsMain
                         continue;
                     }
                     Console.ForegroundColor = ConsoleColor.Green;
-                    Console.WriteLine("[OK] Loaded language \"{0}\" from pack \"{1}\".", elem2, elem);
+                    Console.WriteLine("[OK] Loaded language \"{0}\" from pack \"{1}\"", elem2, elem);
                     Console.ResetColor();
 
                     _tmp_counter++;

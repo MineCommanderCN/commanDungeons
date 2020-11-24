@@ -8,8 +8,8 @@ ports:
 
 # List the start up tasks. You can start them in parallel in multiple terminals. See https://www.gitpod.io/docs/config-start-tasks/
 tasks:
-  - init: echo 'init script' # runs during prebuild
-    command: echo 'start script'
+  - init: echo 'init runtime' # runs during prebuild
+    command: cp -r /usr/share/dotnet/shared/Microsoft.NETCore.App/5.0.0/ /home/gitpod/dotnet/shared/Microsoft.NETCore.App/
 
 vscode:
   extensions:
