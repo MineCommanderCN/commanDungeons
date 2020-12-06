@@ -15,6 +15,7 @@ namespace CommanDungeonsMain
     {
         static void Main(string[] args)
         {
+
             try
             {
                 StaticData.config = File.ReadAllText("config.json").FromJson<Config>();
@@ -22,7 +23,7 @@ namespace CommanDungeonsMain
             }
             catch(Exception e)
             {
-                Console.BackgroundColor = ConsoleColor.Red;
+                Console.BackgroundColor = ConsoleColor.DarkRed;
                 Console.ForegroundColor = ConsoleColor.White;
                 Console.WriteLine("[Fatal] Can not read \"config.json\" file: {0}",e.Message);
                 Console.ResetColor();
@@ -38,7 +39,7 @@ namespace CommanDungeonsMain
             int _counter = 0;
             foreach(string elem in StaticData.config.enabled_packs)
             {
-                Datapack tmp = new Datapack();
+                EntryFormats.Datapack tmp = new EntryFormats.Datapack();
                 tmp.translate = new Dictionary<string, Dictionary<string, string>>();
 
                 Console.ForegroundColor = ConsoleColor.Blue;
@@ -46,7 +47,7 @@ namespace CommanDungeonsMain
                 Console.ResetColor();
                 try
                 {
-                    tmp.registry = File.ReadAllText("packs/" + elem + "/registry.json").FromJson<Datapack.registryFormat>();
+                    tmp.registry = File.ReadAllText("packs/" + elem + "/registry.json").FromJson<EntryFormats.Datapack.RegistryFormat>();
                 }
                 catch(Exception e)
                 {
@@ -88,18 +89,21 @@ namespace CommanDungeonsMain
 
                 _counter++;
             }
+            Console.ForegroundColor = ConsoleColor.Blue;
+            Console.WriteLine("[INFO] Enabled language: '{0}'",StaticData.config.lang);
+            Console.ResetColor();
 
 
 
 
 
 
-
-
-
+            Console.ForegroundColor = ConsoleColor.Blue;
+            Console.WriteLine("All done, initializing...");
+            Console.ResetColor();
             CommandClassLib.CommandClassLib.RegistCommand();
 
-            Console.WriteLine("CommanDungeons Version dev.20201106\nSquidCsharp demo");
+            Console.WriteLine(Tools.GetTranslateString("generic.welcome"), StaticData.VERSION);
             while (true)
             {
                 Console.Write(">>");
@@ -112,7 +116,7 @@ namespace CommanDungeonsMain
                 catch(SquidCoreStates.CommandContainer.SquidCoreRunException e)
                 {
                     Console.ForegroundColor = ConsoleColor.Red;
-                    Console.WriteLine("Exception Caught! Error Message: {0}", e.Message);
+                    Console.WriteLine(Tools.GetTranslateString("generic.exception_caught"), e.Message);
                     Console.ResetColor();
                 }
             }

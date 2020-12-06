@@ -6,6 +6,8 @@ using SquidCsharp;
 namespace CmdungeonsLib
 {
     
+
+
     public struct Config
     {
         public string lang;
@@ -13,92 +15,115 @@ namespace CmdungeonsLib
         public List<string> enabled_packs;
     }
     
-    public class Player
-    {
-        double health = 20.0;
-        int gold = 0;
-        int level = 0;
-        int xp = 0;
-    }
+    
     public class EntryFormats
     {
-        public class Skill
+        public class Reg
         {
-
-        }
-        public class Effect
-        {
-            public bool debuff = false;
-            public class EventsFormat
+            public class EffectEvent
             {
-                public string attribute_name;
-                public int operation = 0;
-                public double amount = 0.0;
-                public bool affect_by_level = true;
-                public bool @fixed = true;
+                public string name;
+                public int time = 0;
+                public int level = 0;
             }
-            public List<EventsFormat> events = new List<EventsFormat>();
-        }
-        public class Item
-        {
-            public string equipment;
-            public class UseEventFormat
+            public class AttributeModifiers
             {
-                public string to;
-                public string effect_name;
-                int time = 1;
-                int level = 0;
-                int waiting_round = 0;
+                public string name;
+                public int operation;
+                public double amount;
             }
-            public List<UseEventFormat> use_events = new List<UseEventFormat>();
-            public class EquipEventFormat
+            public class Item
             {
-                public string attribute_name;
-                int operation = 0;
-                double amount = 0.0;
+                public string equipment;
+                public List<EntryFormats.Reg.EffectEvent> use_events = new List<EntryFormats.Reg.EffectEvent>();  //trigge once when use the item
             }
-            public List<EquipEventFormat> equip_events = new List<EquipEventFormat>();
+            public class effects
+            {
+                public bool debuff = false;
+                public List<EntryFormats.Reg.AttributeModifiers> modifiers = new List<EntryFormats.Reg.AttributeModifiers>();
+            }
         }
-        public class Enemy
+        public class Log
         {
+            
+            public class Effect
+            {
+                public int level = 0;
+                public int time = 0;
 
+                public void Patch(EntryFormats.Log.Effect buf)
+                {
+                    time = (buf.time > time)? buf.time : time;
+                    level = (buf.level > level)? buf.level : level; //select the bigger number
+                }
+            }
+            public class Player
+            {
+                public double health = 20.0;
+                public int gold = 0;
+                public int level = 0;
+                public int xp = 0;
+                public Dictionary<string, EntryFormats.Log.Effect> effects = new Dictionary<string, EntryFormats.Log.Effect>();
+            }
         }
-        public class Level
+        public class Datapack
         {
-
+            public class RegistryFormat
+            {
+                public class MetaInfo
+                {
+                    public int file_format;
+                    public string description;
+                    public string @namespace;
+                    public string creator;
+                    public string pack_version;
+                }
+                public MetaInfo meta_info = new MetaInfo();
+                public List<string> languages = new List<string>(); //enabled languages
+                public Dictionary<string, List<string>> data = new Dictionary<string, List<string>>(); //enabled data files
+                                                                                                       //key = category(item, effect, etc.)
+                                                                                                       //value = entry name list
+            }
+            public RegistryFormat registry = new RegistryFormat();
+            public class DataFormat
+            {
+                //public Dictionary<string, EntryFormats.Reg.Item> items;
+                //public Dictionary<string, EntryFormats.Reg.Effect> effects;
+                //public Dictionary<string, EntryFormats.Reg.Enemy> enemies;
+                //public Dictionary<string, EntryFormats.Reg.Level> levels;
+            }
+            public DataFormat data = new DataFormat();
+            public Dictionary<string, Dictionary<string, string>> translate;    //translate files
+                                                                                //key = language name
+                                                                                //value = translate dictionary
         }
     }
-    public class Datapack
+    
+    public class Tools
     {
-        public struct registryFormat
+        public static string GetTranslateString(string key)
         {
-            public struct meta_info
+            string tmp = key;
+            foreach (EntryFormats.Datapack elem in StaticData.packsData.Values)
             {
-                public int file_format;
-                public string description;
-                public string @namespace;
-                public string creator;
-                public string pack_version;
+                try 
+                { 
+                    tmp = elem.translate[StaticData.config.lang][key];
+                }
+                catch
+                {
+                    ;   //TODO: maybe some log?
+                }
             }
-            public List<string> languages;
-            public Dictionary<string, List<string>> data;
+            return tmp;
         }
-        public registryFormat registry;
-        public struct dataFormat
-        {
-            public Dictionary<string, EntryFormats.Item> items;
-            public Dictionary<string, EntryFormats.Effect> effects;
-            public Dictionary<string, EntryFormats.Enemy> enemies;
-            public Dictionary<string, EntryFormats.Level> levels;
-        }
-        public  dataFormat data;
-        public Dictionary<string, Dictionary<string, string>> translate;
     }
     public class StaticData
     {
+        public const string VERSION = "v.devbuild_20201206";
 
         public static SquidCoreStates squidCoreMain = new SquidCoreStates();
         public static Config config = new Config();
-        public static Dictionary<string, Datapack> packsData = new Dictionary<string, Datapack>();
+        public static Dictionary<string, EntryFormats.Datapack> packsData = new Dictionary<string, EntryFormats.Datapack>();
     }
 }
