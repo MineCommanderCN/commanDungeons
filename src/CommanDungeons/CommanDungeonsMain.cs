@@ -25,9 +25,10 @@ namespace CommanDungeonsMain
             {
                 Console.BackgroundColor = ConsoleColor.DarkRed;
                 Console.ForegroundColor = ConsoleColor.White;
-                Console.WriteLine("[Fatal] Can not read \"config.json\" file: {0}",e.Message);
+                Console.Write("[Fatal] Can not read \"config.json\" file: {0}\nPress any key to exit...",e.Message);
                 Console.ResetColor();
-                return;
+                Console.ReadKey();
+                Environment.Exit(0);
             }
             if (StaticData.config.enabled_packs.Count == 0)
             {
@@ -47,7 +48,7 @@ namespace CommanDungeonsMain
                 Console.ResetColor();
                 try
                 {
-                    tmp.registry = File.ReadAllText("packs/" + elem + "/registry.json").FromJson<EntryFormats.Datapack.RegistryFormat>();
+                    tmp.registry = File.ReadAllText(StaticData.config.packs_path + "/" + elem + "/registry.json").FromJson<EntryFormats.Datapack.RegistryFormat>();
                 }
                 catch(Exception e)
                 {
@@ -64,7 +65,7 @@ namespace CommanDungeonsMain
                 {
                     try
                     {
-                        tmp.translate[elem2] = File.ReadAllText("packs/" + elem + "/translate/" + elem2 + ".json").FromJson<Dictionary<string, string>>();
+                        tmp.translate[elem2] = File.ReadAllText(StaticData.config.packs_path + "/" + elem + "/translate/" + elem2 + ".json").FromJson<Dictionary<string, string>>();
                     }
                     catch(Exception e)
                     {

@@ -10,6 +10,7 @@ namespace CmdungeonsLib
 
     public struct Config
     {
+        public string packs_path;
         public string lang;
         public bool debug;
         public List<string> enabled_packs;
@@ -121,6 +122,7 @@ namespace CmdungeonsLib
     public class StaticData
     {
         public const string VERSION = "v.devbuild_20201206";
+        public const int SUPPORTED_PACKFORMAT = 1;
 
         public static SquidCoreStates squidCoreMain = new SquidCoreStates();
         public static Config config = new Config();

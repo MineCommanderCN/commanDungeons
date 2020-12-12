@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.30717.126
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CommanDungeons", "commanDungeons\CommanDungeons.csproj", "{D24B518D-BA84-4D7F-87D3-066AF11C4AC8}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CommanDungeons", "CommanDungeons\CommanDungeons.csproj", "{D24B518D-BA84-4D7F-87D3-066AF11C4AC8}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CmdungeonsLib", "CmdungeonsLib\CmdungeonsLib.csproj", "{A1AEC0A6-C4D0-4C33-9C05-A14623FE2DC2}"
 EndProject
