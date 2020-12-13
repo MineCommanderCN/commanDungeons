@@ -36,7 +36,7 @@ namespace CmdungeonsLib
             public class Item
             {
                 public string equipment;
-                public List<EntryFormats.Reg.EffectEvent> use_events = new List<EntryFormats.Reg.EffectEvent>();  //trigge once when use the item
+                public List<EntryFormats.Reg.EffectEvent> use_events = new List<EntryFormats.Reg.EffectEvent>();  //Trigge once when use the item
             }
             public class effects
             {
@@ -55,7 +55,7 @@ namespace CmdungeonsLib
                 public void Patch(EntryFormats.Log.Effect buf)
                 {
                     time = (buf.time > time)? buf.time : time;
-                    level = (buf.level > level)? buf.level : level; //select the bigger number
+                    level = (buf.level > level)? buf.level : level; //Select the bigger number
                 }
             }
             public class Player
@@ -80,10 +80,10 @@ namespace CmdungeonsLib
                     public string pack_version;
                 }
                 public MetaInfo meta_info = new MetaInfo();
-                public List<string> languages = new List<string>(); //enabled languages
-                public Dictionary<string, List<string>> data = new Dictionary<string, List<string>>(); //enabled data files
-                                                                                                       //key = category(item, effect, etc.)
-                                                                                                       //value = entry name list
+                public List<string> languages = new List<string>(); //Enabled languages
+                public Dictionary<string, List<string>> data = new Dictionary<string, List<string>>(); //Enabled data files
+                                                                                                       //Key = Category(item, effect, etc.)
+                                                                                                       //Value = Entry name list
             }
             public RegistryFormat registry = new RegistryFormat();
             public class DataFormat
@@ -94,9 +94,9 @@ namespace CmdungeonsLib
                 //public Dictionary<string, EntryFormats.Reg.Level> levels;
             }
             public DataFormat data = new DataFormat();
-            public Dictionary<string, Dictionary<string, string>> translate;    //translate files
-                                                                                //key = language name
-                                                                                //value = translate dictionary
+            public Dictionary<string, Dictionary<string, string>> translate;    //Translate files
+                                                                                //Key = Language name
+                                                                                //Value = Translate dictionary
         }
     }
     
@@ -113,7 +113,7 @@ namespace CmdungeonsLib
                 }
                 catch
                 {
-                    ;   //TODO: maybe some log?
+                    ;   //TODO: Maybe some log?
                 }
             }
             return tmp;

@@ -100,7 +100,7 @@ namespace SquidCsharp
     }
     public class SquidCoreStates
     {
-        protected static Dictionary<string, SquidCsharpLib.CommandInfo> commandRegistry
+        public static Dictionary<string, SquidCsharpLib.CommandInfo> commandRegistry
             = new Dictionary<string, SquidCsharpLib.CommandInfo>();
         //Dictionary of command info
         //命令信息辞典
