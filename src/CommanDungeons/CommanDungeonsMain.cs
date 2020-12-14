@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.IO;
 using System.Collections.Generic;
 using System.Linq;
@@ -17,20 +17,29 @@ namespace CommanDungeonsMain
         {
             try
             {
-                CmdungeonsLib.CmdungeonsLib.config = File.ReadAllText("config.json").FromJson<Config>();
-
+                CommandClassLib.CommandClassLib.Cmd_reload(new List<string>()); //First load
             }
-            catch
+            catch(Exception e)
             {
-                Console.WriteLine("Error: Can not read \"config.json\" file.");
-                return;
+                Console.BackgroundColor = ConsoleColor.DarkRed;
+                Console.ForegroundColor = ConsoleColor.White;
+                Console.Write("[Fatal] {0}\nPress any key to exit...", e.Message);
+                Console.ResetColor();
+                Console.ReadKey();
+                Environment.Exit(0);
             }
 
 
 
-            CommandClassLib.CommandClassLib.RegistCommand();
 
-            Console.WriteLine("CommanDungeons Version dev.20201106\nSquidCsharp demo");
+
+
+            Console.ForegroundColor = ConsoleColor.Blue;
+            Console.WriteLine("All done, initializing...");
+            Console.ResetColor();
+            
+
+            Console.WriteLine(Tools.GetTranslateString("generic.welcome"), StaticData.VERSION);
             while (true)
             {
                 Console.Write(">>");
@@ -42,7 +51,9 @@ namespace CommanDungeonsMain
                 }
                 catch(SquidCoreStates.CommandContainer.SquidCoreRunException e)
                 {
-                    Console.WriteLine("Exception Caught! Error Message: {0}", e.Message);
+                    Console.ForegroundColor = ConsoleColor.Red;
+                    Console.WriteLine(Tools.GetTranslateString("generic.exception_caught"), e.Message);
+                    Console.ResetColor();
                 }
             }
             

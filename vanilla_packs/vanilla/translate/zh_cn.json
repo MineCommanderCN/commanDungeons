@@ -1,0 +1,27 @@
+﻿{
+    "generic.load_done":"加载完成！",
+    "generic.welcome":"欢迎来到CommanDungeons {0}！\n输入\"commands\"或\"help\"来获取帮助。\n输入\"name <角色名>\"来创建新角色，或是\"load <角色名>\"来加载已保存的游戏进度。",
+    "generic.exception_caught":"野生的异常出现了！\n错误信息：{0}",
+    "commands.packinfo.pack_count":"已经启用了{0}个内容包：",
+    "commands.packinfo.pack_info":"内容包{0}的详细信息：",
+    "commands.packinfo.creator":"作者：{0}",
+    "commands.packinfo.namespace":"命名空间：{0}",
+    "commands.packinfo.version":"版本格式：{0}",
+    "commands.packinfo.description":"简介：\n{0}",
+    "commands.packinfo.version.compatible":"[√]兼容",
+    "commands.packinfo.version.uncompatible":"[!]可能不受支持",
+
+
+    "generic.attributes.health.name":"HP",
+    "generic.attributes.max_health.name":"HP上限",
+    "generic.attributes.armor.name":"护甲",
+    "generic.attributes.attack_power.name":"攻击力",
+    "generic.attributes.level.name":"等级",
+    "generic.attributes.exp.name":"经验",
+    "generic.attributes.lucky.name":"运气",
+    
+    "cmdungeons.info.description":"CommanDungeons原生内容包",
+
+    "cmdungeons.effects.fire.name":"灼烧",
+    "cmdungeons.effects.regeneration.name":"生命恢复"
+}

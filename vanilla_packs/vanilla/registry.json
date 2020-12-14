@@ -1,0 +1,30 @@
+{
+    "meta_info":{
+        "file_format": 1,
+        "description": "Vanilla CommanDungeons Data File",
+        "namespace": "cmdungeons",
+        "creator": "MineCommander",
+        "pack_version": "Alpha 0.1"
+    },
+    "languages":[
+        "zh_cn",
+        "en_us"
+    ],
+    "data":{
+        "items":[
+            "apple",
+            "sword"
+        ],
+        "effects":[
+            "fire",
+            "regeneration",
+            "strength"
+        ],
+        "levels":[
+            "testlevel1"
+        ],
+        "enemies":[
+            "test1"
+        ]
+    }
+}

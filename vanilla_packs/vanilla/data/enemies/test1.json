@@ -1,9 +1,10 @@
 {
+    "health": 15,
+    "level": 0,
     "attributes": {
-        "health": 15,
-        "armor": 1,
-        "attack_power": 2,
-        "level": 0
+        "generic:max_health": 15,
+        "generic:armor": 1,
+        "generic:attack_power": 2
     },
     "rewards": {
         "gold": 5,
@@ -29,6 +30,9 @@
                     "time": 1,
                     "active_immediately": true
                 }
+            ],
+            "conditions":[
+
             ]
         },
         "defence": {
@@ -41,6 +45,9 @@
                     "time": 1,
                     "active_immediately": true
                 }
+            ],
+            "conditions":[
+                
             ]
         }
     }
