@@ -19,6 +19,11 @@
 
 对于MacOS和Linux用户，你可以在发布页下载源代码后自行使用跨平台的.NET Core编译器进行构建，并附加仅内容包的发布版（DatapackOnly）进行游戏。
 
+### 内容包
+~~commanDungeons有社区维护的丰富内容包（我相信将来会有的）~~，原生内容包仅作初步体验游戏的功能。
+
+前往论坛下载社区内容包：https://github.com/MineCommanderCN/commanDungeons/discussions/categories/datapacks-内容包
+
 ## 关于开发者
 commanDungeons是一个开源项目，任何人都可以来此贡献代码和原创内容。
 
@@ -26,9 +31,4 @@ commanDungeons是一个开源项目，任何人都可以来此贡献代码和原
 你需要使用Visual Studio 2012及更新版本作为IDE，且已安装“使用.NET平台的桌面开发”功能集。
 之后，下载源代码并解压，打开src文件夹中的`commanDungeons.sln`解决方案，方便您进行修改代码及调试。
 
-### 版本分支
-`main`是面向大众的稳定版本分支，其中较大的累积更新会被打上Tag。
-
-`dev`是仅供开发使用的分支，有时包含最新的版本功能，但不一定能在不被修改的情况下构建成功。
-
-`archived`是使用C++语言编写的旧版本，已不再更新。
+`archived`分支是使用C++语言编写的旧版本，已不再更新。
