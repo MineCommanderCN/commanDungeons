@@ -1,13 +1,8 @@
 {
-    "equipment": "none",
-    "use_events":[
-        {
-            "to": "self",
-            "type": "give_effect",
-            "effect_name": "cmdungeons:regeneration",
-            "time": 2,
-            "level": 1,
-            "active_immediately": true
-        }
-    ]
+    "equipment": "consumable",
+    "use_events": [{
+        "name": "cmdungeons:regenerition",
+        "time": 2,
+        "level": 1
+    }]
 }

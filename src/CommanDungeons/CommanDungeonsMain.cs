@@ -29,27 +29,18 @@ namespace CommanDungeonsMain
                 Environment.Exit(0);
             }
 
-
-
-
-
-
-            Console.ForegroundColor = ConsoleColor.Blue;
             Console.WriteLine("All done, initializing...");
-            Console.ResetColor();
             
-
             Console.WriteLine(Tools.GetTranslateString("generic.welcome"), StaticData.VERSION);
-            while (true)
+            for (; ; )
             {
-                Console.Write(">>");
+                Console.Write(">> ");
                 string strInput = Console.ReadLine();
-                SquidCoreStates.CommandContainer commandContainer = new SquidCoreStates.CommandContainer(strInput);
                 try
                 {
-                    commandContainer.Run();
+                    StaticData.squidCoreMain.Run(strInput);
                 }
-                catch(SquidCoreStates.CommandContainer.SquidCoreRunException e)
+                catch (Exception e)
                 {
                     Console.ForegroundColor = ConsoleColor.Red;
                     Console.WriteLine(Tools.GetTranslateString("generic.exception_caught"), e.Message);

@@ -1,10 +1,8 @@
 {
-    "equipment": "hand",
-    "equip_effects": [
-        {
-            "attribute_name": "generic:attack_power",
-            "operation": 0,
-            "amount": 5.0
-        }
-    ]
+    "equipment": "generic:hand",
+    "attribute_modifiers": [{
+        "name": "generic:attack_power",
+        "operation": 0,
+        "amount": 5.0
+    }]
 }
