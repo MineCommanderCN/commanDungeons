@@ -173,7 +173,38 @@ namespace SquidCsharp
 
             commandRegistry.Add(rootCommand, tmp);
         }
+        public void Run(List<string> argList)
+        {
+            if (argList.Count == 0)
+            {
+                return;
+            }
+            if (commandRegistry.ContainsKey(argList[0]))
+            {
+                if (argList.Count < commandRegistry[argList[0]].argcMin || argList.Count > commandRegistry[argList[0]].argcMax)
+                {
+                    throw new SquidCoreException("Count of arguments was out of range [" + commandRegistry[argList[0]].argcMin
+                            + "," + commandRegistry[argList[0]].argcMax + "]");
+                }
 
+                int _counter = 0;
+                foreach (string elem in argList)
+                {
+                    if (!Regex.IsMatch(elem, commandRegistry[argList[0]].argPatterns[_counter]))
+                    {
+                        throw new SquidCoreException("Argument \"" + elem + "\"(at [" + _counter + "]) could not match the regular expression \""
+                            + commandRegistry[argList[0]].argPatterns[_counter] + "\"");
+                    }
+                    _counter++;
+                }
+                commandRegistry[argList[0]].commandMethod(argList);
+                //return;
+            }
+            else
+            {
+                throw new SquidCoreException("Unknown Command");
+            }
+        }
         public void Run(string command)
         {
             List<string> argList = SquidCsharpLib.Convert(command);

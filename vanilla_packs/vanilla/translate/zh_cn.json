@@ -11,7 +11,7 @@
     "commands.packinfo.description": "简介：\n{0}",
     "commands.packinfo.version.compatible": "[√]兼容",
     "commands.packinfo.version.uncompatible": "[!]可能不受支持",
-
+    "commands.debug.unavailable": "无法使用调试命令。",
 
     "generic.attributes.health.name": "HP",
     "generic.attributes.max_health.name": "HP上限",

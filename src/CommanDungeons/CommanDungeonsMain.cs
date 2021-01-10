@@ -15,6 +15,9 @@ namespace CommanDungeonsMain
     {
         static void Main(string[] args)
         {
+            Console.ForegroundColor = ConsoleColor.Blue;
+            Console.WriteLine("[INFO] Starting up...");
+            Console.ResetColor();
             try
             {
                 CommandClassLib.CommandClassLib.Cmd_reload(new List<string>()); //First load
@@ -25,11 +28,14 @@ namespace CommanDungeonsMain
                 Console.ForegroundColor = ConsoleColor.White;
                 Console.Write("[Fatal] {0}\nPress any key to exit...", e.Message);
                 Console.ResetColor();
+                Console.WriteLine();
                 Console.ReadKey();
                 Environment.Exit(0);
             }
 
-            Console.WriteLine("All done, initializing...");
+            Console.ForegroundColor = ConsoleColor.Blue;
+            Console.WriteLine("[INFO] All done!");
+            Console.ResetColor();
             
             Console.WriteLine(Tools.GetTranslateString("generic.welcome"), StaticData.VERSION);
             for (; ; )
