@@ -6,7 +6,6 @@
     "commands.packinfo.pack_count": "已经启用了{0}个内容包：",
     "commands.packinfo.pack_info": "内容包{0}的详细信息：",
     "commands.packinfo.creator": "作者：{0}",
-    "commands.packinfo.namespace": "命名空间：{0}",
     "commands.packinfo.version": "版本格式：{0}",
     "commands.packinfo.description": "简介：\n{0}",
     "commands.packinfo.version.compatible": "[√]兼容",

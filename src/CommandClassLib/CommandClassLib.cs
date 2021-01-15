@@ -63,6 +63,7 @@ namespace CommandClassLib
             }
             StaticData.packsData.Clear();
             StaticData.squidCoreMain.commandRegistry.Clear();
+            StaticData.debugStates.commandRegistry.Clear();
 
             if (!quiet)
             {
@@ -76,9 +77,6 @@ namespace CommandClassLib
             }
 
             int _counter = 0;
-            Dictionary<string, string> knownNamespaces = new Dictionary<string, string>();
-            //key = namespace, value = pack name
-            //for checking namespace conflicts and Tools.GetDatapackByNamespace()
             foreach (string elem in StaticData.config.enabled_packs)
             {
                 int errorCount = 0, warningCount = 0, entryCount = 0;
@@ -101,16 +99,6 @@ namespace CommandClassLib
                     Console.WriteLine("[Error] Can not read pack \"{0}\": {1}", elem, e.Message);
                     Console.ResetColor();
                     continue;
-                }
-
-                //Namespace conflict check
-                if (knownNamespaces.ContainsKey(tmp.registry.meta_info.@namespace))
-                {
-                    throw new ApplicationException("Pack namespace '" + tmp.registry.meta_info.@namespace + "' conflicted between the pack '" + knownNamespaces[tmp.registry.meta_info.@namespace] + "' and '" + elem + "'.");
-                }
-                else
-                {
-                    knownNamespaces.Add(tmp.registry.meta_info.@namespace, elem);
                 }
 
                 //Load languages
@@ -147,7 +135,12 @@ namespace CommandClassLib
                         entryCount++;
                         try
                         {
-                            tmp.data.items[elem2] = File.ReadAllText(StaticData.config.packs_path + "/" + elem + "/data/items/" + elem2 + ".json").FromJson<EntryFormats.Reg.Item>();
+                            if(!Tools.IsValidName(elem2))
+                            {
+                                throw new ApplicationException("Invalid entry name '" + elem2 + "'.");
+                            }
+                            string[] namepair = elem2.Split(':', 2);
+                            tmp.data.items[elem2] = File.ReadAllText(StaticData.config.packs_path + "/" + elem + "/data/" + namepair[0] + "/items/" + namepair[1] + ".json").FromJson<EntryFormats.Reg.Item>();
                         }
                         catch (Exception e)
                         {
@@ -171,7 +164,12 @@ namespace CommandClassLib
                         entryCount++;
                         try
                         {
-                            tmp.data.effects[elem2] = File.ReadAllText(StaticData.config.packs_path + "/" + elem + "/data/effects/" + elem2 + ".json").FromJson<EntryFormats.Reg.Effect>();
+                            if (!Tools.IsValidName(elem2))
+                            {
+                                throw new ApplicationException("Invalid entry name '" + elem2 + "'.");
+                            }
+                            string[] namepair = elem2.Split(':', 2);
+                            tmp.data.effects[elem2] = File.ReadAllText(StaticData.config.packs_path + "/" + elem + "/data/" + namepair[0] + "/effects/" + namepair[1] + ".json").FromJson<EntryFormats.Reg.Effect>();
                         }
                         catch (Exception e)
                         {
@@ -235,9 +233,12 @@ namespace CommandClassLib
                 if (StaticData.packsData.ContainsKey(args[1]))
                 {
                     Console.WriteLine(Tools.GetTranslateString("commands.packinfo.pack_info"), args[1]);
-                    Console.WriteLine(Tools.GetTranslateString("commands.packinfo.creator"), StaticData.packsData[args[1]].registry.meta_info.creator);
-                    Console.WriteLine(Tools.GetTranslateString("commands.packinfo.namespace"), StaticData.packsData[args[1]].registry.meta_info.@namespace);
-                    Console.Write(Tools.GetTranslateString("commands.packinfo.version") + "    ", StaticData.packsData[args[1]].registry.meta_info.file_format);
+                    Console.WriteLine(
+                        Tools.GetTranslateString("commands.packinfo.creator"), 
+                        StaticData.packsData[args[1]].registry.meta_info.creator);
+                    Console.Write(Tools.GetTranslateString("commands.packinfo.version") + "    ",
+                        StaticData.packsData[args[1]].registry.meta_info.file_format);
+
                     if (StaticData.packsData[args[1]].registry.meta_info.file_format == StaticData.SUPPORTED_PACKFORMAT)
                     {
                         Console.ForegroundColor = ConsoleColor.Green;
@@ -250,16 +251,9 @@ namespace CommandClassLib
                         Console.Write(Tools.GetTranslateString("commands.packinfo.version.uncompatible") + "\n");
                         Console.ResetColor();
                     }
-                    string _tmp_descrip = Tools.GetTranslateString(StaticData.packsData[args[1]].registry.meta_info.@namespace + ".info.description");
-                    if (_tmp_descrip == StaticData.packsData[args[1]].registry.meta_info.@namespace + ".info.description")   //When translated description dose not exit
-                    {
-                        Console.WriteLine(Tools.GetTranslateString("commands.packinfo.description"), StaticData.packsData[args[1]].registry.meta_info.description);
-                        //Get the description in the meta info
-                    }
-                    else
-                    {
-                        Console.WriteLine(Tools.GetTranslateString("commands.packinfo.description"), _tmp_descrip);
-                    }
+                    Console.WriteLine(Tools.GetTranslateString("commands.packinfo.description"),
+                        Tools.GetTranslateString(StaticData.packsData[args[1]].registry.meta_info.description));
+
                 }
                 else
                 {
@@ -287,7 +281,8 @@ namespace CommandClassLib
             List<string> transArgs = args;
             if (transArgs.Count > 2)
             {
-                transArgs.RemoveRange(0, 2);
+                transArgs.Remove(transArgs[0]);
+                transArgs.Remove(transArgs[0]);
                 if (transArgs.Count == 0)
                 {
                     Console.WriteLine(Tools.GetTranslateString(args[1]));

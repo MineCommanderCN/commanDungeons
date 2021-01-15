@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using TinyJson;
 using SquidCsharp;
+using System.Text.RegularExpressions;
 
 namespace CmdungeonsLib
 {
@@ -34,15 +35,18 @@ namespace CmdungeonsLib
             }
             public class Item
             {
-                public string equipment;    //'none' (normal item), 'consumable' (disappear after use) or other strings (for equipment slot ID, move onto the slot after use)
-                public List<EntryFormats.Reg.EffectEvent> use_events = new List<EntryFormats.Reg.EffectEvent>();  //Trigge once when use the item (INVALID for 'none')
-                public List<EntryFormats.Reg.AttributeModifier> attribute_modifiers = new List<EntryFormats.Reg.AttributeModifier>(); //Modifiers on the attributes when equipmented
+                public string equipment;
+                //'none' (normal item), 'consumable' (disappear after use) or other strings (for equipment slot ID, move onto the slot after use)
+                public List<EntryFormats.Reg.EffectEvent> use_events = new List<EntryFormats.Reg.EffectEvent>(); 
+                //Trigge once when use the item (INVALID for 'none')
+                public List<EntryFormats.Reg.AttributeModifier> attribute_modifiers = new List<EntryFormats.Reg.AttributeModifier>();
+                //Modifiers on the attributes when equipmented
             }
             public class Effect
             {
                 public bool debuff = false; //If true, the effect will be highlighted when display
                 public List<EntryFormats.Reg.AttributeModifier> modifiers = new List<EntryFormats.Reg.AttributeModifier>();
-                //Modifiers on attributes for the effect
+                //Modifiers on attributes for the effect.
                 //NOTE: You can use attribute_name = "generic.health" with operation = 0 to modify the HP!
                 //NOTE: Final modified amount is (amount * effect level) !
             }
@@ -65,13 +69,14 @@ namespace CmdungeonsLib
                 public string id;
                 public int count;
 
-                public EntryFormats.Reg.Item GetItemRegInfo()
-                {
-                    string[] strSplitTmp = id.Split(':', 2);
-                    string strNamespc = strSplitTmp[0];
-                    string strId = strSplitTmp[1];
-                    return StaticData.packsData[Tools.GetDatapackByNamespace(strNamespc)].data.items[strId];
-                }
+                //public EntryFormats.Reg.Item GetItemRegInfo()
+                //{
+                //    string[] strSplitTmp = id.Split(':', 2);
+                //    string strNamespc = strSplitTmp[0];
+                //    string strId = strSplitTmp[1];
+                //    //return StaticData.packsData[Tools.GetDatapackByNamespace(strNamespc)].data.items[strId];
+                //    return new Reg.Item();
+                //}
             }
             public class Player
             {
@@ -90,7 +95,8 @@ namespace CmdungeonsLib
                     double tmp_op1 = 1;
                     double tmp_op2 = 1;
                     List<EntryFormats.Reg.AttributeModifier> modifiers = new List<EntryFormats.Reg.AttributeModifier>();
-                    //
+                    //Get all modifiers from effects and equipment
+                    //i'm lazy :|
 
                     foreach (EntryFormats.Reg.AttributeModifier elem in modifiers)
                     {
@@ -123,7 +129,6 @@ namespace CmdungeonsLib
                 {
                     public int file_format;
                     public string description;
-                    public string @namespace;
                     public string creator;
                     public string pack_version;
                 }
@@ -143,8 +148,8 @@ namespace CmdungeonsLib
             }
             public DataFormat data = new DataFormat();
             public Dictionary<string, Dictionary<string, string>> translate = new Dictionary<string, Dictionary<string, string>>();    //Translate files
-                                                                                //Key = Language name
-                                                                                //Value = Translate dictionary
+                                                                                                                                       //Key = Language name
+                                                                                                                                       //Value = Translate dictionary
         }
     }
 
@@ -166,16 +171,39 @@ namespace CmdungeonsLib
             }
             return tmp;
         }
-        public static string GetDatapackByNamespace(string @namespace)
+        public static bool IsValidName(string str)
+        /*
+         *   Judge the str if is a valid name for an entry.
+         *   "A valid name for an entry" must:
+         *     - Only contains lowercase or uppercase letters (a-z, A-Z), numbers (0-9), underscores (_) and only one colon (:);
+         *     - Both sides of colon is not empty.
+         *     
+         *   Here is the magic pattern: [A-Za-z0-9_]+:{1}[A-Za-z0-9_]+
+         *   
+         *   TODO: Support forward slash (/) for the entries in subfolders.
+         */
         {
-            foreach(KeyValuePair<string, EntryFormats.Datapack> elem in StaticData.packsData)
+            if (RegexMatchedStrings(str, @"[A-Za-z0-9_]+:{1}[A-Za-z0-9_]+") == str)
             {
-                if(elem.Value.registry.meta_info.@namespace == @namespace)
-                {
-                    return elem.Key;
-                }
+                return true;
             }
-            return "";
+            return false;
+        }
+        public static string RegexMatchedStrings(string input, string pattern)
+        //Find all substrings that match the pattern in the input, and connect them.
+        {
+            MatchCollection mc = Regex.Matches(input, pattern);
+            string[] matches = new string[mc.Count];
+            string result = "";
+            for (int i = 0; i < mc.Count; i++)
+            {
+                matches[i] = mc[i].Groups[0].Value;
+            }
+            foreach (string s in matches)
+            {
+                result = result + s;
+            }
+            return result;
         }
     }
     public class StaticData

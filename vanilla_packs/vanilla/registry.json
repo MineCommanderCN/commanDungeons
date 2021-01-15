@@ -1,8 +1,7 @@
 {
     "meta_info": {
         "file_format": 1,
-        "description": "Vanilla CommanDungeons Data File",
-        "namespace": "cmdungeons",
+        "description": "cmdungeons.info.description",
         "creator": "MineCommander",
         "pack_version": "Alpha 0.1"
     },
@@ -12,19 +11,19 @@
     ],
     "data": {
         "items": [
-            "apple",
-            "sword"
+            "cmdungeons:apple",
+            "cmdungeons:sword"
         ],
         "effects": [
-            "fire",
-            "regeneration",
-            "strength"
+            "cmdungeons:fire",
+            "cmdungeons:regeneration",
+            "cmdungeons:strength"
         ],
         "levels": [
-            "testlevel1"
+            "cmdungeons:testlevel1"
         ],
         "enemies": [
-            "test1"
+            "cmdungeons:test1"
         ]
     }
 }
