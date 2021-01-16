@@ -18,37 +18,5 @@
                 }
             }
         ]
-    },
-    "skills": {
-        "attack": {
-            "events":[
-                {
-                    "to": "self",
-                    "type": "give_effects",
-                    "effect_name": "cmdungeons:strength",
-                    "level": 1,
-                    "time": 1,
-                    "active_immediately": true
-                }
-            ],
-            "conditions":[
-
-            ]
-        },
-        "defence": {
-            "events":[
-                {
-                    "to": "self",
-                    "type": "give_effects",
-                    "effect_name": "cmdungeons:regeneration",
-                    "level": 1,
-                    "time": 1,
-                    "active_immediately": true
-                }
-            ],
-            "conditions":[
-                
-            ]
-        }
     }
 }

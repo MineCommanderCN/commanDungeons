@@ -7,8 +7,6 @@ ports:
     onOpen: open-preview
 
 # List the start up tasks. You can start them in parallel in multiple terminals. See https://www.gitpod.io/docs/config-start-tasks/
-
-
 vscode:
   extensions:
-    - muhammad-sammy.csharp@1.23.6:BePnSiVYh1NffvJF07AGvQ==
+    - muhammad-sammy.csharp@1.23.8:sQVKBcQ6FdF5kPQ+V6fc5Q==

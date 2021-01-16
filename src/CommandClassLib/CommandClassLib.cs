@@ -186,6 +186,62 @@ namespace CommandClassLib
                     }
 
                 }
+                if (tmp.registry.data.ContainsKey("enemies"))
+                {
+                    foreach (string elem2 in tmp.registry.data["enemies"])
+                    {
+                        entryCount++;
+                        try
+                        {
+                            if (!Tools.IsValidName(elem2))
+                            {
+                                throw new ApplicationException("Invalid entry name '" + elem2 + "'.");
+                            }
+                            string[] namepair = elem2.Split(':', 2);
+                            tmp.data.enemies[elem2] = File.ReadAllText(StaticData.config.packs_path + "/" + elem + "/data/" + namepair[0] + "/enemies/" + namepair[1] + ".json").FromJson<EntryFormats.Reg.Enemy>();
+                        }
+                        catch (Exception e)
+                        {
+                            errorCount++;
+                            Console.ForegroundColor = ConsoleColor.Red;
+                            Console.WriteLine("[Error] Can not load enemy entry \"{0}\" from pack \"{1}\": {2}", elem2, elem, e.Message);
+                            Console.ResetColor();
+                            continue;
+                        }
+                        if (!quiet)
+                        {
+                            Console.WriteLine("Loaded enemy entry \"{0}\" from pack \"{1}\"", elem2, elem);
+                        }
+                    }
+                }
+                if (tmp.registry.data.ContainsKey("levels"))
+                {
+                    foreach (string elem2 in tmp.registry.data["levels"])
+                    {
+                        entryCount++;
+                        try
+                        {
+                            if (!Tools.IsValidName(elem2))
+                            {
+                                throw new ApplicationException("Invalid entry name '" + elem2 + "'.");
+                            }
+                            string[] namepair = elem2.Split(':', 2);
+                            tmp.data.levels[elem2] = File.ReadAllText(StaticData.config.packs_path + "/" + elem + "/data/" + namepair[0] + "/levels/" + namepair[1] + ".json").FromJson<EntryFormats.Reg.Level>();
+                        }
+                        catch (Exception e)
+                        {
+                            errorCount++;
+                            Console.ForegroundColor = ConsoleColor.Red;
+                            Console.WriteLine("[Error] Can not load level entry \"{0}\" from pack \"{1}\": {2}", elem2, elem, e.Message);
+                            Console.ResetColor();
+                            continue;
+                        }
+                        if (!quiet)
+                        {
+                            Console.WriteLine("Loaded level entry \"{0}\" from pack \"{1}\"", elem2, elem);
+                        }
+                    }
+                }
                 //Load data end
                 if (entryCount - warningCount - errorCount == 0)
                 {
@@ -278,24 +334,18 @@ namespace CommandClassLib
 
         public static void Debug_GetTranslateString(List<string> args)
         {
-            List<string> transArgs = args;
-            if (transArgs.Count > 2)
+            if(args.Count > 2)
             {
-                transArgs.Remove(transArgs[0]);
-                transArgs.Remove(transArgs[0]);
-                if (transArgs.Count == 0)
+                string[] transArgs = new string[args.Count - 2];
+                for(int i = 2; i < args.Count; i++)
                 {
-                    Console.WriteLine(Tools.GetTranslateString(args[1]));
+                    transArgs[i - 2] = args[i];
                 }
-                else
-                {
-                    Console.WriteLine(Tools.GetTranslateString(args[1]), transArgs);
-                }
+                Console.WriteLine(Tools.GetTranslateString(args[1]), transArgs);
             }
             else
             {
                 Console.WriteLine(Tools.GetTranslateString(args[1]));
-                return;
             }
         }
     }

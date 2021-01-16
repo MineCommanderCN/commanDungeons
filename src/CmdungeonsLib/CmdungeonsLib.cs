@@ -50,6 +50,38 @@ namespace CmdungeonsLib
                 //NOTE: You can use attribute_name = "generic.health" with operation = 0 to modify the HP!
                 //NOTE: Final modified amount is (amount * effect level) !
             }
+            public class Enemy
+            {
+                public int health = 1;
+                public int level = 0;
+                Dictionary<string, double> attributes = new Dictionary<string, double>();
+                public class RewardsFormat
+                {
+                    public int gold = 0;
+                    public int xp = 0;
+                    public class ItemLoot
+                    {
+                        public string id;
+                        public class CountRange
+                        {
+                            public int min;
+                            public int max;
+                            public int Roll()
+                            {
+                                return 0;
+                            }
+                        }
+                        CountRange count = new CountRange();
+                    }
+                }
+                public RewardsFormat rewards = new RewardsFormat();
+            }
+            public class Level
+            {
+                public bool random = false;
+                public bool looping = false;
+                public List<string> entries = new List<string>();
+            }
         }
         public class Log
         {
@@ -69,14 +101,18 @@ namespace CmdungeonsLib
                 public string id;
                 public int count;
 
-                //public EntryFormats.Reg.Item GetItemRegInfo()
-                //{
-                //    string[] strSplitTmp = id.Split(':', 2);
-                //    string strNamespc = strSplitTmp[0];
-                //    string strId = strSplitTmp[1];
-                //    //return StaticData.packsData[Tools.GetDatapackByNamespace(strNamespc)].data.items[strId];
-                //    return new Reg.Item();
-                //}
+                public EntryFormats.Reg.Item GetItemRegInfo()
+                {
+                    string[] strSplitTmp = id.Split(':', 2);
+                    foreach(EntryFormats.Datapack dtpack in StaticData.packsData.Values)
+                    {
+                        if(dtpack.data.items.ContainsKey(id))
+                        {
+                            return dtpack.data.items[id];
+                        }
+                    }
+                    throw new ApplicationException("Unknown item '" + id + "''.");
+                }
             }
             public class Player
             {
@@ -87,9 +123,11 @@ namespace CmdungeonsLib
                 public Dictionary<string, double> attribute_bases = new Dictionary<string, double>();
                 public Dictionary<string, EntryFormats.Log.Effect> effects = new Dictionary<string, EntryFormats.Log.Effect>();
                 public List<EntryFormats.Log.ItemStack> inventory = new List<EntryFormats.Log.ItemStack>();
-                public Dictionary<string, string> equipment = new Dictionary<string, string>();
+                public Dictionary<string, EntryFormats.Log.ItemStack> equipment = new Dictionary<string, EntryFormats.Log.ItemStack>();
+                public string location; //Empty = home, others = level id
+                public string challanging_enemy;
 
-                public double getAttribute(string attribute_name)
+                public double GetAttribute(string attribute_name)
                 {
                     double tmp_op0 = 0;
                     double tmp_op1 = 1;
@@ -143,8 +181,8 @@ namespace CmdungeonsLib
             {
                 public Dictionary<string, EntryFormats.Reg.Item> items = new Dictionary<string, Reg.Item>();
                 public Dictionary<string, EntryFormats.Reg.Effect> effects = new Dictionary<string, EntryFormats.Reg.Effect>();
-                //public Dictionary<string, EntryFormats.Reg.Enemy> enemies;
-                //public Dictionary<string, EntryFormats.Reg.Level> levels;
+                public Dictionary<string, EntryFormats.Reg.Enemy> enemies = new Dictionary<string, EntryFormats.Reg.Enemy>();
+                public Dictionary<string, EntryFormats.Reg.Level> levels = new Dictionary<string, EntryFormats.Reg.Level>();
             }
             public DataFormat data = new DataFormat();
             public Dictionary<string, Dictionary<string, string>> translate = new Dictionary<string, Dictionary<string, string>>();    //Translate files
@@ -179,6 +217,7 @@ namespace CmdungeonsLib
          *     - Both sides of colon is not empty.
          *     
          *   Here is the magic pattern: [A-Za-z0-9_]+:{1}[A-Za-z0-9_]+
+         *   If the pattern matches the whole origin string, it will be a valid name.
          *   
          *   TODO: Support forward slash (/) for the entries in subfolders.
          */
