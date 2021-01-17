@@ -10,19 +10,19 @@
         "en_us"
     ],
     "data": {
-        "items": [
+        "item": [
             "cmdungeons:apple",
             "cmdungeons:sword"
         ],
-        "effects": [
+        "effect": [
             "cmdungeons:fire",
             "cmdungeons:regeneration",
             "cmdungeons:strength"
         ],
-        "levels": [
+        "level": [
             "cmdungeons:testlevel1"
         ],
-        "enemies": [
+        "enemy": [
             "cmdungeons:test1"
         ]
     }

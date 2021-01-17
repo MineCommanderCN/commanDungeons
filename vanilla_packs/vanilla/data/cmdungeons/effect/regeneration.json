@@ -1,0 +1,8 @@
+{
+    "debuff": false,
+    "modifiers": [{
+        "name": "generic:health",
+        "operation": 0,
+        "amount": 4.0
+    }]
+}

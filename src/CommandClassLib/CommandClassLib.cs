@@ -11,25 +11,27 @@ namespace CommandClassLib
     {
         public static void RegistCommand()
         {
-            StaticData.squidCoreMain.RegCommand
+            GlobalData.squidCoreMain.RegCommand
                 ("test", 2, 2, new List<string> { "", "wrd" }, Cmd_test);
-            StaticData.squidCoreMain.RegCommand
+            GlobalData.squidCoreMain.RegCommand
                 ("exit", 1, 1, Cmd_exit);
-            StaticData.squidCoreMain.RegCommand
+            GlobalData.squidCoreMain.RegCommand
                 ("packinfo", 1, 2, Cmd_packinfo);
-            StaticData.squidCoreMain.RegCommand
+            GlobalData.squidCoreMain.RegCommand
                 ("commands", 1, 1, Cmd_commands);
-            StaticData.squidCoreMain.RegCommand
+            GlobalData.squidCoreMain.RegCommand
                 ("reload", 1, 3, Cmd_reload);
-            StaticData.squidCoreMain.RegCommand
+            GlobalData.squidCoreMain.RegCommand
                 ("debug", 1, 65536, Cmd_debug);
 
-            StaticData.debugStates.RegCommand
+            GlobalData.debugStates.RegCommand
                 ("GetTranslateString", 2, 65536, Debug_GetTranslateString);
+            GlobalData.debugStates.RegCommand
+                ("Roll", 3, 3, Debug_Roll);
         }
         public static void Cmd_commands(List<string> args)
         {
-            foreach (KeyValuePair<string, SquidCsharpLib.CommandInfo> elem in StaticData.squidCoreMain.commandRegistry)
+            foreach (KeyValuePair<string, SquidCsharpLib.CommandInfo> elem in GlobalData.squidCoreMain.commandRegistry)
             {
                 Console.WriteLine("{0}  [{1}-{2}]", elem.Key, elem.Value.argcMin, elem.Value.argcMax);
             }
@@ -55,212 +57,172 @@ namespace CommandClassLib
             {
                 Console.WriteLine("Reloading config...");
             }
-            StaticData.config = File.ReadAllText("config.json").FromJson<Config>();
+            GlobalData.config = File.ReadAllText("config.json").FromJson<Config>();
 
             if (!quiet)
             {
                 Console.WriteLine("Uninstalling data...");
             }
-            StaticData.packsData.Clear();
-            StaticData.squidCoreMain.commandRegistry.Clear();
-            StaticData.debugStates.commandRegistry.Clear();
+            GlobalData.datapackInfo.Clear();
+            GlobalData.regData = new GlobalData.DataFormat();
+            GlobalData.squidCoreMain.commandRegistry.Clear();
+            GlobalData.translates.Clear();
+            GlobalData.debugStates.commandRegistry.Clear();
 
             if (!quiet)
             {
                 Console.WriteLine("Start Loading...");
             }
-            if (StaticData.config.enabled_packs.Count == 0)
+            if (GlobalData.config.enabled_packs.Count == 0)
             {
                 Console.ForegroundColor = ConsoleColor.Yellow;
                 Console.WriteLine("[Warning] No datapacks enabled! Please check your settings at \"config.json\" file.");
                 Console.ResetColor();
             }
 
-            int _counter = 0;
-            foreach (string elem in StaticData.config.enabled_packs)
+            foreach (string packName in GlobalData.config.enabled_packs)
             {
                 int errorCount = 0, warningCount = 0, entryCount = 0;
-                EntryFormats.Datapack tmp = new EntryFormats.Datapack();
-                tmp.translate = new Dictionary<string, Dictionary<string, string>>();
-                tmp.data = new EntryFormats.Datapack.DataFormat();
+                EntryFormats.Datapack tmpPackInfo = new EntryFormats.Datapack();
+                GlobalData.DataFormat tmpRegData = new GlobalData.DataFormat();
                 if (!quiet)
                 {
-                    Console.WriteLine("Loading pack \"{0}\"...", elem);
+                    Console.WriteLine("Loading pack \"{0}\"...", packName);
                 }
 
                 //Load registry.json
                 try
                 {
-                    tmp.registry = File.ReadAllText(StaticData.config.packs_path + "/" + elem + "/registry.json").FromJson<EntryFormats.Datapack.RegistryFormat>();
+                    tmpPackInfo = File.ReadAllText(GlobalData.config.packs_path + "/" + packName + "/registry.json").FromJson<EntryFormats.Datapack>();
                 }
                 catch (Exception e)
                 {
                     Console.ForegroundColor = ConsoleColor.Red;
-                    Console.WriteLine("[Error] Can not read pack \"{0}\": {1}", elem, e.Message);
+                    Console.WriteLine("[Error] Can not read pack \"{0}\": {1}", packName, e.Message);
                     Console.ResetColor();
                     continue;
                 }
 
                 //Load languages
-                if (tmp.registry.languages.Count != 0)
+                if (tmpPackInfo.languages.Count != 0)
                 {
-                    foreach (string elem2 in tmp.registry.languages)
+                    foreach (string lang in tmpPackInfo.languages)
                     {
                         entryCount++;
                         try
                         {
-                            tmp.translate[elem2] = File.ReadAllText(StaticData.config.packs_path + "/" + elem + "/translate/" + elem2 + ".json").FromJson<Dictionary<string, string>>();
+                            GlobalData.translates[lang] = File.ReadAllText(GlobalData.config.packs_path + "/" + packName + "/translate/" + lang + ".json").FromJson<Dictionary<string, string>>();
                         }
                         catch (Exception e)
                         {
                             errorCount++;
                             Console.ForegroundColor = ConsoleColor.Red;
-                            Console.WriteLine("[Error] Can not load language \"{0}\" from pack \"{1}\": {2}", elem2, elem, e.Message);
+                            Console.WriteLine("[Error] Can not load language \"{0}\" from pack \"{1}\": {2}", lang, packName, e.Message);
                             Console.ResetColor();
                             continue;
                         }
                         if (!quiet)
                         {
-                            Console.WriteLine("Loaded language \"{0}\" from pack \"{1}\"", elem2, elem);
+                            Console.WriteLine("Loaded language \"{0}\" from pack \"{1}\"", lang, packName);
                         }
                     }
                 }
                 //Load languages end
 
+
                 //Load data
-                if (tmp.registry.data.ContainsKey("items"))
+                foreach (string category in GlobalData.ENTRY_CATEGORIES)
                 {
-                    foreach (string elem2 in tmp.registry.data["items"])
+                    if (tmpPackInfo.data.ContainsKey(category))
                     {
-                        entryCount++;
-                        try
+                        foreach (string entryName in tmpPackInfo.data[category])
                         {
-                            if(!Tools.IsValidName(elem2))
+                            entryCount++;
+                            try
                             {
-                                throw new ApplicationException("Invalid entry name '" + elem2 + "'.");
-                            }
-                            string[] namepair = elem2.Split(':', 2);
-                            tmp.data.items[elem2] = File.ReadAllText(StaticData.config.packs_path + "/" + elem + "/data/" + namepair[0] + "/items/" + namepair[1] + ".json").FromJson<EntryFormats.Reg.Item>();
-                        }
-                        catch (Exception e)
-                        {
-                            errorCount++;
-                            Console.ForegroundColor = ConsoleColor.Red;
-                            Console.WriteLine("[Error] Can not load item entry \"{0}\" from pack \"{1}\": {2}", elem2, elem, e.Message);
-                            Console.ResetColor();
-                            continue;
-                        }
-                        if (!quiet)
-                        {
-                            Console.WriteLine("Loaded item entry \"{0}\" from pack \"{1}\"", elem2, elem);
-                        }
-                    }
-                }
+                                if (!Tools.IsValidName(entryName))
+                                {
+                                    throw new ApplicationException("Invalid entry name '" + entryName + "'.");
+                                }
+                                string[] namepair = entryName.Split(':', 2);
 
-                if (tmp.registry.data.ContainsKey("effects"))
-                {
-                    foreach (string elem2 in tmp.registry.data["effects"])
-                    {
-                        entryCount++;
-                        try
-                        {
-                            if (!Tools.IsValidName(elem2))
-                            {
-                                throw new ApplicationException("Invalid entry name '" + elem2 + "'.");
-                            }
-                            string[] namepair = elem2.Split(':', 2);
-                            tmp.data.effects[elem2] = File.ReadAllText(StaticData.config.packs_path + "/" + elem + "/data/" + namepair[0] + "/effects/" + namepair[1] + ".json").FromJson<EntryFormats.Reg.Effect>();
-                        }
-                        catch (Exception e)
-                        {
-                            errorCount++;
-                            Console.ForegroundColor = ConsoleColor.Red;
-                            Console.WriteLine("[Error] Can not load effect entry \"{0}\" from pack \"{1}\": {2}", elem2, elem, e.Message);
-                            Console.ResetColor();
-                            continue;
-                        }
-                        if (!quiet)
-                        {
-                            Console.WriteLine("Loaded effect entry \"{0}\" from pack \"{1}\"", elem2, elem);
-                        }
-                    }
+                                switch (category)
+                                {
+                                    case "item":
+                                        tmpRegData.items[entryName] = File.ReadAllText(
+                                            GlobalData.config.packs_path + "/" + packName + "/data/"
+                                            + namepair[0] + "/item/" + namepair[1] + ".json")
+                                            .FromJson<EntryFormats.Reg.Item>();
+                                        break;
 
-                }
-                if (tmp.registry.data.ContainsKey("enemies"))
-                {
-                    foreach (string elem2 in tmp.registry.data["enemies"])
-                    {
-                        entryCount++;
-                        try
-                        {
-                            if (!Tools.IsValidName(elem2))
-                            {
-                                throw new ApplicationException("Invalid entry name '" + elem2 + "'.");
+                                    case "effect":
+                                        tmpRegData.effects[entryName] = File.ReadAllText(
+                                            GlobalData.config.packs_path + "/" + packName + "/data/"
+                                            + namepair[0] + "/effect/" + namepair[1] + ".json")
+                                            .FromJson<EntryFormats.Reg.Effect>();
+                                        break;
+
+                                    case "enemy":
+                                        tmpRegData.enemies[entryName] = File.ReadAllText(
+                                            GlobalData.config.packs_path + "/" + packName + "/data/"
+                                            + namepair[0] + "/enemy/" + namepair[1] + ".json")
+                                            .FromJson<EntryFormats.Reg.Enemy>();
+                                        break;
+
+                                    case "level":
+                                        tmpRegData.levels[entryName] = File.ReadAllText(
+                                            GlobalData.config.packs_path + "/" + packName + "/data/"
+                                            + namepair[0] + "/level/" + namepair[1] + ".json")
+                                            .FromJson<EntryFormats.Reg.Level>();
+                                        break;
+                                }
                             }
-                            string[] namepair = elem2.Split(':', 2);
-                            tmp.data.enemies[elem2] = File.ReadAllText(StaticData.config.packs_path + "/" + elem + "/data/" + namepair[0] + "/enemies/" + namepair[1] + ".json").FromJson<EntryFormats.Reg.Enemy>();
-                        }
-                        catch (Exception e)
-                        {
-                            errorCount++;
-                            Console.ForegroundColor = ConsoleColor.Red;
-                            Console.WriteLine("[Error] Can not load enemy entry \"{0}\" from pack \"{1}\": {2}", elem2, elem, e.Message);
-                            Console.ResetColor();
-                            continue;
-                        }
-                        if (!quiet)
-                        {
-                            Console.WriteLine("Loaded enemy entry \"{0}\" from pack \"{1}\"", elem2, elem);
-                        }
-                    }
-                }
-                if (tmp.registry.data.ContainsKey("levels"))
-                {
-                    foreach (string elem2 in tmp.registry.data["levels"])
-                    {
-                        entryCount++;
-                        try
-                        {
-                            if (!Tools.IsValidName(elem2))
+                            catch (Exception e)
                             {
-                                throw new ApplicationException("Invalid entry name '" + elem2 + "'.");
+                                errorCount++;
+                                Console.ForegroundColor = ConsoleColor.Red;
+                                Console.WriteLine("[Error] Can not load " + category + " entry \"{0}\" from pack \"{1}\": {2}", entryName, packName, e.Message);
+                                Console.ResetColor();
+                                continue;
                             }
-                            string[] namepair = elem2.Split(':', 2);
-                            tmp.data.levels[elem2] = File.ReadAllText(StaticData.config.packs_path + "/" + elem + "/data/" + namepair[0] + "/levels/" + namepair[1] + ".json").FromJson<EntryFormats.Reg.Level>();
-                        }
-                        catch (Exception e)
-                        {
-                            errorCount++;
-                            Console.ForegroundColor = ConsoleColor.Red;
-                            Console.WriteLine("[Error] Can not load level entry \"{0}\" from pack \"{1}\": {2}", elem2, elem, e.Message);
-                            Console.ResetColor();
-                            continue;
-                        }
-                        if (!quiet)
-                        {
-                            Console.WriteLine("Loaded level entry \"{0}\" from pack \"{1}\"", elem2, elem);
+                            if (!quiet)
+                            {
+                                Console.WriteLine("Loaded " + category + " entry \"{0}\" from pack \"{1}\"", entryName, packName);
+                            }
                         }
                     }
                 }
                 //Load data end
+
+
                 if (entryCount - warningCount - errorCount == 0)
                 {
                     Console.ForegroundColor = ConsoleColor.Yellow;
-                    Console.WriteLine("[Warning] There is nothing to do with the pack \"{0}\", {1} entries detected.", elem, entryCount);
+                    Console.WriteLine("[Warning] There is nothing to do with the pack \"{0}\", {1} entries detected.",
+                        packName, entryCount);
                     Console.ResetColor();
                 }
                 else
                 {
                     Console.ForegroundColor = ConsoleColor.Green;
-                    Console.WriteLine("[OK] Loaded pack \"{0}\": {1} entries, {2} warnings, {3} errors.", elem, entryCount, warningCount, errorCount);
+                    Console.WriteLine("[OK] Loaded pack \"{0}\": {1} entries, {2} warnings, {3} errors.",
+                        packName, entryCount, warningCount, errorCount);
                     Console.ResetColor();
                 }
-                StaticData.packsData.Add(elem, tmp);
+                GlobalData.datapackInfo.Add(packName, tmpPackInfo);
 
-                _counter++;
+                GlobalData.regData.items = Tools.MergeDictionary<string, EntryFormats.Reg.Item>(
+                    GlobalData.regData.items, tmpRegData.items);
+                GlobalData.regData.effects = Tools.MergeDictionary<string, EntryFormats.Reg.Effect>(
+                    GlobalData.regData.effects, tmpRegData.effects);
+                GlobalData.regData.enemies = Tools.MergeDictionary<string, EntryFormats.Reg.Enemy>(
+                    GlobalData.regData.enemies, tmpRegData.enemies);
+                GlobalData.regData.levels = Tools.MergeDictionary<string, EntryFormats.Reg.Level>(
+                    GlobalData.regData.levels, tmpRegData.levels);
             }
+
             Console.ForegroundColor = ConsoleColor.Blue;
-            Console.WriteLine("[INFO] Enabled language: '{0}'", StaticData.config.lang);
+            Console.WriteLine("[INFO] Enabled language: '{0}'", GlobalData.config.language);
             Console.ResetColor();
             RegistCommand();
             Console.WriteLine(Tools.GetTranslateString("generic.load_done"));
@@ -278,24 +240,24 @@ namespace CommandClassLib
         {
             if (args.Count == 1)
             {
-                Console.WriteLine(Tools.GetTranslateString("commands.packinfo.pack_count"), StaticData.packsData.Count);
-                foreach (KeyValuePair<string, EntryFormats.Datapack> elem in StaticData.packsData)
+                Console.WriteLine(Tools.GetTranslateString("commands.packinfo.pack_count"), GlobalData.datapackInfo.Count);
+                foreach (KeyValuePair<string, EntryFormats.Datapack> elem in GlobalData.datapackInfo)
                 {
                     Console.WriteLine(elem.Key);
                 }
             }
             else
             {
-                if (StaticData.packsData.ContainsKey(args[1]))
+                if (GlobalData.datapackInfo.ContainsKey(args[1]))
                 {
                     Console.WriteLine(Tools.GetTranslateString("commands.packinfo.pack_info"), args[1]);
                     Console.WriteLine(
-                        Tools.GetTranslateString("commands.packinfo.creator"), 
-                        StaticData.packsData[args[1]].registry.meta_info.creator);
+                        Tools.GetTranslateString("commands.packinfo.creator"),
+                        GlobalData.datapackInfo[args[1]].meta_info.creator);
                     Console.Write(Tools.GetTranslateString("commands.packinfo.version") + "    ",
-                        StaticData.packsData[args[1]].registry.meta_info.file_format);
+                        GlobalData.datapackInfo[args[1]].meta_info.file_format);
 
-                    if (StaticData.packsData[args[1]].registry.meta_info.file_format == StaticData.SUPPORTED_PACKFORMAT)
+                    if (GlobalData.datapackInfo[args[1]].meta_info.file_format == GlobalData.SUPPORTED_PACKFORMAT)
                     {
                         Console.ForegroundColor = ConsoleColor.Green;
                         Console.Write(Tools.GetTranslateString("commands.packinfo.version.compatible") + "\n");
@@ -308,7 +270,7 @@ namespace CommandClassLib
                         Console.ResetColor();
                     }
                     Console.WriteLine(Tools.GetTranslateString("commands.packinfo.description"),
-                        Tools.GetTranslateString(StaticData.packsData[args[1]].registry.meta_info.description));
+                        Tools.GetTranslateString(GlobalData.datapackInfo[args[1]].meta_info.description));
 
                 }
                 else
@@ -321,10 +283,30 @@ namespace CommandClassLib
         }
         public static void Cmd_debug(List<string> args)
         {
-            if (StaticData.config.debug)
+            if (GlobalData.config.debug)
             {
-                args.Remove("debug");
-                StaticData.debugStates.Run(args);
+                if (args.Count == 1)
+                {
+                    //Take over the input stream
+                    for (; ; )
+                    {
+                        Console.Write("debug >> ");
+                        string strInput = Console.ReadLine();
+                        if (strInput == "")
+                        {
+                            break;
+                        }
+                        else
+                        {
+                            GlobalData.debugStates.Run(strInput);
+                        }
+                    }
+                }
+                else
+                {
+                    args.Remove("debug");
+                    GlobalData.debugStates.Run(args);
+                }
             }
             else
             {
@@ -334,10 +316,10 @@ namespace CommandClassLib
 
         public static void Debug_GetTranslateString(List<string> args)
         {
-            if(args.Count > 2)
+            if (args.Count > 2)
             {
                 string[] transArgs = new string[args.Count - 2];
-                for(int i = 2; i < args.Count; i++)
+                for (int i = 2; i < args.Count; i++)
                 {
                     transArgs[i - 2] = args[i];
                 }
@@ -347,6 +329,18 @@ namespace CommandClassLib
             {
                 Console.WriteLine(Tools.GetTranslateString(args[1]));
             }
+        }
+
+        public static void Debug_Roll(List<string> args)
+        {
+            int min = Convert.ToInt32(args[1]);
+            int max = Convert.ToInt32(args[2]);
+            if (min > max)
+            {
+                throw new ApplicationException("The minimum value must be smaller than the maximum value.");
+            }
+            Random rd = new Random();
+            Console.WriteLine(rd.Next(min, max + 1));
         }
     }
 }

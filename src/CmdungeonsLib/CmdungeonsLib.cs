@@ -9,7 +9,7 @@ namespace CmdungeonsLib
     public struct Config
     {
         public string packs_path;
-        public string lang;
+        public string language;
         public bool debug;
         public List<string> enabled_packs;
     }
@@ -37,7 +37,7 @@ namespace CmdungeonsLib
             {
                 public string equipment;
                 //'none' (normal item), 'consumable' (disappear after use) or other strings (for equipment slot ID, move onto the slot after use)
-                public List<EntryFormats.Reg.EffectEvent> use_events = new List<EntryFormats.Reg.EffectEvent>(); 
+                public List<EntryFormats.Reg.EffectEvent> use_events = new List<EntryFormats.Reg.EffectEvent>();
                 //Trigge once when use the item (INVALID for 'none')
                 public List<EntryFormats.Reg.AttributeModifier> attribute_modifiers = new List<EntryFormats.Reg.AttributeModifier>();
                 //Modifiers on the attributes when equipmented
@@ -68,7 +68,8 @@ namespace CmdungeonsLib
                             public int max;
                             public int Roll()
                             {
-                                return 0;
+                                Random rd = new Random();
+                                return rd.Next(max - min) + min;
                             }
                         }
                         CountRange count = new CountRange();
@@ -79,7 +80,11 @@ namespace CmdungeonsLib
             public class Level
             {
                 public bool random = false;
+                //If true, the enemies will appear randomly, instead of be in set order.
                 public bool looping = false;
+                // If true, the level will loop again when all enemies have been defeated.
+                // The level won't be end unless the player exit manually.
+                // Also, the level won't be able to show in finished_levels.
                 public List<string> entries = new List<string>();
             }
         }
@@ -103,29 +108,24 @@ namespace CmdungeonsLib
 
                 public EntryFormats.Reg.Item GetItemRegInfo()
                 {
-                    string[] strSplitTmp = id.Split(':', 2);
-                    foreach(EntryFormats.Datapack dtpack in StaticData.packsData.Values)
+                    if (GlobalData.regData.items.ContainsKey(this.id))
                     {
-                        if(dtpack.data.items.ContainsKey(id))
-                        {
-                            return dtpack.data.items[id];
-                        }
+                        return GlobalData.regData.items[id];
                     }
-                    throw new ApplicationException("Unknown item '" + id + "''.");
+                    else
+                    {
+                        throw new ApplicationException("Unknown item '" + this.id + "'.");
+                    }
                 }
             }
-            public class Player
+            public class Entity
             {
-                public double health = 20.0;
-                public int gold = 0;
-                public int level = 0;
-                public int xp = 0;
+                public string id;   //For player, its id is 'generic:player'.
+                public double health = 1.0;
+                public int level;
                 public Dictionary<string, double> attribute_bases = new Dictionary<string, double>();
                 public Dictionary<string, EntryFormats.Log.Effect> effects = new Dictionary<string, EntryFormats.Log.Effect>();
-                public List<EntryFormats.Log.ItemStack> inventory = new List<EntryFormats.Log.ItemStack>();
                 public Dictionary<string, EntryFormats.Log.ItemStack> equipment = new Dictionary<string, EntryFormats.Log.ItemStack>();
-                public string location; //Empty = home, others = level id
-                public string challanging_enemy;
 
                 public double GetAttribute(string attribute_name)
                 {
@@ -135,6 +135,10 @@ namespace CmdungeonsLib
                     List<EntryFormats.Reg.AttributeModifier> modifiers = new List<EntryFormats.Reg.AttributeModifier>();
                     //Get all modifiers from effects and equipment
                     //i'm lazy :|
+                    foreach (KeyValuePair<string, EntryFormats.Log.Effect> effect in this.effects)
+                    {
+
+                    }
 
                     foreach (EntryFormats.Reg.AttributeModifier elem in modifiers)
                     {
@@ -158,36 +162,33 @@ namespace CmdungeonsLib
                     return 0;
                 }
             }
+
+
+            public class SavesData
+            {
+                public string name;
+                public int gold = 0;
+                public int xp = 0;
+                public List<EntryFormats.Log.ItemStack> inventory = new List<EntryFormats.Log.ItemStack>();
+                public string location; //Empty = home, others = level id
+                public EntryFormats.Log.Entity challanging_enemy = new EntryFormats.Log.Entity();
+                public List<string> finished_levels = new List<string>();
+                //Levels with looping=true can NOT be finished!
+            }
         }
         public class Datapack
         {
-            public class RegistryFormat
+            public class MetaInfo
             {
-                public class MetaInfo
-                {
-                    public int file_format;
-                    public string description;
-                    public string creator;
-                    public string pack_version;
-                }
-                public MetaInfo meta_info = new MetaInfo();
-                public List<string> languages = new List<string>(); //Enabled languages
-                public Dictionary<string, List<string>> data = new Dictionary<string, List<string>>(); //Enabled data files
-                                                                                                       //Key = Category(items, effects, etc.)
-                                                                                                       //Value = Entry name list
+                public int file_format;
+                public string description;
+                public string creator;
+                public string pack_version;
             }
-            public RegistryFormat registry = new RegistryFormat();
-            public class DataFormat
-            {
-                public Dictionary<string, EntryFormats.Reg.Item> items = new Dictionary<string, Reg.Item>();
-                public Dictionary<string, EntryFormats.Reg.Effect> effects = new Dictionary<string, EntryFormats.Reg.Effect>();
-                public Dictionary<string, EntryFormats.Reg.Enemy> enemies = new Dictionary<string, EntryFormats.Reg.Enemy>();
-                public Dictionary<string, EntryFormats.Reg.Level> levels = new Dictionary<string, EntryFormats.Reg.Level>();
-            }
-            public DataFormat data = new DataFormat();
-            public Dictionary<string, Dictionary<string, string>> translate = new Dictionary<string, Dictionary<string, string>>();    //Translate files
-                                                                                                                                       //Key = Language name
-                                                                                                                                       //Value = Translate dictionary
+            public MetaInfo meta_info = new MetaInfo();
+            public List<string> languages = new List<string>(); //Enabled languages
+            public Dictionary<string, List<string>> data = new Dictionary<string, List<string>>(); //Enabled data files
+                                                                                                   //Key = Category(items, effects, etc.)
         }
     }
 
@@ -195,19 +196,21 @@ namespace CmdungeonsLib
     {
         public static string GetTranslateString(string key)
         {
-            string tmp = key;
-            foreach (EntryFormats.Datapack elem in StaticData.packsData.Values)
+            if (GlobalData.translates.ContainsKey(GlobalData.config.language))
             {
-                try
+                if (GlobalData.translates[GlobalData.config.language].ContainsKey(key))
                 {
-                    tmp = elem.translate[StaticData.config.lang][key];
+                    return GlobalData.translates[GlobalData.config.language][key];
                 }
-                catch
+                else
                 {
-                    ;   //TODO: Unknown translate string: Maybe some log?
+                    return key;
                 }
             }
-            return tmp;
+            else
+            {
+                return key;
+            }
         }
         public static bool IsValidName(string str)
         /*
@@ -244,15 +247,54 @@ namespace CmdungeonsLib
             }
             return result;
         }
+        public static Dictionary<GT_Key, GT_Value> MergeDictionary<GT_Key, GT_Value>(
+            Dictionary<GT_Key, GT_Value> first, Dictionary<GT_Key, GT_Value> second)
+        {
+            if (first == null)
+            {
+                first = new Dictionary<GT_Key, GT_Value>();
+            }
+            if (second == null)
+            {
+                return first;
+            }
+
+            foreach (var item in second)
+            {
+                if (!first.ContainsKey(item.Key))
+                {
+                    first.Add(item.Key, item.Value);
+                }
+                else
+                {
+                    first[item.Key] = second[item.Key];
+                }
+            }
+
+            return first;
+        }
     }
-    public class StaticData
+    public class GlobalData
     {
         public const string VERSION = "v.devbuild_20201206";
         public const int SUPPORTED_PACKFORMAT = 1;
+        public readonly static string[] ENTRY_CATEGORIES = new string[4] { "item", "effect", "enemy", "level" };
 
         public static SquidCoreStates squidCoreMain = new SquidCoreStates();
         public static SquidCoreStates debugStates = new SquidCoreStates();
         public static Config config = new Config();
-        public static Dictionary<string, EntryFormats.Datapack> packsData = new Dictionary<string, EntryFormats.Datapack>();
+        public static Dictionary<string, EntryFormats.Datapack> datapackInfo = new Dictionary<string, EntryFormats.Datapack>();
+        public class DataFormat
+        {
+            public Dictionary<string, EntryFormats.Reg.Item> items = new Dictionary<string, EntryFormats.Reg.Item>();
+            public Dictionary<string, EntryFormats.Reg.Effect> effects = new Dictionary<string, EntryFormats.Reg.Effect>();
+            public Dictionary<string, EntryFormats.Reg.Enemy> enemies = new Dictionary<string, EntryFormats.Reg.Enemy>();
+            public Dictionary<string, EntryFormats.Reg.Level> levels = new Dictionary<string, EntryFormats.Reg.Level>();
+        }
+        public static DataFormat regData = new DataFormat();
+        public static Dictionary<string, Dictionary<string, string>> translates = new Dictionary<string, Dictionary<string, string>>();
+
+        public static EntryFormats.Log.Entity playerEntity = new EntryFormats.Log.Entity();
+        public static EntryFormats.Log.SavesData saves = new EntryFormats.Log.SavesData();
     }
 }

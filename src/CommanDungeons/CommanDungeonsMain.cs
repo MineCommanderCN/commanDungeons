@@ -37,14 +37,14 @@ namespace CommanDungeonsMain
             Console.WriteLine("[INFO] All done!");
             Console.ResetColor();
             
-            Console.WriteLine(Tools.GetTranslateString("generic.welcome"), StaticData.VERSION);
+            Console.WriteLine(Tools.GetTranslateString("generic.welcome"), GlobalData.VERSION);
             for (; ; )
             {
                 Console.Write(">> ");
                 string strInput = Console.ReadLine();
                 try
                 {
-                    StaticData.squidCoreMain.Run(strInput);
+                    GlobalData.squidCoreMain.Run(strInput);
                 }
                 catch (Exception e)
                 {
