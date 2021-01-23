@@ -1,7 +1,9 @@
 {
     "random": false,
     "looping": false,
-    "entries":[
-        "cmdungeons:test1"
+    "waves":[
+        [
+            "cmdungeons:test1"
+        ]
     ]
 }

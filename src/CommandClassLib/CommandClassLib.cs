@@ -27,7 +27,7 @@ namespace CommandClassLib
             GlobalData.debugStates.RegCommand
                 ("GetTranslateString", 2, 65536, Debug_GetTranslateString);
             GlobalData.debugStates.RegCommand
-                ("Roll", 3, 3, Debug_Roll);
+                ("RollerWithLuck", 2, 2, Debug_RollerWithLuck);
         }
         public static void Cmd_commands(List<string> args)
         {
@@ -79,11 +79,12 @@ namespace CommandClassLib
                 Console.WriteLine("[Warning] No datapacks enabled! Please check your settings at \"config.json\" file.");
                 Console.ResetColor();
             }
-
-            foreach (string packName in GlobalData.config.enabled_packs)
+            List<string> packList = GlobalData.config.enabled_packs;
+            packList.Reverse();
+            foreach (string packName in packList)
             {
                 int errorCount = 0, warningCount = 0, entryCount = 0;
-                EntryFormats.Datapack tmpPackInfo = new EntryFormats.Datapack();
+                EntryFormats.DatapackRegistry tmpPackInfo = new EntryFormats.DatapackRegistry();
                 GlobalData.DataFormat tmpRegData = new GlobalData.DataFormat();
                 if (!quiet)
                 {
@@ -93,7 +94,7 @@ namespace CommandClassLib
                 //Load registry.json
                 try
                 {
-                    tmpPackInfo = File.ReadAllText(GlobalData.config.packs_path + "/" + packName + "/registry.json").FromJson<EntryFormats.Datapack>();
+                    tmpPackInfo = File.ReadAllText(GlobalData.config.packs_path + "/" + packName + "/registry.json").FromJson<EntryFormats.DatapackRegistry>();
                 }
                 catch (Exception e)
                 {
@@ -241,7 +242,7 @@ namespace CommandClassLib
             if (args.Count == 1)
             {
                 Console.WriteLine(Tools.GetTranslateString("commands.packinfo.pack_count"), GlobalData.datapackInfo.Count);
-                foreach (KeyValuePair<string, EntryFormats.Datapack> elem in GlobalData.datapackInfo)
+                foreach (KeyValuePair<string, EntryFormats.DatapackRegistry> elem in GlobalData.datapackInfo)
                 {
                     Console.WriteLine(elem.Key);
                 }
@@ -250,14 +251,15 @@ namespace CommandClassLib
             {
                 if (GlobalData.datapackInfo.ContainsKey(args[1]))
                 {
+                    EntryFormats.DatapackRegistry packInfoTemp = GlobalData.datapackInfo[args[1]];
                     Console.WriteLine(Tools.GetTranslateString("commands.packinfo.pack_info"), args[1]);
                     Console.WriteLine(
                         Tools.GetTranslateString("commands.packinfo.creator"),
-                        GlobalData.datapackInfo[args[1]].meta_info.creator);
+                        packInfoTemp.meta_info.creator);
                     Console.Write(Tools.GetTranslateString("commands.packinfo.version") + "    ",
-                        GlobalData.datapackInfo[args[1]].meta_info.file_format);
+                        packInfoTemp.meta_info.file_format);
 
-                    if (GlobalData.datapackInfo[args[1]].meta_info.file_format == GlobalData.SUPPORTED_PACKFORMAT)
+                    if (packInfoTemp.meta_info.file_format == GlobalData.SUPPORTED_PACKFORMAT)
                     {
                         Console.ForegroundColor = ConsoleColor.Green;
                         Console.Write(Tools.GetTranslateString("commands.packinfo.version.compatible") + "\n");
@@ -270,13 +272,13 @@ namespace CommandClassLib
                         Console.ResetColor();
                     }
                     Console.WriteLine(Tools.GetTranslateString("commands.packinfo.description"),
-                        Tools.GetTranslateString(GlobalData.datapackInfo[args[1]].meta_info.description));
+                        Tools.GetTranslateString(packInfoTemp.meta_info.description));
 
                 }
                 else
                 {
                     Console.ForegroundColor = ConsoleColor.Red;
-                    Console.WriteLine("[Error] " + Tools.GetTranslateString("commands.packinfo.unknown_pack"), args[1]);
+                    Console.WriteLine(Tools.GetTranslateString("commands.packinfo.unknown_pack"), args[1]);
                     Console.ResetColor();
                 }
             }
@@ -331,16 +333,10 @@ namespace CommandClassLib
             }
         }
 
-        public static void Debug_Roll(List<string> args)
+        public static void Debug_RollerWithLuck(List<string> args)
         {
-            int min = Convert.ToInt32(args[1]);
-            int max = Convert.ToInt32(args[2]);
-            if (min > max)
-            {
-                throw new ApplicationException("The minimum value must be smaller than the maximum value.");
-            }
-            Random rd = new Random();
-            Console.WriteLine(rd.Next(min, max + 1));
+            double luck = Convert.ToDouble(args[1]);
+            Console.WriteLine(EntryFormats.Log.Entity.RollerWithLuck(luck));
         }
     }
 }

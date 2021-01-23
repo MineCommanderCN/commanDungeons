@@ -85,13 +85,14 @@ namespace CmdungeonsLib
                 // If true, the level will loop again when all enemies have been defeated.
                 // The level won't be end unless the player exit manually.
                 // Also, the level won't be able to show in finished_levels.
-                public List<string> entries = new List<string>();
+                public List<List<string>> waves = new List<List<string>>();
             }
         }
         public class Log
         {
             public class Effect
             {
+                public string id;
                 public int level = 0;
                 public int time = 0;
 
@@ -100,13 +101,24 @@ namespace CmdungeonsLib
                     time = (buf.time > this.time) ? buf.time : this.time;
                     level = (buf.level > this.level) ? buf.level : this.level; //Select the bigger number
                 }
+                public EntryFormats.Reg.Effect GetRegInfo()
+                {
+                    if (GlobalData.regData.effects.ContainsKey(this.id))
+                    {
+                        return GlobalData.regData.effects[id];
+                    }
+                    else
+                    {
+                        throw new ApplicationException("Unknown effect '" + this.id + "'.");
+                    }
+                }
             }
             public class ItemStack
             {
                 public string id;
                 public int count;
 
-                public EntryFormats.Reg.Item GetItemRegInfo()
+                public EntryFormats.Reg.Item GetRegInfo()
                 {
                     if (GlobalData.regData.items.ContainsKey(this.id))
                     {
@@ -120,11 +132,11 @@ namespace CmdungeonsLib
             }
             public class Entity
             {
-                public string id;   //For player, its id is 'generic:player'.
+                public string id;   //Player's entity id is 'generic:player'
                 public double health = 1.0;
                 public int level;
                 public Dictionary<string, double> attribute_bases = new Dictionary<string, double>();
-                public Dictionary<string, EntryFormats.Log.Effect> effects = new Dictionary<string, EntryFormats.Log.Effect>();
+                public List<EntryFormats.Log.Effect> effects = new List<EntryFormats.Log.Effect>();
                 public Dictionary<string, EntryFormats.Log.ItemStack> equipment = new Dictionary<string, EntryFormats.Log.ItemStack>();
 
                 public double GetAttribute(string attribute_name)
@@ -134,10 +146,13 @@ namespace CmdungeonsLib
                     double tmp_op2 = 1;
                     List<EntryFormats.Reg.AttributeModifier> modifiers = new List<EntryFormats.Reg.AttributeModifier>();
                     //Get all modifiers from effects and equipment
-                    //i'm lazy :|
-                    foreach (KeyValuePair<string, EntryFormats.Log.Effect> effect in this.effects)
+                    foreach (EntryFormats.Log.Effect effect in this.effects)
                     {
-
+                        modifiers.AddRange(effect.GetRegInfo().modifiers);
+                    }
+                    foreach (EntryFormats.Log.ItemStack item in this.equipment.Values)
+                    {
+                        modifiers.AddRange(item.GetRegInfo().attribute_modifiers);
                     }
 
                     foreach (EntryFormats.Reg.AttributeModifier elem in modifiers)
@@ -161,22 +176,78 @@ namespace CmdungeonsLib
                     }
                     return 0;
                 }
+                public int Roller()
+                //Roll a point 1~6 with entity's luck attribute.
+                {
+                    return RollerWithLuck(GetAttribute("generic:luck"));
+                }
+                public static int RollerWithLuck(double l)
+                //Roll a point 1~6 with given luck.
+                {
+                    //l for luck.
+                    //w[x] for the weight of rolling a point x (1 <= x <= 6).
+                    //There is always w[x]+w[7-x]=2 (e.g if w[1]=0.6, w[6] must be 1.4).
+                    double[] w = new double[7]; //w[0] is not for use
+                    w[0] = 0;
+
+                    //Calculate weight
+                    if(l == 0)
+                    {
+                        w = new double[7]{0, 1, 1, 1, 1, 1, 1};
+                    }
+                    if(l > 0)
+                    {
+                        w[1] = (2*l + 2) / (Math.Pow(l+1, 2) + 1);
+                        w[2] = (2*l + 3) / (Math.Pow(l+1, 2) + 2);
+                        w[3] = (2*l + 4) / (Math.Pow(l+1, 2) + 3);
+                        w[4] = 2 - w[3];
+                        w[5] = 2 - w[2];
+                        w[6] = 2 - w[1];
+                    }
+                    if(l < 0)
+                    {
+                        l = -l;
+                        w[6] = (2*l + 2) / (Math.Pow(l+1, 2) + 1);
+                        w[5] = (2*l + 3) / (Math.Pow(l+1, 2) + 2);
+                        w[4] = (2*l + 4) / (Math.Pow(l+1, 2) + 3);
+                        w[3] = 2 - w[4];
+                        w[2] = 2 - w[5];
+                        w[1] = 2 - w[6];
+                    }
+
+                    //Roll point with weight
+                    Random rand = new Random();
+                    double doubleRandNum = Math.Round(rand.NextDouble() * 6.0, 3);
+
+                    for(int i = 1; i <= 6; i++)
+                    {
+                        if(doubleRandNum >= w[i])
+                        {
+                            doubleRandNum -= w[i];
+                        }
+                        else
+                        {
+                            return i;
+                        }
+                    }
+                    return 1;
+                }
             }
 
 
             public class SavesData
             {
-                public string name;
+                public string player_name;
                 public int gold = 0;
                 public int xp = 0;
                 public List<EntryFormats.Log.ItemStack> inventory = new List<EntryFormats.Log.ItemStack>();
                 public string location; //Empty = home, others = level id
-                public EntryFormats.Log.Entity challanging_enemy = new EntryFormats.Log.Entity();
+                public List<EntryFormats.Log.Entity> current_wave = new List<EntryFormats.Log.Entity>();
                 public List<string> finished_levels = new List<string>();
                 //Levels with looping=true can NOT be finished!
             }
         }
-        public class Datapack
+        public class DatapackRegistry
         {
             public class MetaInfo
             {
@@ -276,14 +347,14 @@ namespace CmdungeonsLib
     }
     public class GlobalData
     {
-        public const string VERSION = "v.devbuild_20201206";
+        public const string VERSION = "v.devbuild_20210123";
         public const int SUPPORTED_PACKFORMAT = 1;
         public readonly static string[] ENTRY_CATEGORIES = new string[4] { "item", "effect", "enemy", "level" };
 
         public static SquidCoreStates squidCoreMain = new SquidCoreStates();
         public static SquidCoreStates debugStates = new SquidCoreStates();
         public static Config config = new Config();
-        public static Dictionary<string, EntryFormats.Datapack> datapackInfo = new Dictionary<string, EntryFormats.Datapack>();
+        public static Dictionary<string, EntryFormats.DatapackRegistry> datapackInfo = new Dictionary<string, EntryFormats.DatapackRegistry>();
         public class DataFormat
         {
             public Dictionary<string, EntryFormats.Reg.Item> items = new Dictionary<string, EntryFormats.Reg.Item>();
