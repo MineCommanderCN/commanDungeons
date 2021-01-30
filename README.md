@@ -24,7 +24,7 @@ You can also use commanDungeons Launcher, a graphical launcher application only 
 ## 内容包 / Datapack
 ~~commanDungeons有社区维护的丰富内容包（我相信将来会有的）~~，原生内容包仅作初步体验游戏的功能~~（又名新手教程）~~。
 
-~~commanDungeons has a tons of datapacks maintained by community(not so far, but I believe it will)~~, the "vanilla datapack" is only for the first try of the game~~(aka new player tutorial)~~.
+~~commanDungeons has a tons of datapacks maintained by community(not so far, but I believe it will)~~, the "vanilla datapack" is only for the first try of the game ~~(aka new player tutorial)~~.
 
 前往论坛下载社区内容包：https://github.com/MineCommanderCN/commanDungeons/discussions/categories/datapacks-内容包
 
