@@ -1,0 +1,50 @@
+{
+    "name": "MineCommander",
+    "gold": 2333,
+    "xp": 0,
+    "inventory": [{
+        "id": "cmdungeons:apple",
+        "count": 1
+    }],
+    "map": {
+        "cmdungeons:testlevel1": [{
+            "entities": [{
+                "id": "cmdungeons:test1",
+                "health": 15.0,
+                "level": 0,
+                "attribute_bases": {
+                    "generic:max_health": 15.0,
+                    "generic:armor": 2.0,
+                    "generic:attack_power": 3.0,
+                    "generic:luck": 0.0
+                },
+                "effects": [],
+                "equipment": {}
+            }],
+            "dropped_items": [{
+                "id": "cmdungeons:apple",
+                "count": 1
+            }]
+        }]
+    },
+    "location": "cmdungeons:testlevel1",
+    "room_index": 0,
+    "finished_levels": [],
+    "player_entity": {
+        "id": "generic:player",
+        "health": 20.0,
+        "level": 0,
+        "attribute_bases": {
+            "generic:max_health": 20.0,
+            "generic:armor": 3.0,
+            "generic:attack_power": 5.0,
+            "generic:luck": 0.0
+        },
+        "effects": [{
+            "id": "cmdungeons:regeneration",
+            "time": 9999,
+            "level": 9999
+        }],
+        "equipment": {}
+    }
+}

@@ -1,10 +1,11 @@
 {
-    "health": 15,
+    "health": 15.0,
     "level": 0,
     "attributes": {
-        "generic:max_health": 15,
-        "generic:armor": 1,
-        "generic:attack_power": 2
+        "generic:max_health": 15.0,
+        "generic:armor": 1.0,
+        "generic:attack_power": 2.0,
+        "generic:luck": 0
     },
     "rewards": {
         "gold": 5,

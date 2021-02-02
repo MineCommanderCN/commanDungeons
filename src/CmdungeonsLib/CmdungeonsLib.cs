@@ -52,7 +52,7 @@ namespace CmdungeonsLib
             }
             public class Enemy
             {
-                public int health = 1;
+                public double health = 1.0;
                 public int level = 0;
                 Dictionary<string, double> attributes = new Dictionary<string, double>();
                 public class RewardsFormat
@@ -72,10 +72,16 @@ namespace CmdungeonsLib
                                 return rd.Next(max - min) + min;
                             }
                         }
-                        CountRange count = new CountRange();
+                        public CountRange count = new CountRange();
                     }
+                    public List<ItemLoot> items = new List<ItemLoot>();
                 }
                 public RewardsFormat rewards = new RewardsFormat();
+            }
+            public class LevelRoom
+            {
+                List<string> enemies = new List<string>();
+                List<EntryFormats.Log.ItemStack> items = new List<EntryFormats.Log.ItemStack>();
             }
             public class Level
             {
@@ -85,7 +91,7 @@ namespace CmdungeonsLib
                 // If true, the level will loop again when all enemies have been defeated.
                 // The level won't be end unless the player exit manually.
                 // Also, the level won't be able to show in finished_levels.
-                public List<List<string>> waves = new List<List<string>>();
+                public List<List<string>> rooms = new List<List<string>>();
             }
         }
         public class Log
@@ -134,54 +140,106 @@ namespace CmdungeonsLib
             {
                 public string id;   //Player's entity id is 'generic:player'
                 public double health = 1.0;
-                public int level;
+                public int level = 0;
+                public int lifetick = 0;
                 public Dictionary<string, double> attribute_bases = new Dictionary<string, double>();
-                public List<EntryFormats.Log.Effect> effects = new List<EntryFormats.Log.Effect>();
-                public Dictionary<string, EntryFormats.Log.ItemStack> equipment = new Dictionary<string, EntryFormats.Log.ItemStack>();
+                public List<EntryFormats.Log.Effect> effects = new List<Effect>();
+                public Dictionary<string, EntryFormats.Log.ItemStack> equipment = new Dictionary<string, ItemStack>();
 
                 public double GetAttribute(string attribute_name)
                 {
-                    double tmp_op0 = 0;
+                    double tmp_op0 = this.attribute_bases[attribute_name];
                     double tmp_op1 = 1;
                     double tmp_op2 = 1;
-                    List<EntryFormats.Reg.AttributeModifier> modifiers = new List<EntryFormats.Reg.AttributeModifier>();
+                    List<EntryFormats.Reg.AttributeModifier> modifiers = new List<Reg.AttributeModifier>();
                     //Get all modifiers from effects and equipment
-                    foreach (EntryFormats.Log.Effect effect in this.effects)
+                    foreach (var effect in this.effects)
                     {
                         modifiers.AddRange(effect.GetRegInfo().modifiers);
                     }
-                    foreach (EntryFormats.Log.ItemStack item in this.equipment.Values)
+                    foreach (var item in this.equipment.Values)
                     {
                         modifiers.AddRange(item.GetRegInfo().attribute_modifiers);
                     }
-
-                    foreach (EntryFormats.Reg.AttributeModifier elem in modifiers)
+                    foreach (var elem in modifiers)
                     {
-                        switch (elem.operation)
+                        if (elem.name == attribute_name)
                         {
-                            case 0:
-                                tmp_op0 += elem.amount;
-                                break;
-                            case 1:
-                                tmp_op1 += elem.amount;
-                                break;
-                            case 2:
-                                tmp_op2 *= elem.amount;
-                                break;
-                            default:
-                                //TODO: Unknown operation: Maybe some log?
-                                break;
+                            switch (elem.operation)
+                            {
+                                case 0:
+                                    tmp_op0 += elem.amount;
+                                    break;
+                                case 1:
+                                    tmp_op1 += elem.amount;
+                                    break;
+                                case 2:
+                                    tmp_op2 *= elem.amount;
+                                    break;
+                                default:
+                                    //TODO: Unknown operation: Maybe some log?
+                                    break;
+                            }
                         }
-                        return (this.attribute_bases[attribute_name] + tmp_op0) * tmp_op1 * tmp_op2;
                     }
-                    return 0;
+                    return tmp_op0 * tmp_op1 * tmp_op2;
                 }
-                public int Roller()
+                public int Dice()
                 //Roll a point 1~6 with entity's luck attribute.
                 {
-                    return RollerWithLuck(GetAttribute("generic:luck"));
+                    return RollPointWithLuck(GetAttribute("generic:luck"));
                 }
-                public static int RollerWithLuck(double l)
+
+                public void Attack(Entity target, int point,
+                    out double damageDealted, out double damageBlocked)
+                //The higher point gived, the more damage will dealt (1<=point<=6).
+                {
+                    if (point > 6 || point < 1)
+                    {
+                        throw new ApplicationException("Invalid dice point.");
+                    }
+                    damageDealted = this.GetAttribute("generic:attack_power") * 0.2 * point;
+                    damageBlocked = target.GetAttribute("generic:armor") * 0.125 * (7 - point);
+                    if (damageDealted - damageBlocked <= 0)  //All or even more damage has been blocked
+                    {
+                        return;
+                        //...and nothing happend
+                    }
+                    else
+                    {
+                        target.health -= damageDealted - damageBlocked;
+                        return;
+                    }
+                }
+                public void NextTurn(out bool death)
+                {
+                    lifetick++;
+                    if (this.health <= 0)
+                    {
+                        death = true;
+                        return;
+                    }
+                    else
+                    {
+                        death = false;
+                    }
+                    foreach (var effect in this.effects)
+                    {
+                        foreach (var modifier in effect.GetRegInfo().modifiers)
+                        {
+                            if (modifier.name == "generic:health")
+                            {
+                                this.health += modifier.amount * effect.level;
+                            }
+                        }
+                        effect.time--;
+                        if (effect.time == 0)
+                        {
+                            this.effects.Remove(effect);
+                        }
+                    }
+                }
+                public static int RollPointWithLuck(double l)
                 //Roll a point 1~6 with given luck.
                 {
                     //l for luck.
@@ -191,25 +249,25 @@ namespace CmdungeonsLib
                     w[0] = 0;
 
                     //Calculate weight
-                    if(l == 0)
+                    if (l == 0)
                     {
-                        w = new double[7]{0, 1, 1, 1, 1, 1, 1};
+                        w = new double[7] { 0, 1, 1, 1, 1, 1, 1 };
                     }
-                    if(l > 0)
+                    if (l > 0)
                     {
-                        w[1] = (2*l + 2) / (Math.Pow(l+1, 2) + 1);
-                        w[2] = (2*l + 3) / (Math.Pow(l+1, 2) + 2);
-                        w[3] = (2*l + 4) / (Math.Pow(l+1, 2) + 3);
+                        w[1] = (3 * l + 1) / (Math.Pow(l + 1, 2) + 1 * l);
+                        w[2] = (4 * l + 1) / (Math.Pow(l + 1, 2) + 2 * l);
+                        w[3] = (5 * l + 1) / (Math.Pow(l + 1, 2) + 3 * l);
                         w[4] = 2 - w[3];
                         w[5] = 2 - w[2];
                         w[6] = 2 - w[1];
                     }
-                    if(l < 0)
+                    if (l < 0)
                     {
                         l = -l;
-                        w[6] = (2*l + 2) / (Math.Pow(l+1, 2) + 1);
-                        w[5] = (2*l + 3) / (Math.Pow(l+1, 2) + 2);
-                        w[4] = (2*l + 4) / (Math.Pow(l+1, 2) + 3);
+                        w[6] = (3 * l + 2) / (Math.Pow(l + 1, 2) + 1 * l);
+                        w[5] = (4 * l + 3) / (Math.Pow(l + 1, 2) + 2 * l);
+                        w[4] = (5 * l + 4) / (Math.Pow(l + 1, 2) + 3 * l);
                         w[3] = 2 - w[4];
                         w[2] = 2 - w[5];
                         w[1] = 2 - w[6];
@@ -219,9 +277,9 @@ namespace CmdungeonsLib
                     Random rand = new Random();
                     double doubleRandNum = Math.Round(rand.NextDouble() * 6.0, 3);
 
-                    for(int i = 1; i <= 6; i++)
+                    for (int i = 1; i <= 6; i++)
                     {
-                        if(doubleRandNum >= w[i])
+                        if (doubleRandNum >= w[i])
                         {
                             doubleRandNum -= w[i];
                         }
@@ -234,16 +292,22 @@ namespace CmdungeonsLib
                 }
             }
 
-
-            public class SavesData
+            public class Room
             {
-                public string player_name;
+                public List<EntryFormats.Log.Entity> entities = new List<EntryFormats.Log.Entity>();
+                public List<EntryFormats.Log.ItemStack> dropped_items = new List<EntryFormats.Log.ItemStack>();
+            }
+            public class SaveData
+            {
+                public string name = "";
+                public EntryFormats.Log.Entity player_entity = new Entity();
                 public int gold = 0;
                 public int xp = 0;
                 public List<EntryFormats.Log.ItemStack> inventory = new List<EntryFormats.Log.ItemStack>();
-                public string location; //Empty = home, others = level id
-                public List<EntryFormats.Log.Entity> current_wave = new List<EntryFormats.Log.Entity>();
+                public string location = ""; //Empty = home, others = level id
+                public Dictionary<string, List<EntryFormats.Log.Room>> map = new Dictionary<string, List<EntryFormats.Log.Room>>();
                 public List<string> finished_levels = new List<string>();
+                public int room_index = 0;
                 //Levels with looping=true can NOT be finished!
             }
         }
@@ -364,8 +428,7 @@ namespace CmdungeonsLib
         }
         public static DataFormat regData = new DataFormat();
         public static Dictionary<string, Dictionary<string, string>> translates = new Dictionary<string, Dictionary<string, string>>();
-
-        public static EntryFormats.Log.Entity playerEntity = new EntryFormats.Log.Entity();
-        public static EntryFormats.Log.SavesData saves = new EntryFormats.Log.SavesData();
+        public static EntryFormats.Log.SaveData save = new EntryFormats.Log.SaveData();
+        public static string memorySavesPath = "";
     }
 }

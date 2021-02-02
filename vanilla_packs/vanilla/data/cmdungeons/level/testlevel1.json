@@ -1,9 +1,12 @@
 {
     "random": false,
     "looping": false,
-    "waves":[
-        [
-            "cmdungeons:test1"
-        ]
+    "rooms":[
+        {
+            "enemies":[
+                "cmdungeons:test1"
+            ],
+            "items":[]
+        }
     ]
 }

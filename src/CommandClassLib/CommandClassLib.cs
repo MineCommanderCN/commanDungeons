@@ -23,11 +23,20 @@ namespace CommandClassLib
                 ("reload", 1, 3, Cmd_reload);
             GlobalData.squidCoreMain.RegCommand
                 ("debug", 1, 65536, Cmd_debug);
+            GlobalData.squidCoreMain.RegCommand
+                ("load", 1, 2, Cmd_load);
+            GlobalData.squidCoreMain.RegCommand
+                ("attack", 1, 2, Cmd_attack);
+            GlobalData.squidCoreMain.RegCommand
+                ("attribute", 2, 2, Cmd_attribute);
+            GlobalData.squidCoreMain.RegCommand
+                ("ground", 1, 1, Cmd_ground);
+
 
             GlobalData.debugStates.RegCommand
                 ("GetTranslateString", 2, 65536, Debug_GetTranslateString);
             GlobalData.debugStates.RegCommand
-                ("RollerWithLuck", 2, 2, Debug_RollerWithLuck);
+                ("Dice", 2, 2, Debug_Dice);
         }
         public static void Cmd_commands(List<string> args)
         {
@@ -228,7 +237,125 @@ namespace CommandClassLib
             RegistCommand();
             Console.WriteLine(Tools.GetTranslateString("generic.load_done"));
         }
+        public static void Cmd_load(List<string> args)
+        {
+            void Load()
+            {
+                string saves_file;
+                try
+                {
+                    saves_file = File.ReadAllText(GlobalData.memorySavesPath);
+                    GlobalData.save = saves_file.FromJson<EntryFormats.Log.SaveData>();
+                    Console.ForegroundColor = ConsoleColor.Green;
+                    Console.WriteLine(Tools.GetTranslateString("command.load.successful"), GlobalData.save.name);
+                    Console.ResetColor();
+                }
+                catch (Exception e)
+                {
+                    Console.ForegroundColor = ConsoleColor.Red;
+                    Console.WriteLine(Tools.GetTranslateString("command.load.error.load_failed"), e.Message);
+                    Console.ResetColor();
+                    GlobalData.memorySavesPath = "";
+                    return;
+                }
+            }
 
+            if (args.Count == 1)
+            {
+                if (GlobalData.memorySavesPath.Length == 0)
+                {
+                    Console.ForegroundColor = ConsoleColor.Yellow;
+                    Console.WriteLine(Tools.GetTranslateString("command.load.no_memory_path"));
+                    Console.ResetColor();
+                }
+                else
+                {
+                    Load();
+                }
+            }
+            else
+            {
+                GlobalData.memorySavesPath = args[1];
+                Load();
+            }
+        }
+        public static void Cmd_attack(List<string> args)
+        {
+            List<EntryFormats.Log.Entity> targetList =
+                GlobalData.save.map[GlobalData.save.location][GlobalData.save.room_index].entities;
+
+            int targetIndex = 0;
+            if (args.Count == 2)
+            {
+                targetIndex = Convert.ToInt32(args[1]);
+            }
+            double dmgDealted = 0, dmgBlocked = 0;
+            bool selfDead = false, targetDead = false;
+            int point = GlobalData.save.player_entity.Dice();
+
+            void Attack(string selfName, string targetName,
+                ref EntryFormats.Log.Entity self, ref EntryFormats.Log.Entity target)
+            {
+                Console.WriteLine(Tools.GetTranslateString("command.attack.act"), selfName, targetName);
+
+                self.Attack(target, point, out dmgDealted, out dmgBlocked);
+
+                Console.Write(Tools.GetTranslateString("command.attack.info"), point);
+                Console.ForegroundColor = ConsoleColor.Green;
+                Console.Write(Math.Round(dmgDealted, 1));
+                Console.ResetColor();
+
+                Console.Write(" - ");
+
+                Console.ForegroundColor = ConsoleColor.Yellow;
+                Console.Write(Math.Round(dmgBlocked, 1));
+                Console.ResetColor();
+                Console.WriteLine();
+
+                target.health = (target.health > 0) ? target.health : 0;
+                Console.Write(Tools.GetTranslateString("command.attack.result"),
+                    targetName, target.GetAttribute("generic:max_health"), target.health);
+
+                if (dmgDealted - dmgBlocked > 0)
+                {
+                    Console.ForegroundColor = ConsoleColor.Red;
+                    Console.WriteLine("  (-{0:F1})", dmgDealted - dmgBlocked);
+                    Console.ResetColor();
+                }
+                else
+                {
+                    Console.WriteLine();
+                }
+            }
+
+            EntryFormats.Log.Entity enemyTmp = targetList[targetIndex];
+            Attack(Tools.GetTranslateString("generic.target.you"),
+                Tools.GetTranslateString(
+                    "enemy." + targetList[targetIndex].id + ".name"),
+                ref GlobalData.save.player_entity,
+                ref enemyTmp
+                );
+            targetList[targetIndex] = enemyTmp;
+
+            targetList[targetIndex].NextTurn(out targetDead);
+            if (targetDead)
+            {
+                Console.WriteLine("菜");
+                foreach (var item in
+                    GlobalData.regData.enemies[GlobalData.save.map[GlobalData.save.location][GlobalData.save.room_index]
+                    .entities[targetIndex].id
+                    ].rewards.items)
+                {
+                    EntryFormats.Log.ItemStack itemTmp = new EntryFormats.Log.ItemStack();
+                    itemTmp.id = item.id;
+                    itemTmp.count = item.count.Roll();
+                    GlobalData.save.map[GlobalData.save.location][GlobalData.save.room_index].dropped_items.Add(itemTmp);
+                }
+
+                targetList.Remove(targetList[targetIndex]);
+            }
+            GlobalData.save.map[GlobalData.save.location][GlobalData.save.room_index].entities = targetList;
+        }
         public static void Cmd_test(List<string> args)
         {
             Console.WriteLine(Tools.GetTranslateString("test.hello_world"));
@@ -241,7 +368,7 @@ namespace CommandClassLib
         {
             if (args.Count == 1)
             {
-                Console.WriteLine(Tools.GetTranslateString("commands.packinfo.pack_count"), GlobalData.datapackInfo.Count);
+                Console.WriteLine(Tools.GetTranslateString("command.packinfo.pack_count"), GlobalData.datapackInfo.Count);
                 foreach (KeyValuePair<string, EntryFormats.DatapackRegistry> elem in GlobalData.datapackInfo)
                 {
                     Console.WriteLine(elem.Key);
@@ -252,35 +379,47 @@ namespace CommandClassLib
                 if (GlobalData.datapackInfo.ContainsKey(args[1]))
                 {
                     EntryFormats.DatapackRegistry packInfoTemp = GlobalData.datapackInfo[args[1]];
-                    Console.WriteLine(Tools.GetTranslateString("commands.packinfo.pack_info"), args[1]);
+                    Console.WriteLine(Tools.GetTranslateString("command.packinfo.pack_info"), args[1]);
                     Console.WriteLine(
-                        Tools.GetTranslateString("commands.packinfo.creator"),
+                        Tools.GetTranslateString("command.packinfo.creator"),
                         packInfoTemp.meta_info.creator);
-                    Console.Write(Tools.GetTranslateString("commands.packinfo.version") + "    ",
+                    Console.Write(Tools.GetTranslateString("command.packinfo.version") + "    ",
                         packInfoTemp.meta_info.file_format);
 
                     if (packInfoTemp.meta_info.file_format == GlobalData.SUPPORTED_PACKFORMAT)
                     {
                         Console.ForegroundColor = ConsoleColor.Green;
-                        Console.Write(Tools.GetTranslateString("commands.packinfo.version.compatible") + "\n");
+                        Console.Write(Tools.GetTranslateString("command.packinfo.version.compatible") + "\n");
                         Console.ResetColor();
                     }
                     else
                     {
                         Console.ForegroundColor = ConsoleColor.Yellow;
-                        Console.Write(Tools.GetTranslateString("commands.packinfo.version.uncompatible") + "\n");
+                        Console.Write(Tools.GetTranslateString("command.packinfo.version.uncompatible") + "\n");
                         Console.ResetColor();
                     }
-                    Console.WriteLine(Tools.GetTranslateString("commands.packinfo.description"),
+                    Console.WriteLine(Tools.GetTranslateString("command.packinfo.description"),
                         Tools.GetTranslateString(packInfoTemp.meta_info.description));
 
                 }
                 else
                 {
                     Console.ForegroundColor = ConsoleColor.Red;
-                    Console.WriteLine(Tools.GetTranslateString("commands.packinfo.unknown_pack"), args[1]);
+                    Console.WriteLine(Tools.GetTranslateString("command.packinfo.error.unknown_pack"), args[1]);
                     Console.ResetColor();
                 }
+            }
+        }
+        public static void Cmd_attribute(List<string> args)
+        {
+            Console.WriteLine(GlobalData.save.player_entity.GetAttribute(args[1]));
+        }
+        public static void Cmd_ground(List<string> args)
+        {
+            foreach (var item in GlobalData.save.map[GlobalData.save.location][GlobalData.save.room_index].dropped_items)
+            {
+                Console.Write(Tools.GetTranslateString("item." + item.id + ".name"));
+                Console.WriteLine("  x" + item.count);
             }
         }
         public static void Cmd_debug(List<string> args)
@@ -312,7 +451,7 @@ namespace CommandClassLib
             }
             else
             {
-                Console.WriteLine(Tools.GetTranslateString("commands.debug.unavailable"));
+                Console.WriteLine(Tools.GetTranslateString("command.debug.unavailable"));
             }
         }
 
@@ -333,10 +472,10 @@ namespace CommandClassLib
             }
         }
 
-        public static void Debug_RollerWithLuck(List<string> args)
+        public static void Debug_Dice(List<string> args)
         {
             double luck = Convert.ToDouble(args[1]);
-            Console.WriteLine(EntryFormats.Log.Entity.RollerWithLuck(luck));
+            Console.WriteLine(EntryFormats.Log.Entity.RollPointWithLuck(luck));
         }
     }
 }

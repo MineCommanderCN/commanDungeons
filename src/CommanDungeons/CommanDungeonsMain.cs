@@ -22,7 +22,7 @@ namespace CommanDungeonsMain
             {
                 CommandClassLib.CommandClassLib.Cmd_reload(new List<string>()); //First load
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                 Console.BackgroundColor = ConsoleColor.DarkRed;
                 Console.ForegroundColor = ConsoleColor.White;
@@ -36,7 +36,7 @@ namespace CommanDungeonsMain
             Console.ForegroundColor = ConsoleColor.Blue;
             Console.WriteLine("[INFO] All done!");
             Console.ResetColor();
-            
+
             Console.WriteLine(Tools.GetTranslateString("generic.welcome"), GlobalData.VERSION);
             for (; ; )
             {
@@ -53,7 +53,7 @@ namespace CommanDungeonsMain
                     Console.ResetColor();
                 }
             }
-            
+
         }
     }
 }
