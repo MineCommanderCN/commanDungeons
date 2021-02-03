@@ -1,5 +1,6 @@
 {
     "equipment": "generic:hand",
+    "max_stack": 1,
     "attribute_modifiers": [{
         "name": "generic:attack_power",
         "operation": 0,

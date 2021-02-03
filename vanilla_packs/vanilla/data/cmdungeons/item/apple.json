@@ -1,5 +1,6 @@
 {
     "equipment": "consumable",
+    "max_stack": 50,
     "use_events": [{
         "name": "cmdungeons:regenerition",
         "time": 2,

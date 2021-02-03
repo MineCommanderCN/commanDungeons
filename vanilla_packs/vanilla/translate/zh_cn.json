@@ -11,7 +11,7 @@
     "generic.message.looted_item": "掉落了 {0} x{1}",
     "generic.message.picked_item": "拾取了 {0} x{1}",
     "generic.message.inventory_full": "物品栏空间不足！",
-    "generic.message.player_dead": "你死了...",
+    "generic.message.player_dead": "你死了...\n所有装备和物品都掉落在此房间：{0}[{1}]\n你将会在营地重生。",
 
     "command.packinfo.pack_count": "已经启用了{0}个内容包：",
     "command.packinfo.pack_info": "内容包{0}的详细信息：",
@@ -29,6 +29,8 @@
     "command.attack.info": "点数：{0}\n伤害：",
     "command.attack.result": "{0}剩余HP：{1:F1}/{2:F1}",
     "command.attack.defeated": "{0}被击败了！",
+    "command.attack.error.failed": "操作失败，请输入正确的索引坐标重试。",
+    "command.attribute.message": "你的{0}为：{1:F2}",
 
     "generic.entity.level": "等级",
     "generic.entity.exp": "经验",

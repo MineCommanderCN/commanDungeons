@@ -37,6 +37,8 @@ namespace CmdungeonsLib
             {
                 public string equipment;
                 //'none' (normal item), 'consumable' (disappear after use) or other strings (for equipment slot ID, move onto the slot after use)
+                public int max_stack = 1;
+                //The max count of a stack of the item
                 public List<EntryFormats.Reg.EffectEvent> use_events = new List<EntryFormats.Reg.EffectEvent>();
                 //Trigge once when use the item (INVALID for 'none')
                 public List<EntryFormats.Reg.AttributeModifier> attribute_modifiers = new List<EntryFormats.Reg.AttributeModifier>();
@@ -124,7 +126,7 @@ namespace CmdungeonsLib
                 public string id;
                 public int count;
 
-                public EntryFormats.Reg.Item GetRegInfo()
+                public Reg.Item GetRegInfo()
                 {
                     if (GlobalData.regData.items.ContainsKey(this.id))
                     {
@@ -148,6 +150,11 @@ namespace CmdungeonsLib
 
                 public double GetAttribute(string attribute_name)
                 {
+                    if (!attribute_bases.ContainsKey(attribute_name))
+                    {
+                        return 0;
+                    }
+
                     double tmp_op0 = this.attribute_bases[attribute_name];
                     double tmp_op1 = 1;
                     double tmp_op2 = 1;
@@ -238,6 +245,10 @@ namespace CmdungeonsLib
                             this.effects.Remove(effect);
                         }
                     }
+                    if (health > this.GetAttribute("generic:max_health"))
+                    {
+                        health = GetAttribute("generic:max_health");
+                    }
                 }
                 public static int RollPointWithLuck(double l)
                 //Roll a point 1~6 with given luck.
@@ -307,7 +318,7 @@ namespace CmdungeonsLib
                 public string location = ""; //Empty = home, others = level id
                 public Dictionary<string, List<EntryFormats.Log.Room>> map = new Dictionary<string, List<EntryFormats.Log.Room>>();
                 public List<string> finished_levels = new List<string>();
-                public int room_index = 0;
+                public int room_index = -1;
                 //Levels with looping=true can NOT be finished!
             }
         }
@@ -407,6 +418,64 @@ namespace CmdungeonsLib
             }
 
             return first;
+        }
+        public static void StackItems(ref List<EntryFormats.Log.ItemStack> itemList, EntryFormats.Log.ItemStack stack,
+            int maxCapacity, out EntryFormats.Log.ItemStack itemRemained)
+        {
+            int maxStack = stack.GetRegInfo().max_stack;
+            for (int i = 0; i < itemList.Count; i++)
+            {
+                if (itemList[i].id == stack.id && itemList[i].count < maxStack)
+                {
+                    itemList[i].count += stack.count;
+                    if (itemList[i].count > maxStack)
+                    {
+                        stack.count = itemList[i].count - maxStack;
+                        itemList[i].count = maxStack;
+                    }
+                    else
+                    {
+                        stack.count = 0;
+                    }
+                }
+            }
+            while (stack.count > 0 && itemList.Count < maxCapacity)
+            {
+                EntryFormats.Log.ItemStack stackTmp = new EntryFormats.Log.ItemStack();
+                stackTmp.id = stack.id;
+                stackTmp.count = (stack.count > maxStack) ? maxStack : stack.count;
+                stack.count -= stackTmp.count;
+                itemList.Add(stackTmp);
+            }
+            itemRemained = stack;
+        }
+        public static void StackItems(ref List<EntryFormats.Log.ItemStack> itemList, EntryFormats.Log.ItemStack stack)
+        {
+            int maxStack = stack.GetRegInfo().max_stack;
+            for (int i = 0; i < itemList.Count; i++)
+            {
+                if (itemList[i].id == stack.id && itemList[i].count < maxStack)
+                {
+                    itemList[i].count += stack.count;
+                    if (itemList[i].count > maxStack)
+                    {
+                        stack.count = itemList[i].count - maxStack;
+                        itemList[i].count = maxStack;
+                    }
+                    else
+                    {
+                        stack.count = 0;
+                    }
+                }
+            }
+            while (stack.count > 0)
+            {
+                EntryFormats.Log.ItemStack stackTmp = new EntryFormats.Log.ItemStack();
+                stackTmp.id = stack.id;
+                stackTmp.count = (stack.count > maxStack) ? maxStack : stack.count;
+                stack.count -= stackTmp.count;
+                itemList.Add(stackTmp);
+            }
         }
     }
     public class GlobalData

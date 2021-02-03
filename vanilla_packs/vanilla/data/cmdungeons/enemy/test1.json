@@ -10,14 +10,12 @@
     "rewards": {
         "gold": 5,
         "xp": 30,
-        "items": [
-            {
-                "id": "cmdungeons:apple",
-                "count":{
-                    "min": 1,
-                    "max": 2
-                }
+        "items": [{
+            "id": "cmdungeons:apple",
+            "count": {
+                "min": 100,
+                "max": 200
             }
-        ]
+        }]
     }
 }
