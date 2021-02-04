@@ -1,12 +1,13 @@
 {
     "random": false,
     "looping": false,
-    "rooms":[
-        {
-            "enemies":[
-                "cmdungeons:test1"
-            ],
-            "items":[]
-        }
-    ]
+    "rooms": [{
+        "enemies": [
+            "cmdungeons:test1"
+        ],
+        "items": [{
+            "id": "cmdungeons:apple",
+            "count": 1
+        }]
+    }]
 }

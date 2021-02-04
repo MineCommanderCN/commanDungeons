@@ -38,7 +38,8 @@
             "generic:max_health": 20.0,
             "generic:armor": 3.0,
             "generic:attack_power": 5.0,
-            "generic:luck": 0.0
+            "generic:luck": 0.0,
+            "player:inventory_capacity": 20.0
         },
         "effects": [{
             "id": "cmdungeons:regeneration",

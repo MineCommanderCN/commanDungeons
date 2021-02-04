@@ -56,7 +56,7 @@ namespace CmdungeonsLib
             {
                 public double health = 1.0;
                 public int level = 0;
-                Dictionary<string, double> attributes = new Dictionary<string, double>();
+                public Dictionary<string, double> attributes = new Dictionary<string, double>();
                 public class RewardsFormat
                 {
                     public int gold = 0;
@@ -79,11 +79,18 @@ namespace CmdungeonsLib
                     public List<ItemLoot> items = new List<ItemLoot>();
                 }
                 public RewardsFormat rewards = new RewardsFormat();
+
+                public class EquipmentFormat
+                {
+                    public string id;
+                    public double random_chance = 1;
+                }
+                public Dictionary<string, EquipmentFormat> equipment = new Dictionary<string, EquipmentFormat>();
             }
             public class LevelRoom
             {
-                List<string> enemies = new List<string>();
-                List<EntryFormats.Log.ItemStack> items = new List<EntryFormats.Log.ItemStack>();
+                public List<string> enemies = new List<string>();
+                public List<EntryFormats.Log.ItemStack> items = new List<EntryFormats.Log.ItemStack>();
             }
             public class Level
             {
@@ -93,7 +100,7 @@ namespace CmdungeonsLib
                 // If true, the level will loop again when all enemies have been defeated.
                 // The level won't be end unless the player exit manually.
                 // Also, the level won't be able to show in finished_levels.
-                public List<List<string>> rooms = new List<List<string>>();
+                public List<LevelRoom> rooms = new List<LevelRoom>();
             }
         }
         public class Log
@@ -310,7 +317,18 @@ namespace CmdungeonsLib
             }
             public class SaveData
             {
-                public string name = "";
+                public SaveData()
+                {
+                    player_entity.id = "generic:player";
+                    player_entity.health = 20.0;
+                    player_entity.level = 0;
+                    player_entity.attribute_bases.Add("generic:max_health", 20.0);
+                    player_entity.attribute_bases.Add("generic:attack_power", 3.0);
+                    player_entity.attribute_bases.Add("generic:armor", 1.0);
+                    player_entity.attribute_bases.Add("generic:luck", 0.0);
+                    player_entity.attribute_bases.Add("player:inventory_capacity", 20.0);
+                }
+                public string name = "Player";
                 public EntryFormats.Log.Entity player_entity = new Entity();
                 public int gold = 0;
                 public int xp = 0;
@@ -420,7 +438,7 @@ namespace CmdungeonsLib
             return first;
         }
         public static void StackItems(ref List<EntryFormats.Log.ItemStack> itemList, EntryFormats.Log.ItemStack stack,
-            int maxCapacity, out EntryFormats.Log.ItemStack itemRemained)
+            int maxCapacity, out EntryFormats.Log.ItemStack itemRemaining)
         {
             int maxStack = stack.GetRegInfo().max_stack;
             for (int i = 0; i < itemList.Count; i++)
@@ -447,7 +465,7 @@ namespace CmdungeonsLib
                 stack.count -= stackTmp.count;
                 itemList.Add(stackTmp);
             }
-            itemRemained = stack;
+            itemRemaining = stack;
         }
         public static void StackItems(ref List<EntryFormats.Log.ItemStack> itemList, EntryFormats.Log.ItemStack stack)
         {

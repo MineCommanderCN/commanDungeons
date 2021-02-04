@@ -24,9 +24,8 @@ namespace CommanDungeonsMain
             }
             catch (Exception e)
             {
-                Console.BackgroundColor = ConsoleColor.DarkRed;
-                Console.ForegroundColor = ConsoleColor.White;
-                Console.Write("[Fatal] {0}\nPress any key to exit...", e.Message);
+                Console.ForegroundColor = ConsoleColor.DarkRed;
+                Console.Write("[Fatal] Game crashed!\n{0}\nPress any key to exit...", e.Message);
                 Console.ResetColor();
                 Console.WriteLine();
                 Console.ReadKey();
@@ -42,6 +41,14 @@ namespace CommanDungeonsMain
             {
                 Console.Write(">> ");
                 string strInput = Console.ReadLine();
+                if (!GlobalData.squidCoreMain.commandRegistry.ContainsKey(
+                    SquidCsharpLib.Convert(strInput)[0]))
+                {
+                    Console.ForegroundColor = ConsoleColor.Red;
+                    Console.WriteLine(Tools.GetTranslateString("generic.error.unknown_command"));
+                    Console.ResetColor();
+                    continue;
+                }
                 try
                 {
                     GlobalData.squidCoreMain.Run(strInput);

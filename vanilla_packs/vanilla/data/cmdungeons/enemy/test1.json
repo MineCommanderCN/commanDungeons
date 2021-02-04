@@ -17,5 +17,11 @@
                 "max": 200
             }
         }]
+    },
+    "equipment": {
+        "generic:right_hand": {
+            "id": "cmdungeons:sword",
+            "random_chance": 0.8
+        }
     }
 }

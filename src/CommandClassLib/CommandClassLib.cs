@@ -28,9 +28,25 @@ namespace CommandClassLib
             GlobalData.squidCoreMain.RegCommand
                 ("attack", 1, 2, Cmd_attack);
             GlobalData.squidCoreMain.RegCommand
+                ("atk", 1, 2, Cmd_attack);
+            GlobalData.squidCoreMain.RegCommand
                 ("attribute", 2, 2, Cmd_attribute);
             GlobalData.squidCoreMain.RegCommand
+                ("atb", 2, 2, Cmd_attribute);
+            GlobalData.squidCoreMain.RegCommand
                 ("ground", 1, 1, Cmd_ground);
+            GlobalData.squidCoreMain.RegCommand
+                ("grd", 1, 1, Cmd_ground);
+            GlobalData.squidCoreMain.RegCommand
+                ("inventory", 1, 1, Cmd_inventory);
+            GlobalData.squidCoreMain.RegCommand
+                ("inv", 1, 1, Cmd_inventory);
+            GlobalData.squidCoreMain.RegCommand
+                ("goto", 2, 2, Cmd_goto);
+            GlobalData.squidCoreMain.RegCommand
+                ("name", 2, 2, Cmd_name);
+            GlobalData.squidCoreMain.RegCommand
+                ("info", 1, 2, Cmd_info);
 
 
             GlobalData.debugStates.RegCommand
@@ -304,7 +320,7 @@ namespace CommandClassLib
 
             double dmgDealted = 0, dmgBlocked = 0;
             bool selfDead = false, targetDead = false;
-            int point = GlobalData.save.player_entity.Dice();
+            int point;
 
             void Attack(string selfName, string targetName,
                 ref EntryFormats.Log.Entity self, ref EntryFormats.Log.Entity target)
@@ -327,7 +343,7 @@ namespace CommandClassLib
 
                 target.health = (target.health > 0) ? target.health : 0;
                 Console.Write(Tools.GetTranslateString("command.attack.result"),
-                    targetName, target.GetAttribute("generic:max_health"), target.health);
+                     targetName, target.health, target.GetAttribute("generic:max_health"));
 
                 if (dmgDealted - dmgBlocked > 0)
                 {
@@ -342,6 +358,7 @@ namespace CommandClassLib
             }
 
             EntryFormats.Log.Entity enemyTmp = targetList[targetIndex];
+            point = GlobalData.save.player_entity.Dice();
             Attack(Tools.GetTranslateString("generic.target.you"),
                 Tools.GetTranslateString(
                     "enemy." + targetList[targetIndex].id + ".name"),
@@ -377,6 +394,7 @@ namespace CommandClassLib
             else
             {
                 enemyTmp = targetList[targetIndex];
+                point = enemyTmp.Dice();
                 Attack(Tools.GetTranslateString(
                         "enemy." + targetList[targetIndex].id + ".name"),
                     Tools.GetTranslateString("generic.target.you"),
@@ -384,11 +402,14 @@ namespace CommandClassLib
                     ref GlobalData.save.player_entity
                     );
                 GlobalData.save.player_entity.NextTurn(out selfDead);
+                GlobalData.save.map[GlobalData.save.location][GlobalData.save.room_index].entities = targetList;
                 if (selfDead)
                 {
                     Console.ForegroundColor = ConsoleColor.DarkRed;
                     Console.WriteLine(Tools.GetTranslateString("generic.message.player_dead"),
-                        GlobalData.save.location, GlobalData.save.room_index);
+                        Tools.GetTranslateString("level." + GlobalData.save.location + ".name"),
+                        GlobalData.save.room_index);
+                    Console.ResetColor();
                     foreach (var item in GlobalData.save.inventory)
                     {
                         Tools.StackItems(ref GlobalData.save.map[GlobalData.save.location][GlobalData.save.room_index]
@@ -403,9 +424,9 @@ namespace CommandClassLib
                     GlobalData.save.player_entity.equipment.Clear();
                     GlobalData.save.location = "";
                     GlobalData.save.room_index = -1;
+                    return;
                 }
             }
-
             GlobalData.save.map[GlobalData.save.location][GlobalData.save.room_index].entities = targetList;
         }
         public static void Cmd_test(List<string> args)
@@ -475,6 +496,104 @@ namespace CommandClassLib
                 Console.WriteLine("  x" + item.count);
             }
         }
+        public static void Cmd_inventory(List<string> args)
+        {
+            Console.WriteLine(Tools.GetTranslateString("command.inventory.capacity"),
+                GlobalData.save.inventory.Count,
+                Convert.ToInt32(Math.Floor(GlobalData.save.player_entity.GetAttribute("player:inventory_capacity"))));
+            foreach (var item in GlobalData.save.inventory)
+            {
+                Console.WriteLine(Tools.GetTranslateString("item." + item.id + ".name") + "  x" + item.count);
+            }
+        }
+        public static void Cmd_goto(List<string> args)
+        {
+            if (!GlobalData.regData.levels.ContainsKey(args[1]))
+            {
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.WriteLine(Tools.GetTranslateString("command.goto.error.unknown_level"));
+                Console.ResetColor();
+                return;
+            }
+
+            void InitLevel()
+            {
+                EntryFormats.Reg.Level levelRegData = GlobalData.regData.levels[args[1]];
+                List<EntryFormats.Log.Room> tmpRoomList = new List<EntryFormats.Log.Room>();
+                EntryFormats.Log.Room tmpRoom = new EntryFormats.Log.Room();
+                foreach (var roomRegData in levelRegData.rooms)
+                {
+                    foreach (var enemyID in roomRegData.enemies)
+                    {
+                        EntryFormats.Log.Entity enemyEntity = new EntryFormats.Log.Entity();
+                        enemyEntity.health = GlobalData.regData.enemies[enemyID].health;
+                        enemyEntity.id = enemyID;
+                        enemyEntity.level = GlobalData.regData.enemies[enemyID].level;
+                        enemyEntity.attribute_bases = GlobalData.regData.enemies[enemyID].attributes;
+                        foreach (var equipmentItem in GlobalData.regData.enemies[enemyID].equipment)
+                        {
+                            Random random = new Random();
+                            if (random.NextDouble() > equipmentItem.Value.random_chance)
+                            {
+                                continue;
+                            }
+                            EntryFormats.Log.ItemStack itemTmp = new EntryFormats.Log.ItemStack();
+                            itemTmp.id = equipmentItem.Value.id;
+                            itemTmp.count = 1;
+                            enemyEntity.equipment.Add(equipmentItem.Key, itemTmp);
+                        }
+                        tmpRoom.entities.Add(enemyEntity);
+                    }
+                    tmpRoom.dropped_items = roomRegData.items;
+                    tmpRoomList.Add(tmpRoom);
+                }
+                GlobalData.save.map[args[1]] = tmpRoomList;
+            }
+
+            if (GlobalData.save.map.ContainsKey(args[1]))
+            {
+                GlobalData.save.location = args[1];
+                GlobalData.save.room_index = 0;
+                Console.ForegroundColor = ConsoleColor.Blue;
+                Console.WriteLine(Tools.GetTranslateString("command.goto.message"),
+                    Tools.GetTranslateString("level." + args[1] + ".name"));
+                Console.ResetColor();
+            }
+            else
+            {
+                Console.ForegroundColor = ConsoleColor.Yellow;
+                Console.WriteLine(Tools.GetTranslateString("command.goto.init"),
+                    Tools.GetTranslateString("level." + args[1] + ".name"));
+                Console.ResetColor();
+                InitLevel();
+                GlobalData.save.location = args[1];
+                GlobalData.save.room_index = 0;
+                Console.ForegroundColor = ConsoleColor.Blue;
+                Console.WriteLine(Tools.GetTranslateString("command.goto.message"),
+                    Tools.GetTranslateString("level." + args[1] + ".name"));
+                Console.ResetColor();
+            }
+        }
+        public static void Cmd_name(List<string> args)
+        {
+            GlobalData.save.name = args[1];
+            Console.WriteLine(Tools.GetTranslateString("command.name.message"), args[1]);
+        }
+        public static void Cmd_info(List<string> args)
+        {
+            Console.WriteLine(
+                Tools.GetTranslateString("command.info.message"),
+                GlobalData.save.name,
+                GlobalData.save.player_entity.health,
+                GlobalData.save.player_entity.GetAttribute("generic:max_health"),
+                GlobalData.save.player_entity.level,
+                GlobalData.save.player_entity.GetAttribute("generic:attack_power"),
+                GlobalData.save.player_entity.GetAttribute("generic:armor"),
+                GlobalData.save.player_entity.effects.Count,
+                GlobalData.save.inventory.Count,
+                Convert.ToInt32(Math.Floor(GlobalData.save.player_entity.GetAttribute("player:inventory_capacity"))));
+        }
+
         public static void Cmd_debug(List<string> args)
         {
             if (GlobalData.config.debug)
