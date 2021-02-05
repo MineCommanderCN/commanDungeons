@@ -643,7 +643,7 @@ namespace CommandClassLib
         }
         public static void Cmd_effect(List<string> args)
         {
-            Console.Write(Tools.GetTranslateString("command.effect.count"), GlobalData.save.player_entity.effects.Count);
+            Console.WriteLine(Tools.GetTranslateString("command.effect.count"), GlobalData.save.player_entity.effects.Count);
             foreach (var effect in GlobalData.save.player_entity.effects)
             {
                 if (effect.GetRegInfo().debuff)
