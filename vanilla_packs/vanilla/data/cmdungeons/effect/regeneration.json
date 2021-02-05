@@ -2,7 +2,7 @@
     "debuff": false,
     "modifiers": [{
         "name": "generic:health",
-        "operation": 0,
+        "operation": "directly_add",
         "amount": 4.0
     }]
 }

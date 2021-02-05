@@ -1,5 +1,5 @@
 {
-    "equipment": "consumable",
+    "type": "consumable",
     "max_stack": 50,
     "use_events": [{
         "name": "cmdungeons:regenerition",

@@ -3,6 +3,8 @@
     "looping": false,
     "rooms": [{
         "enemies": [
+            "cmdungeons:test1",
+            "cmdungeons:test1",
             "cmdungeons:test1"
         ],
         "items": [{

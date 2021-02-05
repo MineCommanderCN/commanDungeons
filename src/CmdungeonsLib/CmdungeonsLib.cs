@@ -28,19 +28,23 @@ namespace CmdungeonsLib
             public class AttributeModifier
             {
                 public string name; //Name of attribute
-                public int operation = 0;   //0 = directly add (base + a1 + a2 + ...)
-                                            //1 = overlaying multiply (base * (1 + a1 + a2 + ...) )
-                                            //2 = directly multiply (base * a1 * a2 * ...)
+                public string operation = "";   
+                //Supported values:
+                //"directly_add" (base + a1 + a2 + ...),
+                //"overlaying_multiply" (base * (1 + a1 + a2 + ...) ),
+                //"directly_multiply" (base * a1 * a2 * ...).
                 public double amount = 0.0;
             }
             public class Item
             {
-                public string equipment;
-                //'none' (normal item), 'consumable' (disappear after use) or other strings (for equipment slot ID, move onto the slot after use)
+                public string type;
+                //'normal' (normal item), 'consumable' (disappear after use) or 'equipment' (move onto the equipment slot after use)
+                public List<string> slots = new List<string>();
+                //(Only for 'equipment' item) Available equipment slot IDs
                 public int max_stack = 1;
                 //The max count of a stack of the item
                 public List<EntryFormats.Reg.EffectEvent> use_events = new List<EntryFormats.Reg.EffectEvent>();
-                //Trigge once when use the item (INVALID for 'none')
+                //(Invalid for 'normal') Trigge once when use the item
                 public List<EntryFormats.Reg.AttributeModifier> attribute_modifiers = new List<EntryFormats.Reg.AttributeModifier>();
                 //Modifiers on the attributes when equipmented
             }
@@ -49,7 +53,7 @@ namespace CmdungeonsLib
                 public bool debuff = false; //If true, the effect will be highlighted when display
                 public List<EntryFormats.Reg.AttributeModifier> modifiers = new List<EntryFormats.Reg.AttributeModifier>();
                 //Modifiers on attributes for the effect.
-                //NOTE: You can use attribute_name = "generic.health" with operation = 0 to modify the HP!
+                //NOTE: You can use attribute_name = "generic.health" to modify the HP! (Operation is forcely set to "directly_add")
                 //NOTE: Final modified amount is (amount * effect level) !
             }
             public class Enemy
@@ -181,13 +185,13 @@ namespace CmdungeonsLib
                         {
                             switch (elem.operation)
                             {
-                                case 0:
+                                case "directly_add":
                                     tmp_op0 += elem.amount;
                                     break;
-                                case 1:
+                                case "overlaying_multiply":
                                     tmp_op1 += elem.amount;
                                     break;
-                                case 2:
+                                case "directly_multiply":
                                     tmp_op2 *= elem.amount;
                                     break;
                                 default:
@@ -225,9 +229,8 @@ namespace CmdungeonsLib
                         return;
                     }
                 }
-                public void NextTurn(out bool death)
+                public void Update(out bool death)
                 {
-                    lifetick++;
                     if (this.health <= 0)
                     {
                         death = true;
@@ -237,6 +240,14 @@ namespace CmdungeonsLib
                     {
                         death = false;
                     }
+                    if (health > this.GetAttribute("generic:max_health"))
+                    {
+                        health = GetAttribute("generic:max_health");
+                    }
+                }
+                public void NextTurn(out bool death)
+                {
+                    lifetick++;
                     foreach (var effect in this.effects)
                     {
                         foreach (var modifier in effect.GetRegInfo().modifiers)
@@ -252,10 +263,7 @@ namespace CmdungeonsLib
                             this.effects.Remove(effect);
                         }
                     }
-                    if (health > this.GetAttribute("generic:max_health"))
-                    {
-                        health = GetAttribute("generic:max_health");
-                    }
+                    Update(out death);
                 }
                 public static int RollPointWithLuck(double l)
                 //Roll a point 1~6 with given luck.
