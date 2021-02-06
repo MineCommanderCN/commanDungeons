@@ -1,8 +1,7 @@
 using System;
 using System.Collections.Generic;
-using TinyJson;
-using SquidCsharp;
 using System.Text.RegularExpressions;
+using SquidCsharp;
 
 namespace CmdungeonsLib
 {
@@ -28,7 +27,7 @@ namespace CmdungeonsLib
             public class AttributeModifier
             {
                 public string name; //Name of attribute
-                public string operation = "";   
+                public string operation = "";
                 //Supported values:
                 //"directly_add" (base + a1 + a2 + ...),
                 //"overlaying_multiply" (base * (1 + a1 + a2 + ...) ),
@@ -337,12 +336,12 @@ namespace CmdungeonsLib
                     player_entity.attribute_bases.Add("player:inventory_capacity", 20.0);
                 }
                 public string name = "Player";
-                public EntryFormats.Log.Entity player_entity = new Entity();
+                public Entity player_entity = new Entity();
                 public int gold = 0;
                 public int xp = 0;
-                public List<EntryFormats.Log.ItemStack> inventory = new List<EntryFormats.Log.ItemStack>();
+                public List<ItemStack> inventory = new List<ItemStack>();
                 public string location = ""; //Empty = home, others = level id
-                public Dictionary<string, List<EntryFormats.Log.Room>> map = new Dictionary<string, List<EntryFormats.Log.Room>>();
+                public Dictionary<string, List<Room>> map = new Dictionary<string, List<Room>>();
                 public List<string> finished_levels = new List<string>();
                 public int room_index = -1;
                 //Levels with looping=true can NOT be finished!
@@ -467,9 +466,11 @@ namespace CmdungeonsLib
             }
             while (stack.count > 0 && itemList.Count < maxCapacity)
             {
-                EntryFormats.Log.ItemStack stackTmp = new EntryFormats.Log.ItemStack();
-                stackTmp.id = stack.id;
-                stackTmp.count = (stack.count > maxStack) ? maxStack : stack.count;
+                EntryFormats.Log.ItemStack stackTmp = new EntryFormats.Log.ItemStack
+                {
+                    id = stack.id,
+                    count = (stack.count > maxStack) ? maxStack : stack.count
+                };
                 stack.count -= stackTmp.count;
                 itemList.Add(stackTmp);
             }
@@ -503,6 +504,18 @@ namespace CmdungeonsLib
                 itemList.Add(stackTmp);
             }
         }
+        public static void UpdateItemList(ref List<EntryFormats.Log.ItemStack> itemList)
+        {
+            for (int i = 0; i < itemList.Count; i++)
+            {
+                if (itemList[i].count == 0)
+                {
+                    itemList.RemoveAt(i);
+                    i--;
+                    continue;
+                }
+            }
+        }
     }
     public class GlobalData
     {
@@ -525,5 +538,12 @@ namespace CmdungeonsLib
         public static Dictionary<string, Dictionary<string, string>> translates = new Dictionary<string, Dictionary<string, string>>();
         public static EntryFormats.Log.SaveData save = new EntryFormats.Log.SaveData();
         public static string memorySavesPath = "";
+        public static EntryFormats.Log.Room CurrentRoom
+        {
+            get
+            {
+                return save.map[save.location][save.room_index];
+            }
+        }
     }
 }

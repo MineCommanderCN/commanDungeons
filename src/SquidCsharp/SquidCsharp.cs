@@ -173,6 +173,14 @@ namespace SquidCsharp
 
             commandRegistry.Add(rootCommand, tmp);
         }
+        public void Link(string link, string command)
+        {
+            if (!commandRegistry.ContainsKey(command))
+            {
+                throw new SquidCoreException("Orginal command \"" + command + "\" not found");
+            }
+            commandRegistry.Add(link, commandRegistry[command]);
+        }
         public void Run(List<string> argList)
         {
             if (argList.Count == 0)

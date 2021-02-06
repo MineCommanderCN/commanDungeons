@@ -1,12 +1,6 @@
 using System;
-using System.IO;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using CmdungeonsLib;
-using CommandClassLib;
-using TinyJson;
 using SquidCsharp;
 
 namespace CommanDungeonsMain
@@ -41,6 +35,10 @@ namespace CommanDungeonsMain
             {
                 Console.Write(">> ");
                 string strInput = Console.ReadLine();
+                if (strInput == "")
+                {
+                    continue;
+                }
                 if (!GlobalData.squidCoreMain.commandRegistry.ContainsKey(
                     SquidCsharpLib.Convert(strInput)[0]))
                 {
