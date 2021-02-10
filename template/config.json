@@ -1,6 +1,6 @@
 {
     "packs_path": "packs/",
-    "lang": "en_us",
+    "language": "en_us",
     "debug": false,
     "enabled_packs": [
         "vanilla"

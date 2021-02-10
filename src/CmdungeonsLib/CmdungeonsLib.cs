@@ -26,31 +26,36 @@ namespace CmdungeonsLib
             }
             public class AttributeModifier
             {
-                public string name; //Name of attribute
-                public string operation = "";
-                //Supported values:
-                //"directly_add" (base + a1 + a2 + ...),
-                //"overlaying_multiply" (base * (1 + a1 + a2 + ...) ),
-                //"directly_multiply" (base * a1 * a2 * ...).
+                public string name; //Name of the attribute
+                public string operation = "directly_add";
                 public double amount = 0.0;
+                //  Modifier operaions:
+                //
+                //  directly_add
+                //    Just simply add the amount onto the base. (Default option)
+                //    Mathematical expression: x = base + a1 + a2+ ...
+                //  overlaying_multiply
+                //    Add all amounts that be with "overlaying_multiply" operation and a 1 together,
+                //    then multiply the base with this number.
+                //    Mathematical expression: x = base * (1 + a1 + a2 + ...)
+                //  directly_multiply
+                //    Multiply the base with the amount. Easy!
+                //    Mathematical expression: x = base * a1 * a2 * ...
             }
             public class Item
             {
-                public string type;
-                //'normal' (normal item), 'consumable' (disappear after use) or 'equipment' (move onto the equipment slot after use)
-                public List<string> slots = new List<string>();
-                //(Only for 'equipment' item) Available equipment slot IDs
+                public string type = "normal";
+                //'normal' (normal item, default option), 'consumable' (disappear after use) or 'equipment' (move onto the equipment slot after use)
+                public Dictionary<string, List<AttributeModifier>> slot_effects = new Dictionary<string, List<AttributeModifier>>();
+                //(Only for 'equipment' item) Available equipment slot IDs, and the attribute modifiers on each slot.
                 public int max_stack = 1;
-                //The max count of a stack of the item
-                public List<EntryFormats.Reg.EffectEvent> use_events = new List<EntryFormats.Reg.EffectEvent>();
-                //(Invalid for 'normal') Trigge once when use the item
-                public List<EntryFormats.Reg.AttributeModifier> attribute_modifiers = new List<EntryFormats.Reg.AttributeModifier>();
-                //Modifiers on the attributes when equipmented
+                //The max count of a stack of the item.
+                public List<EffectEvent> use_events = new List<EffectEvent>();
             }
             public class Effect
             {
                 public bool debuff = false; //If true, the effect will be highlighted when display
-                public List<EntryFormats.Reg.AttributeModifier> modifiers = new List<EntryFormats.Reg.AttributeModifier>();
+                public List<AttributeModifier> modifiers = new List<AttributeModifier>();
                 //Modifiers on attributes for the effect.
                 //NOTE: You can use attribute_name = "generic.health" to modify the HP! (Operation is forcely set to "directly_add")
                 //NOTE: Final modified amount is (amount * effect level) !
@@ -114,12 +119,12 @@ namespace CmdungeonsLib
                 public int level = 0;
                 public int time = 0;
 
-                public void Patch(EntryFormats.Log.Effect buf)  //Merge a patch from buf, for overlaying effects
+                public void Patch(Log.Effect buf)  //Merge a patch from buf, for overlaying effects
                 {
                     time = (buf.time > this.time) ? buf.time : this.time;
                     level = (buf.level > this.level) ? buf.level : this.level; //Select the bigger number
                 }
-                public EntryFormats.Reg.Effect GetRegInfo()
+                public Reg.Effect GetRegInfo()
                 {
                     if (GlobalData.regData.effects.ContainsKey(this.id))
                     {
@@ -148,6 +153,10 @@ namespace CmdungeonsLib
                     }
                 }
             }
+            public class SoldItem : ItemStack
+            {
+                public int price = 0;
+            }
             public class Entity
             {
                 public string id;   //Player's entity id is 'generic:player'
@@ -155,8 +164,8 @@ namespace CmdungeonsLib
                 public int level = 0;
                 public int lifetick = 0;
                 public Dictionary<string, double> attribute_bases = new Dictionary<string, double>();
-                public List<EntryFormats.Log.Effect> effects = new List<Effect>();
-                public Dictionary<string, EntryFormats.Log.ItemStack> equipment = new Dictionary<string, ItemStack>();
+                public List<Effect> effects = new List<Effect>();
+                public Dictionary<string, ItemStack> equipment = new Dictionary<string, ItemStack>();
 
                 public double GetAttribute(string attribute_name)
                 {
@@ -174,9 +183,9 @@ namespace CmdungeonsLib
                     {
                         modifiers.AddRange(effect.GetRegInfo().modifiers);
                     }
-                    foreach (var item in this.equipment.Values)
+                    foreach (var item in this.equipment)
                     {
-                        modifiers.AddRange(item.GetRegInfo().attribute_modifiers);
+                        modifiers.AddRange(item.Value.GetRegInfo().slot_effects[item.Key]);
                     }
                     foreach (var elem in modifiers)
                     {
@@ -316,35 +325,165 @@ namespace CmdungeonsLib
                     return 1;
                 }
             }
-
-            public class Room
+            public class Player : Entity
             {
-                public List<EntryFormats.Log.Entity> entities = new List<EntryFormats.Log.Entity>();
-                public List<EntryFormats.Log.ItemStack> dropped_items = new List<EntryFormats.Log.ItemStack>();
-            }
-            public class SaveData
-            {
-                public SaveData()
-                {
-                    player_entity.id = "generic:player";
-                    player_entity.health = 20.0;
-                    player_entity.level = 0;
-                    player_entity.attribute_bases.Add("generic:max_health", 20.0);
-                    player_entity.attribute_bases.Add("generic:attack_power", 3.0);
-                    player_entity.attribute_bases.Add("generic:armor", 1.0);
-                    player_entity.attribute_bases.Add("generic:luck", 0.0);
-                    player_entity.attribute_bases.Add("player:inventory_capacity", 20.0);
-                }
-                public string name = "Player";
-                public Entity player_entity = new Entity();
+                public string player_name = "Player";
                 public int gold = 0;
                 public int xp = 0;
                 public List<ItemStack> inventory = new List<ItemStack>();
-                public string location = ""; //Empty = home, others = level id
-                public Dictionary<string, List<Room>> map = new Dictionary<string, List<Room>>();
-                public List<string> finished_levels = new List<string>();
+                public string location = "";
                 public int room_index = -1;
-                //Levels with looping=true can NOT be finished!
+                public List<string> finished_levels = new List<string>();
+            }
+            public class Room
+            {
+                public class InvalidRoomException : ApplicationException
+                {
+                    public InvalidRoomException() : base()
+                    {
+                    }
+                    public InvalidRoomException(string message) : base(message)
+                    {
+                    }
+                }
+                public Room(Type type)
+                {
+                    this.type = type;
+                }
+                public enum Type
+                {
+                    BasicRoom = 0,
+                    BattleRoom = 1,
+                    Store = 2
+                }
+                public readonly Type type;
+                private List<ItemStack> _dropped_items = new List<ItemStack>();
+                private List<Entity> _enemies = new List<Entity>();
+                private List<SoldItem> _shelf = new List<SoldItem>();
+
+                public List<ItemStack> dropped_items
+                {
+                    get
+                    {
+                        return _dropped_items;
+                    }
+                    set
+                    {
+                        _dropped_items = value;
+                    }
+                }
+                public List<Entity> enemies
+                {
+                    get
+                    {
+                        if (type == Type.Store || type == Type.BasicRoom)
+                        {
+                            throw new InvalidRoomException("This property does not support current type of room.");
+                        }
+                        return _enemies;
+                    }
+                    set
+                    {
+                        if (type == Type.Store || type == Type.BasicRoom)
+                        {
+                            throw new InvalidRoomException("This property does not support current type of room.");
+                        }
+                        _enemies = value;
+                    }
+                }
+                public List<SoldItem> shelf
+                {
+                    get
+                    {
+                        if (type == Type.BattleRoom || type == Type.BasicRoom)
+                        {
+                            throw new InvalidRoomException("This property does not support current type of room.");
+                        }
+                        return _shelf;
+                    }
+                    set
+                    {
+                        if (type == Type.BattleRoom || type == Type.BasicRoom)
+                        {
+                            throw new InvalidRoomException("This property does not support current type of room.");
+                        }
+                        _shelf = value;
+                    }
+                }
+            }
+
+            public class SaveData
+            {
+                public class UnknownLocationException : ApplicationException
+                {
+                    public UnknownLocationException() : base()
+                    {
+                    }
+                    public UnknownLocationException(string message) : base(message)
+                    {
+                    }
+                }
+                public SaveData()
+                {
+                    player.id = "generic:player";
+                    player.health = 20.0;
+                    player.attribute_bases.Add("generic:max_health", 20.0);
+                    player.attribute_bases.Add("generic:attack_power", 3.0);
+                    player.attribute_bases.Add("generic:armor", 1.0);
+                    player.attribute_bases.Add("generic:luck", 0.0);
+                    player.attribute_bases.Add("player:inventory_capacity", 20.0);
+                }
+                public Player player = new Player();
+                public Dictionary<string, List<Room>> map = new Dictionary<string, List<Room>>();
+                public Room CurrentRoom
+                {
+                    get
+                    {
+                        if (!map.ContainsKey(player.location))
+                        {
+                            throw new UnknownLocationException("Unknown location.");
+                        }
+                        if (player.room_index < 0)
+                        {
+                            throw new UnknownLocationException("Unknown location.");
+                        }
+                        return map[player.location][player.room_index];
+                    }
+                    set
+                    {
+                        if (!map.ContainsKey(player.location))
+                        {
+                            throw new UnknownLocationException("Unknown location.");
+                        }
+                        if (player.room_index < 0)
+                        {
+                            throw new UnknownLocationException("Unknown location.");
+                        }
+                        map[player.location][player.room_index] = value;
+                    }
+                }
+                public List<ItemStack> CurrentGround
+                {
+                    get
+                    {
+                        return CurrentRoom.dropped_items;
+                    }
+                    set
+                    {
+                        map[player.location][player.room_index].dropped_items = value;
+                    }
+                }
+                public List<Entity> CurrentEntityList
+                {
+                    get
+                    {
+                        return CurrentRoom.enemies;
+                    }
+                    set
+                    {
+                        map[player.location][player.room_index].enemies = value;
+                    }
+                }
             }
         }
         public class DatapackRegistry
@@ -538,12 +677,6 @@ namespace CmdungeonsLib
         public static Dictionary<string, Dictionary<string, string>> translates = new Dictionary<string, Dictionary<string, string>>();
         public static EntryFormats.Log.SaveData save = new EntryFormats.Log.SaveData();
         public static string memorySavesPath = "";
-        public static EntryFormats.Log.Room CurrentRoom
-        {
-            get
-            {
-                return save.map[save.location][save.room_index];
-            }
-        }
+
     }
 }
