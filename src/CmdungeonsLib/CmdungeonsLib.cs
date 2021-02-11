@@ -327,6 +327,32 @@ namespace CmdungeonsLib
             }
             public class Player : Entity
             {
+                public Entity ToEntity
+                {
+                    get
+                    {
+                        return new Entity
+                        {
+                            id = this.id,
+                            health = this.health,
+                            level = this.level,
+                            lifetick = this.lifetick,
+                            attribute_bases = this.attribute_bases,
+                            effects = this.effects,
+                            equipment = this.equipment
+                        };
+                    }
+                    set
+                    {
+                        this.id = value.id;
+                        this.health = value.health;
+                        this.level = value.level;
+                        this.lifetick = value.lifetick;
+                        this.attribute_bases = value.attribute_bases;
+                        this.effects = value.effects;
+                        this.equipment = value.equipment;
+                    }
+                }
                 public string player_name = "Player";
                 public int gold = 0;
                 public int xp = 0;

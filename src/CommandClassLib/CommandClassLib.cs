@@ -106,27 +106,27 @@ namespace CommandClassLib
             {
                 Console.ForegroundColor = ConsoleColor.DarkRed;
                 Console.WriteLine(Tools.GetTranslateString("generic.message.player_dead"),
-                    Tools.GetTranslateString("level." + GlobalData.save.location + ".name"),
-                    GlobalData.save.room_index);
+                    Tools.GetTranslateString("level." + GlobalData.save.player.location + ".name"),
+                    GlobalData.save.player.room_index);
                 Console.ResetColor();
-                foreach (var item in GlobalData.save.inventory)
+                foreach (var item in GlobalData.save.player.inventory)
                 {
-                    Tools.StackItems(ref GlobalData.save.map[GlobalData.save.location][GlobalData.save.room_index]
+                    Tools.StackItems(ref GlobalData.save.map[GlobalData.save.player.location][GlobalData.save.player.room_index]
                         .dropped_items, item);
                 }
-                GlobalData.save.inventory.Clear();
-                foreach (var equipment in GlobalData.save.player_entity.equipment.Values)
+                GlobalData.save.player.inventory.Clear();
+                foreach (var equipment in GlobalData.save.player.equipment.Values)
                 {
-                    Tools.StackItems(ref GlobalData.save.map[GlobalData.save.location][GlobalData.save.room_index]
+                    Tools.StackItems(ref GlobalData.save.map[GlobalData.save.player.location][GlobalData.save.player.room_index]
                         .dropped_items, equipment);
                 }
-                GlobalData.save.player_entity.equipment.Clear();
-                GlobalData.save.player_entity.health =
-                    GlobalData.save.player_entity.GetAttribute("generic:max_health") / 2;
-                GlobalData.save.location = "";
-                GlobalData.save.room_index = -1;
+                GlobalData.save.player.equipment.Clear();
+                GlobalData.save.player.health =
+                    GlobalData.save.player.GetAttribute("generic:max_health") / 2;
+                GlobalData.save.player.location = "";
+                GlobalData.save.player.room_index = -1;
             }
-            var targetList = GlobalData.save.map[GlobalData.save.location][GlobalData.save.room_index].entities;
+            var targetList = GlobalData.save.map[GlobalData.save.player.location][GlobalData.save.player.room_index].entities;
             for (int i = 0; i < targetList.Count; i++)
             {
                 var enemyTmp = targetList[i];
@@ -147,7 +147,7 @@ namespace CommandClassLib
                         Console.WriteLine(Tools.GetTranslateString("generic.message.looted_item"),
                             Tools.GetTranslateString("item." + itemTmp.id + ".name"), itemTmp.count);
                         Console.ResetColor();
-                        Tools.StackItems(ref GlobalData.save.map[GlobalData.save.location][GlobalData.save.room_index].dropped_items, itemTmp);
+                        Tools.StackItems(ref GlobalData.save.map[GlobalData.save.player.location][GlobalData.save.player.room_index].dropped_items, itemTmp);
                     }
                     GlobalData.save.xp += rewards.xp;
                     GlobalData.save.gold += rewards.gold;
@@ -163,25 +163,25 @@ namespace CommandClassLib
                 point = enemyTmp.Dice();
                 Attack(Tools.GetTranslateString("enemy." + enemyTmp.id + ".name"),
                     Tools.GetTranslateString("generic.target.you"),
-                    ref enemyTmp, ref GlobalData.save.player_entity);
-                GlobalData.save.player_entity.Update(out playerDead);
+                    ref enemyTmp, ref GlobalData.save.player);
+                GlobalData.save.player.Update(out playerDead);
                 targetList[i] = enemyTmp;
                 if (playerDead)
                 {
-                    GlobalData.save.map[GlobalData.save.location][GlobalData.save.room_index].entities = targetList;
+                    GlobalData.save.map[GlobalData.save.player.location][GlobalData.save.player.room_index].entities = targetList;
                     PlayerDead();
                     return;
                 }
             }
 
-            GlobalData.save.player_entity.NextTurn(out playerDead);
+            GlobalData.save.player.NextTurn(out playerDead);
             if (playerDead)
             {
-                GlobalData.save.map[GlobalData.save.location][GlobalData.save.room_index].entities = targetList;
+                GlobalData.save.map[GlobalData.save.player.location][GlobalData.save.player.room_index].entities = targetList;
                 PlayerDead();
                 return;
             }
-            GlobalData.save.map[GlobalData.save.location][GlobalData.save.room_index].entities = targetList;
+            GlobalData.save.map[GlobalData.save.player.location][GlobalData.save.player.room_index].entities = targetList;
         }
         public static void Cmd_commands(List<string> args)
         {
@@ -392,7 +392,7 @@ namespace CommandClassLib
                     saves_file = File.ReadAllText(GlobalData.memorySavesPath);
                     GlobalData.save = saves_file.FromJson<EntryFormats.Log.SaveData>();
                     Console.ForegroundColor = ConsoleColor.Green;
-                    Console.WriteLine(Tools.GetTranslateString("command.load.successful"), GlobalData.save.name);
+                    Console.WriteLine(Tools.GetTranslateString("command.load.successful"), GlobalData.save.player.player_name);
                     Console.ResetColor();
                 }
                 catch (Exception e)
@@ -462,14 +462,14 @@ namespace CommandClassLib
                 }
             }
 
-            if (GlobalData.save.room_index < 0)
+            if (GlobalData.save.player.room_index < 0)
             {
                 Console.ForegroundColor = ConsoleColor.Yellow;
                 Console.WriteLine(Tools.GetTranslateString("command.attack.no_target"));
                 Console.ResetColor();
                 return;
             }
-            var targetList = GlobalData.save.map[GlobalData.save.location][GlobalData.save.room_index].entities;
+            var targetList = GlobalData.save.map[GlobalData.save.player.location][GlobalData.save.player.room_index].enemies;
             if (targetList.Count == 0)
             {
                 Console.ForegroundColor = ConsoleColor.Yellow;
@@ -490,11 +490,11 @@ namespace CommandClassLib
                 return;
             }
             var enemyTmp = targetList[targetIndex];
-            point = GlobalData.save.player_entity.Dice();
+            point = GlobalData.save.player.Dice();
             Attack(Tools.GetTranslateString("generic.target.you"), Tools.GetTranslateString("enemy." + enemyTmp.id + ".name"),
-                    ref GlobalData.save.player_entity, ref enemyTmp);
+                    ref GlobalData.save.player.ToEntity, ref enemyTmp);
             targetList[targetIndex] = enemyTmp;
-            GlobalData.save.map[GlobalData.save.location][GlobalData.save.room_index].entities = targetList;
+            GlobalData.save.map[GlobalData.save.player.location][GlobalData.save.player.room_index].entities = targetList;
             TurnRound();
         }
         public static void Cmd_test(List<string> args)
@@ -568,28 +568,28 @@ namespace CommandClassLib
                 }
             }
             EntryFormats.Log.Entity entity = (args.Count == 2) ?
-                GlobalData.save.player_entity :
+                GlobalData.save.player :
                 GlobalData.CurrentRoom.entities[Convert.ToInt32(args[2])];
             Console.WriteLine(Tools.GetTranslateString("command.attribute.message"),
                 Tools.GetTranslateString("attribute." + args[1] + ".name"), entity.GetAttribute(args[1]));
         }
         public static void Cmd_ground(List<string> args)
         {
-            if (!GlobalData.save.map.ContainsKey(GlobalData.save.location))
+            if (!GlobalData.save.map.ContainsKey(GlobalData.save.player.location))
             {
                 Console.ForegroundColor = ConsoleColor.Yellow;
                 Console.WriteLine(Tools.GetTranslateString("command.ground.nothing"));
                 Console.ResetColor();
                 return;
             }
-            if (GlobalData.save.room_index < 0)
+            if (GlobalData.save.player.room_index < 0)
             {
                 Console.ForegroundColor = ConsoleColor.Yellow;
                 Console.WriteLine(Tools.GetTranslateString("command.ground.nothing"));
                 Console.ResetColor();
                 return;
             }
-            foreach (var item in GlobalData.save.map[GlobalData.save.location][GlobalData.save.room_index].dropped_items)
+            foreach (var item in GlobalData.save.map[GlobalData.save.player.location][GlobalData.save.player.room_index].dropped_items)
             {
                 Console.Write(Tools.GetTranslateString("item." + item.id + ".name"));
                 Console.WriteLine("  x" + item.count);
@@ -598,9 +598,9 @@ namespace CommandClassLib
         public static void Cmd_inventory(List<string> args)
         {
             Console.WriteLine(Tools.GetTranslateString("command.inventory.capacity"),
-                GlobalData.save.inventory.Count,
-                Convert.ToInt32(Math.Floor(GlobalData.save.player_entity.GetAttribute("player:inventory_capacity"))));
-            foreach (var item in GlobalData.save.inventory)
+                GlobalData.save.player.inventory.Count,
+                Convert.ToInt32(Math.Floor(GlobalData.save.player.GetAttribute("player:inventory_capacity"))));
+            foreach (var item in GlobalData.save.player.inventory)
             {
                 Console.WriteLine(Tools.GetTranslateString("item." + item.id + ".name") + "  x" + item.count);
             }
@@ -651,8 +651,8 @@ namespace CommandClassLib
 
             if (GlobalData.save.map.ContainsKey(args[1]))
             {
-                GlobalData.save.location = args[1];
-                GlobalData.save.room_index = 0;
+                GlobalData.save.player.location = args[1];
+                GlobalData.save.player.room_index = 0;
                 Console.ForegroundColor = ConsoleColor.Blue;
                 Console.WriteLine(Tools.GetTranslateString("command.goto.message"),
                     Tools.GetTranslateString("level." + args[1] + ".name"));
@@ -665,8 +665,8 @@ namespace CommandClassLib
                     Tools.GetTranslateString("level." + args[1] + ".name"));
                 Console.ResetColor();
                 InitLevel();
-                GlobalData.save.location = args[1];
-                GlobalData.save.room_index = 0;
+                GlobalData.save.player.location = args[1];
+                GlobalData.save.player.room_index = 0;
                 Console.ForegroundColor = ConsoleColor.Blue;
                 Console.WriteLine(Tools.GetTranslateString("command.goto.message"),
                     Tools.GetTranslateString("level." + args[1] + ".name"));
@@ -695,7 +695,7 @@ namespace CommandClassLib
                 }
             }
             EntryFormats.Log.Entity entity = (args.Count == 1) ?
-                GlobalData.save.player_entity :
+                GlobalData.save.player :
                 GlobalData.CurrentRoom.entities[Convert.ToInt32(args[1])];
             Console.WriteLine(
                 Tools.GetTranslateString("command.info.message"),
@@ -724,7 +724,7 @@ namespace CommandClassLib
                 }
             }
             EntryFormats.Log.Entity entity = (args.Count == 1) ?
-                GlobalData.save.player_entity :
+                GlobalData.save.player :
                 GlobalData.CurrentRoom.entities[Convert.ToInt32(args[1])];
 
             Console.WriteLine(Tools.GetTranslateString("command.effect.count"), entity.effects.Count);
@@ -742,7 +742,7 @@ namespace CommandClassLib
         }
         public static void Cmd_home(List<string> args)
         {
-            if (GlobalData.save.location == "")
+            if (GlobalData.save.player.location == "")
             {
                 return;
             }
@@ -750,8 +750,8 @@ namespace CommandClassLib
             Console.WriteLine(Tools.GetTranslateString("command.home.message"));
             Console.ResetColor();
             TurnRound();
-            GlobalData.save.room_index = -1;
-            GlobalData.save.location = "";
+            GlobalData.save.player.room_index = -1;
+            GlobalData.save.player.location = "";
         }
         public static void Cmd_pass(List<string> args)
         {
@@ -763,29 +763,29 @@ namespace CommandClassLib
         public static void Cmd_pick(List<string> args)
         {
             //TODO: Max count
-            if (!GlobalData.save.map.ContainsKey(GlobalData.save.location))
+            if (!GlobalData.save.map.ContainsKey(GlobalData.save.player.location))
             {
                 Console.ForegroundColor = ConsoleColor.Yellow;
                 Console.WriteLine(Tools.GetTranslateString("command.pick.nothing_to_do"));
                 Console.ResetColor();
                 return;
             }
-            if (GlobalData.save.room_index < 0)
+            if (GlobalData.save.player.room_index < 0)
             {
                 Console.ForegroundColor = ConsoleColor.Yellow;
                 Console.WriteLine(Tools.GetTranslateString("command.ground.nothing_to_do"));
                 Console.ResetColor();
                 return;
             }
-            if (GlobalData.save.inventory.Count >=
-                Convert.ToInt32(Math.Floor(GlobalData.save.player_entity.GetAttribute("player:inventory_capacity"))))
+            if (GlobalData.save.player.inventory.Count >=
+                Convert.ToInt32(Math.Floor(GlobalData.save.player.GetAttribute("player:inventory_capacity"))))
             {
                 Console.ForegroundColor = ConsoleColor.Yellow;
                 Console.WriteLine(Tools.GetTranslateString("command.ground.nothing_to_do"));
                 Console.ResetColor();
                 return;
             }
-            var itemList = GlobalData.save.map[GlobalData.save.location][GlobalData.save.room_index]
+            var itemList = GlobalData.save.map[GlobalData.save.player.location][GlobalData.save.player.room_index]
                 .dropped_items;
 
             for (int i = 0; i < itemList.Count; i++)
@@ -796,8 +796,8 @@ namespace CommandClassLib
                 }
 
                 int pickedCount = itemList[i].count;
-                Tools.StackItems(ref GlobalData.save.inventory, itemList[i],
-                    Convert.ToInt32(Math.Floor(GlobalData.save.player_entity.GetAttribute("player:inventory_capacity"))),
+                Tools.StackItems(ref GlobalData.save.player.inventory, itemList[i],
+                    Convert.ToInt32(Math.Floor(GlobalData.save.player.GetAttribute("player:inventory_capacity"))),
                     out var remaining);
                 pickedCount -= remaining.count;
                 Console.ForegroundColor = ConsoleColor.Green;
@@ -814,7 +814,7 @@ namespace CommandClassLib
                 }
             }
             Tools.UpdateItemList(ref itemList);
-            GlobalData.save.map[GlobalData.save.location][GlobalData.save.room_index]
+            GlobalData.save.map[GlobalData.save.player.location][GlobalData.save.player.room_index]
                .dropped_items = itemList;
         }
 
@@ -878,7 +878,7 @@ namespace CommandClassLib
             effectTmp.id = args[1];
             effectTmp.time = Convert.ToInt32(args[2]);
             effectTmp.level = Convert.ToInt32(args[3]);
-            GlobalData.save.player_entity.effects.Add(effectTmp);
+            GlobalData.save.player.effects.Add(effectTmp);
         }
     }
 }
