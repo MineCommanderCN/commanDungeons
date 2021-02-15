@@ -15,7 +15,7 @@
     <ProjectReference Include="..\CmdungeonsLib\CmdungeonsLib.csproj" />
     <ProjectReference Include="..\CommandClassLib\CommandClassLib.csproj" />
     <ProjectReference Include="..\SquidCsharp\SquidCsharp.csproj" />
-    <ProjectReference Include="..\TinyJson\json.csproj" />
+    <ProjectReference Include="..\TinyJson\TinyJson.csproj" />
   </ItemGroup>
 
 </Project>

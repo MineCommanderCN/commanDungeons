@@ -159,6 +159,10 @@ namespace CmdungeonsLib
             }
             public class Entity
             {
+                public struct EntityUpdateResults
+                {
+                    public bool death;
+                }
                 public string id;   //Player's entity id is 'generic:player'
                 public double health = 1.0;
                 public int level = 0;
@@ -237,23 +241,26 @@ namespace CmdungeonsLib
                         return;
                     }
                 }
-                public void Update(out bool death)
+                public void Update(out EntityUpdateResults result)
                 {
+                    EntityUpdateResults r;
                     if (this.health <= 0)
                     {
-                        death = true;
+                        r.death = true;
+                        result = r;
                         return;
                     }
                     else
                     {
-                        death = false;
+                        r.death = false;
                     }
                     if (health > this.GetAttribute("generic:max_health"))
                     {
                         health = GetAttribute("generic:max_health");
                     }
+                    result = r;
                 }
-                public void NextTurn(out bool death)
+                public void NextTurn(out EntityUpdateResults result)
                 {
                     lifetick++;
                     foreach (var effect in this.effects)
@@ -271,7 +278,7 @@ namespace CmdungeonsLib
                             this.effects.Remove(effect);
                         }
                     }
-                    Update(out death);
+                    Update(out result);
                 }
                 public static int RollPointWithLuck(double l)
                 //Roll a point 1~6 with given luck.
