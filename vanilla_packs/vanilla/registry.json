@@ -1,29 +1,7 @@
 {
-    "meta_info": {
-        "file_format": 1,
-        "description": "cmdungeons.info.description",
-        "creator": "MineCommander",
-        "pack_version": "Alpha 0.1"
-    },
-    "languages": [
-        "zh_cn",
-        "en_us"
-    ],
-    "data": {
-        "item": [
-            "cmdungeons:apple",
-            "cmdungeons:sword"
-        ],
-        "effect": [
-            "cmdungeons:fire",
-            "cmdungeons:regeneration",
-            "cmdungeons:strength"
-        ],
-        "level": [
-            "cmdungeons:testlevel1"
-        ],
-        "enemy": [
-            "cmdungeons:test1"
-        ]
-    }
+    "pack_name": "pack.cmdungeons.vanilla",
+    "file_format": 1,
+    "description": "cmdungeons.info.description",
+    "creator": "MineCommander",
+    "pack_version": "Alpha 0.1"
 }

@@ -7,10 +7,10 @@ namespace CmdungeonsLib
 {
     public struct Config
     {
-        public string packs_path;
+        public string packsPath;
         public string language;
         public bool debug;
-        public List<string> enabled_packs;
+        public List<string> enabledPacks;
     }
 
 
@@ -26,9 +26,42 @@ namespace CmdungeonsLib
             }
             public class AttributeModifier
             {
-                public string name; //Name of the attribute
-                public string operation = "directly_add";
-                public double amount = 0.0;
+                public enum Operations
+                {
+                    DirectlyAdd, OverlayingMultiply, DirectlyMultiply
+                }
+                public static readonly Dictionary<string, Operations> operationsStrLayout = new Dictionary<string, Operations>
+                {
+                    { "directly_add", Operations.DirectlyAdd },
+                    { "overlaying_multiply", Operations.OverlayingMultiply },
+                    { "directly_multiply", Operations.DirectlyMultiply }
+                };
+                private string name; //Name of the attribute
+                public Operations operation = Operations.DirectlyAdd;
+                private double amount = 0.0;
+
+                public string Name
+                {
+                    get { return name; }
+                    set { name = value; }
+                }
+                public string Operation
+                {
+                    set
+                    {
+                        switch (value)
+                        {
+                            case "directly_add": operation = Operations.DirectlyAdd; break;
+                            case "overlaying_multiply": operation = Operations.OverlayingMultiply; break;
+                            case "directly_multiply": operation = Operations.DirectlyMultiply; break;
+                        }
+                    }
+                }
+                public string name
+                {
+                    get { return _name; }
+                    set { _name = value; }
+                }
                 //  Modifier operaions:
                 //
                 //  directly_add
@@ -334,32 +367,6 @@ namespace CmdungeonsLib
             }
             public class Player : Entity
             {
-                public Entity ToEntity
-                {
-                    get
-                    {
-                        return new Entity
-                        {
-                            id = this.id,
-                            health = this.health,
-                            level = this.level,
-                            lifetick = this.lifetick,
-                            attribute_bases = this.attribute_bases,
-                            effects = this.effects,
-                            equipment = this.equipment
-                        };
-                    }
-                    set
-                    {
-                        this.id = value.id;
-                        this.health = value.health;
-                        this.level = value.level;
-                        this.lifetick = value.lifetick;
-                        this.attribute_bases = value.attribute_bases;
-                        this.effects = value.effects;
-                        this.equipment = value.equipment;
-                    }
-                }
                 public string player_name = "Player";
                 public int gold = 0;
                 public int xp = 0;
@@ -691,9 +698,9 @@ namespace CmdungeonsLib
     }
     public class GlobalData
     {
-        public const string VERSION = "v.devbuild_20210123";
-        public const int SUPPORTED_PACKFORMAT = 1;
-        public readonly static string[] ENTRY_CATEGORIES = new string[4] { "item", "effect", "enemy", "level" };
+        public readonly string version = "v.devbuild_20210123";
+        public readonly int[] supportedPackFormat = new int[]{ 1 };
+        public readonly static string[] entryCategories = new string[4] { "item", "effect", "enemy", "level" };
 
         public static SquidCoreStates squidCoreMain = new SquidCoreStates();
         public static SquidCoreStates debugStates = new SquidCoreStates();

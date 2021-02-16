@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace SquidCsharp
 {
-    public delegate void FuncDele(List<string> args);
+    public delegate void FuncDele(string[] args);
     public static class SquidCsharpLib
     {
         public struct CommandInfo
@@ -18,7 +18,7 @@ namespace SquidCsharp
             public List<string> argPatterns;  //Regular expression check for arguments at corresponding positions
                                               //对于相应位置的参数的正则表达式检查
         }
-        public static List<string> Convert(string buf)
+        public static string[] Convert(string buf)
         {
             buf.Trim();
             buf += "\n";
@@ -95,7 +95,7 @@ namespace SquidCsharp
                 _counter++;
 
             }
-            return tmp;
+            return tmp.ToArray();
         }
     }
     public class SquidCoreStates
@@ -181,15 +181,15 @@ namespace SquidCsharp
             }
             commandRegistry.Add(link, commandRegistry[command]);
         }
-        public void Run(List<string> argList)
+        public void Run(string[] argList)
         {
-            if (argList.Count == 0)
+            if (argList.Length == 0)
             {
                 return;
             }
             if (commandRegistry.ContainsKey(argList[0]))
             {
-                if (argList.Count < commandRegistry[argList[0]].argcMin || argList.Count > commandRegistry[argList[0]].argcMax)
+                if (argList.Length < commandRegistry[argList[0]].argcMin || argList.Length > commandRegistry[argList[0]].argcMax)
                 {
                     throw new SquidCoreException("Count of arguments was out of range [" + commandRegistry[argList[0]].argcMin
                             + "," + commandRegistry[argList[0]].argcMax + "]");
@@ -215,14 +215,14 @@ namespace SquidCsharp
         }
         public void Run(string command)
         {
-            List<string> argList = SquidCsharpLib.Convert(command);
-            if (argList.Count == 0)
+            string[] argList = SquidCsharpLib.Convert(command);
+            if (argList.Length == 0)
             {
                 return;
             }
             if (commandRegistry.ContainsKey(argList[0]))
             {
-                if (argList.Count < commandRegistry[argList[0]].argcMin || argList.Count > commandRegistry[argList[0]].argcMax)
+                if (argList.Length < commandRegistry[argList[0]].argcMin || argList.Length > commandRegistry[argList[0]].argcMax)
                 {
                     throw new SquidCoreException("Count of arguments was out of range [" + commandRegistry[argList[0]].argcMin
                             + "," + commandRegistry[argList[0]].argcMax + "]");
@@ -239,7 +239,6 @@ namespace SquidCsharp
                     _counter++;
                 }
                 commandRegistry[argList[0]].commandMethod(argList);
-                //return;
             }
             else
             {
