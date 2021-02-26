@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Collections.Generic;
 using CmdungeonsLib;
 using SquidCsharp;
@@ -9,12 +10,40 @@ namespace CommanDungeonsMain
     {
         static void Main(string[] args)
         {
+            if (args.Contains("--debug") || args.Contains("-d"))
+            {
+                GlobalData.debugModeOn = true;
+            }
+            if (args.Contains("--disable-datapack"))
+            {
+                for (int argIndex = args.ToList().IndexOf("--disable-datapack") + 1;
+                    argIndex < args.Length; argIndex++)
+                {
+                    if (args[argIndex].StartsWith('-')) break;
+                    GlobalData.disabledPacks.Add(args[argIndex]);
+                }
+            }
+            if (args.Contains("-D"))
+            {
+                for (int argIndex = args.ToList().IndexOf("-D") + 1;
+                    argIndex < args.Length; argIndex++)
+                {
+                    if (args[argIndex].StartsWith('-')) break;
+                    GlobalData.disabledPacks.Add(args[argIndex]);
+                }
+            }
+            if (args.Contains("--safemode") || args.Contains("-s"))
+            {
+                GlobalData.safeModeOn = true;
+            }
+
+
             Console.ForegroundColor = ConsoleColor.Blue;
             Console.WriteLine("[INFO] Starting up...");
             Console.ResetColor();
             try
             {
-                CommandClassLib.CommandClassLib.Cmd_reload(new List<string>()); //First load
+                CommandClassLib.CommandClassLib.Cmd_reload(new string[1]); //First load
             }
             catch (Exception e)
             {
@@ -30,7 +59,7 @@ namespace CommanDungeonsMain
             Console.WriteLine("[INFO] All done!");
             Console.ResetColor();
 
-            Console.WriteLine(Tools.GetTranslateString("generic.welcome"), GlobalData.VERSION);
+            Console.WriteLine(Tools.GetTranslateString("generic.welcome"), GlobalData.Version);
             for (; ; )
             {
                 Console.Write(">> ");

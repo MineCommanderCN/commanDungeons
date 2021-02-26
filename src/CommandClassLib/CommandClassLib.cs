@@ -8,17 +8,6 @@ using System.IO;
 
 namespace CommandClassLib
 {
-    public class JsonInterface
-    {
-        public struct PackRegistry
-        {
-
-        }
-        public struct Config
-        {
-
-        }
-    }
     public class CommandClassLib
     {
         public static void RegistCommand()
@@ -68,11 +57,11 @@ namespace CommandClassLib
             GlobalData.squidCoreMain.RegCommand
                 ("pick", 2, 2, Cmd_pick);
 
-            GlobalData.debugStates.RegCommand
+            GlobalData.debugCommandStates.RegCommand
                 ("GetTranslateString", 2, 65536, Debug_GetTranslateString);
-            GlobalData.debugStates.RegCommand
+            GlobalData.debugCommandStates.RegCommand
                 ("Dice", 2, 2, Debug_Dice);
-            GlobalData.debugStates.RegCommand
+            GlobalData.debugCommandStates.RegCommand
                 ("Effect", 4, 4, Debug_Effect);
         }
         public static void Cmd_commands(string[] args)
@@ -104,9 +93,9 @@ namespace CommandClassLib
                 Console.WriteLine("Reloading config...");
             }
 
-            GlobalData.config = JsonConvert.DeserializeObject<Config>(File.ReadAllText("config.json"));
-
-
+            JsonFormat.Config config = JsonConvert.DeserializeObject<JsonFormat.Config>(File.ReadAllText("config.json"));
+            GlobalData.config.language = config.language;
+            GlobalData.config.packsPath = config.packs_path;
 
             if (!quiet)
             {
@@ -116,20 +105,107 @@ namespace CommandClassLib
             GlobalData.regData = new GlobalData.DataFormat();
             GlobalData.squidCoreMain.commandRegistry.Clear();
             GlobalData.translates.Clear();
-            GlobalData.debugStates.commandRegistry.Clear();
+            GlobalData.debugCommandStates.commandRegistry.Clear();
+
+            if (!quiet)
+            {
+                Console.WriteLine("Sacnning for datapacks...");
+            }
+            List<DirectoryInfo> enabledPackDirs = new List<DirectoryInfo>();
+            DirectoryInfo[] pendingPackDirs = new DirectoryInfo(GlobalData.config.packsPath).GetDirectories();
+            foreach (var item in pendingPackDirs)
+            {
+                if (File.Exists(item.FullName + "/registry.json"))
+                {
+                    enabledPackDirs.Add(item);
+                }
+            }
 
             if (!quiet)
             {
                 Console.WriteLine("Start Loading...");
             }
-            if (GlobalData.config.enabled_packs.Count == 0)
+            if (enabledPackDirs.Count == 0)
             {
                 Console.ForegroundColor = ConsoleColor.Yellow;
-                Console.WriteLine("[Warning] No datapacks enabled! Please check your settings at \"config.json\" file.");
+                Console.WriteLine("[Warning] No datapacks enabled! Please check your 'packs_path' folder.");
                 Console.ResetColor();
             }
-            List<string> packList = GlobalData.config.enabled_packs;
-            packList.Reverse();
+            enabledPackDirs.Reverse();
+
+            foreach (var packDirInfo in enabledPackDirs)
+            {
+                //Load registry.json
+                JsonFormat.PackRegistry packRegistryJson = new JsonFormat.PackRegistry();
+                EntryFormat.DatapackRegistry datapackRegistry = new EntryFormat.DatapackRegistry();
+                try
+                {
+                    packRegistryJson = JsonConvert.DeserializeObject<JsonFormat.PackRegistry>
+                                        (File.ReadAllText(new FileInfo(packDirInfo.FullName + "/registry.json").FullName));
+                    datapackRegistry = new EntryFormat.DatapackRegistry
+                    {
+                        fileFormat = packRegistryJson.file_format,
+                        creator = packRegistryJson.creator,
+                        descriptionTransKey = packRegistryJson.description,
+                        packVersion = packRegistryJson.pack_version
+                    };
+                }
+                catch (Exception e)
+                {
+                    Console.ForegroundColor = ConsoleColor.Red;
+                    Console.WriteLine("[Error] Could not load registry info file from pack '{0}': {1}", packDirInfo.FullName, e.Message);
+                    Console.ResetColor();
+                }
+                if (GlobalData.datapackInfo.ContainsKey(packRegistryJson.pack_name))
+                {
+                    Console.ForegroundColor = ConsoleColor.Yellow;
+                    Console.WriteLine("[Warning] Pack '{0}' is already exist, and another pack from folder '{1}' is trying to override it.",
+                        packRegistryJson.pack_name, packDirInfo.FullName);
+                    Console.ResetColor();
+                }
+                GlobalData.datapackInfo[packRegistryJson.pack_name] = datapackRegistry;
+
+                //Load languages
+                if (Directory.Exists(packDirInfo.FullName + "/language"))
+                {
+                    DirectoryInfo languageDirInfo = new DirectoryInfo(packDirInfo.FullName + "/language");
+
+                    FileInfo[] languageFileInfo = languageDirInfo.GetFiles("*.json");
+                    foreach (var language in languageFileInfo)
+                    {
+                        try
+                        {
+                            string lang = Path.GetFileNameWithoutExtension(language.FullName);
+                            Dictionary<string, string> langDict = JsonConvert.DeserializeObject<Dictionary<string, string>>
+                                                        (File.ReadAllText(language.FullName));
+                            if (GlobalData.translates.ContainsKey(lang))
+                            {
+                                GlobalData.translates[lang] = Tools.MergeDictionary(GlobalData.translates[lang], langDict);
+                            }
+                            else
+                            {
+                                GlobalData.translates.Add(lang, langDict);
+                            }
+                            if (!quiet)
+                            {
+                                Console.WriteLine("Loaded language \"{0}\" from pack \"{1}\"", lang, packDirInfo.FullName);
+                            }
+                        }
+                        catch (Exception e)
+                        {
+                            Console.ForegroundColor = ConsoleColor.Red;
+                            Console.WriteLine("[Error] Could not load language '{0}' from pack '{1}': {2}",
+                                Path.GetFileNameWithoutExtension(language.FullName), packDirInfo.FullName, e.Message);
+                            Console.ResetColor();
+                        }
+                    }
+                }
+            }
+
+
+
+
+            RegistCommand();
         }
         public static void Cmd_load(string[] args)
         {
@@ -140,7 +216,10 @@ namespace CommandClassLib
 
         }
         public static void Cmd_test(string[] args) { }
-        public static void Cmd_exit(string[] args) { }
+        public static void Cmd_exit(string[] args)
+        {
+            Environment.Exit(0);
+        }
         public static void Cmd_packinfo(string[] args) { }
         public static void Cmd_attribute(string[] args) { }
         public static void Cmd_ground(string[] args) { }
@@ -155,7 +234,7 @@ namespace CommandClassLib
 
         public static void Cmd_debug(string[] args)
         {
-            if (GlobalData.config.debug)
+            if (GlobalData.debugModeOn)
             {
                 if (args.Length == 1)
                 {
@@ -170,7 +249,7 @@ namespace CommandClassLib
                         }
                         else
                         {
-                            GlobalData.debugStates.Run(strInput);
+                            GlobalData.debugCommandStates.Run(strInput);
                         }
                     }
                 }
@@ -178,7 +257,7 @@ namespace CommandClassLib
                 {
                     string[] N_args = new string[args.Length - 1];
                     args.CopyTo(N_args, 1);
-                    GlobalData.debugStates.Run(N_args);
+                    GlobalData.debugCommandStates.Run(N_args);
                 }
             }
             else

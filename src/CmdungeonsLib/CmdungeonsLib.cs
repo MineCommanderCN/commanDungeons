@@ -9,12 +9,9 @@ namespace CmdungeonsLib
     {
         public string packsPath;
         public string language;
-        public bool debug;
-        public List<string> enabledPacks;
     }
 
-
-    public class EntryFormats
+    public class EntryFormat
     {
         public class Reg
         {
@@ -28,57 +25,45 @@ namespace CmdungeonsLib
             {
                 public enum Operations
                 {
-                    DirectlyAdd, OverlayingMultiply, DirectlyMultiply
+                    DirectlyAdd = 0,
+                    //  Just simply add the amount onto the base. (Default option)
+                    //  Mathematical expression: x = base + a1 + a2+ ...
+                    OverlayingMultiply = 1,
+                    //  Add all amounts that be with "overlaying_multiply" operation and a 1 together,
+                    //  then multiply the base with this number.
+                    //  Mathematical expression: x = base * (1 + a1 + a2 + ...)
+                    DirectlyMultiply = 2
+                    //  Multiply the base with the amount. Easy!
+                    //  Mathematical expression: x = base * a1 * a2 * ...
                 }
-                public static readonly Dictionary<string, Operations> operationsStrLayout = new Dictionary<string, Operations>
-                {
-                    { "directly_add", Operations.DirectlyAdd },
-                    { "overlaying_multiply", Operations.OverlayingMultiply },
-                    { "directly_multiply", Operations.DirectlyMultiply }
-                };
-                private string name; //Name of the attribute
+                public string name; //Name of the attribute
                 public Operations operation = Operations.DirectlyAdd;
-                private double amount = 0.0;
+                public double amount = 0.0;
 
-                public string Name
+                public string OperationString
                 {
-                    get { return name; }
-                    set { name = value; }
-                }
-                public string Operation
-                {
+                    get
+                    {
+                        return operation.ToString();
+                    }
                     set
                     {
-                        switch (value)
-                        {
-                            case "directly_add": operation = Operations.DirectlyAdd; break;
-                            case "overlaying_multiply": operation = Operations.OverlayingMultiply; break;
-                            case "directly_multiply": operation = Operations.DirectlyMultiply; break;
-                        }
+                        operation = (Operations)Enum.Parse(typeof(Operations), value);
                     }
                 }
-                public string name
-                {
-                    get { return _name; }
-                    set { _name = value; }
-                }
-                //  Modifier operaions:
-                //
-                //  directly_add
-                //    Just simply add the amount onto the base. (Default option)
-                //    Mathematical expression: x = base + a1 + a2+ ...
-                //  overlaying_multiply
-                //    Add all amounts that be with "overlaying_multiply" operation and a 1 together,
-                //    then multiply the base with this number.
-                //    Mathematical expression: x = base * (1 + a1 + a2 + ...)
-                //  directly_multiply
-                //    Multiply the base with the amount. Easy!
-                //    Mathematical expression: x = base * a1 * a2 * ...
             }
             public class Item
             {
-                public string type = "normal";
-                //'normal' (normal item, default option), 'consumable' (disappear after use) or 'equipment' (move onto the equipment slot after use)
+                public enum Type
+                {
+                    normal = 0,
+                    //  Normal item (default option)
+                    consumable = 1,
+                    //  Disappear after use
+                    equipment = 2
+                    //  Move onto the equipment slot after use
+                }
+                public Type type = Type.normal;
                 public Dictionary<string, List<AttributeModifier>> slot_effects = new Dictionary<string, List<AttributeModifier>>();
                 //(Only for 'equipment' item) Available equipment slot IDs, and the attribute modifiers on each slot.
                 public int max_stack = 1;
@@ -131,16 +116,16 @@ namespace CmdungeonsLib
             public class LevelRoom
             {
                 public List<string> enemies = new List<string>();
-                public List<EntryFormats.Log.ItemStack> items = new List<EntryFormats.Log.ItemStack>();
+                public List<EntryFormat.Log.ItemStack> items = new List<EntryFormat.Log.ItemStack>();
             }
             public class Level
             {
                 public bool random = false;
-                //If true, the enemies will appear randomly, instead of be in set order.
+                //  If true, the enemies will appear randomly, instead of be in set order.
                 public bool looping = false;
-                // If true, the level will loop again when all enemies have been defeated.
-                // The level won't be end unless the player exit manually.
-                // Also, the level won't be able to show in finished_levels.
+                //  If true, the level will loop again when all enemies have been defeated.
+                //  The level won't be end unless the player exit manually.
+                //  Also, the level won't be able to show in finished_levels.
                 public List<LevelRoom> rooms = new List<LevelRoom>();
             }
         }
@@ -152,10 +137,10 @@ namespace CmdungeonsLib
                 public int level = 0;
                 public int time = 0;
 
-                public void Patch(Log.Effect buf)  //Merge a patch from buf, for overlaying effects
+                public void Patch(Effect buffer)  //Merge a patch from buffer, for overlaying effects
                 {
-                    time = (buf.time > this.time) ? buf.time : this.time;
-                    level = (buf.level > this.level) ? buf.level : this.level; //Select the bigger number
+                    time = (buffer.time > this.time) ? buffer.time : this.time;
+                    level = (buffer.level > this.level) ? buffer.level : this.level; //Select the bigger number
                 }
                 public Reg.Effect GetRegInfo()
                 {
@@ -211,10 +196,10 @@ namespace CmdungeonsLib
                         return 0;
                     }
 
-                    double tmp_op0 = this.attribute_bases[attribute_name];
+                    double tmp_op0 = attribute_bases[attribute_name];
                     double tmp_op1 = 1;
                     double tmp_op2 = 1;
-                    List<EntryFormats.Reg.AttributeModifier> modifiers = new List<Reg.AttributeModifier>();
+                    List<Reg.AttributeModifier> modifiers = new List<Reg.AttributeModifier>();
                     //Get all modifiers from effects and equipment
                     foreach (var effect in this.effects)
                     {
@@ -230,17 +215,16 @@ namespace CmdungeonsLib
                         {
                             switch (elem.operation)
                             {
-                                case "directly_add":
+                                case Reg.AttributeModifier.Operations.DirectlyAdd:
                                     tmp_op0 += elem.amount;
                                     break;
-                                case "overlaying_multiply":
+                                case Reg.AttributeModifier.Operations.OverlayingMultiply:
                                     tmp_op1 += elem.amount;
                                     break;
-                                case "directly_multiply":
+                                case Reg.AttributeModifier.Operations.DirectlyMultiply:
                                     tmp_op2 *= elem.amount;
                                     break;
                                 default:
-                                    //TODO: Unknown operation: Maybe some log?
                                     break;
                             }
                         }
@@ -329,22 +313,23 @@ namespace CmdungeonsLib
                     }
                     if (l > 0)
                     {
-                        w[1] = (3 * l + 1) / (Math.Pow(l + 1, 2) + 1 * l);
-                        w[2] = (4 * l + 1) / (Math.Pow(l + 1, 2) + 2 * l);
-                        w[3] = (5 * l + 1) / (Math.Pow(l + 1, 2) + 3 * l);
-                        w[4] = 2 - w[3];
-                        w[5] = 2 - w[2];
-                        w[6] = 2 - w[1];
+                        for (int i = 1; i < 7; i++)
+                        {
+                            if (i <= 3)
+                                w[i] = (i + 2) * (l + 1) / (Math.Pow(l + 1, 2) + i * l);
+                            else
+                                w[i] = 2 - w[7 - i];
+                        }
                     }
                     if (l < 0)
                     {
-                        l = -l;
-                        w[6] = (3 * l + 2) / (Math.Pow(l + 1, 2) + 1 * l);
-                        w[5] = (4 * l + 3) / (Math.Pow(l + 1, 2) + 2 * l);
-                        w[4] = (5 * l + 4) / (Math.Pow(l + 1, 2) + 3 * l);
-                        w[3] = 2 - w[4];
-                        w[2] = 2 - w[5];
-                        w[1] = 2 - w[6];
+                        for (int i = 6; i > 0; i--)
+                        {
+                            if (i >= 4)
+                                w[i] = (i + 2) * (l + 1) / (Math.Pow(l + 1, 2) + i * l);
+                            else
+                                w[i] = 2 - w[7 - i];
+                        }
                     }
 
                     //Roll point with weight
@@ -377,78 +362,17 @@ namespace CmdungeonsLib
             }
             public class Room
             {
-                public class InvalidRoomException : ApplicationException
+                public class BasicRoom
                 {
-                    public InvalidRoomException() : base()
-                    {
-                    }
-                    public InvalidRoomException(string message) : base(message)
-                    {
-                    }
+                    public List<ItemStack> droppedItems = new List<ItemStack>();
                 }
-                public Room(Type type)
+                public class BattleRoom : BasicRoom
                 {
-                    this.type = type;
+                    public List<Entity> enemies = new List<Entity>();
                 }
-                public enum Type
+                public class StoreRoom : BasicRoom
                 {
-                    BasicRoom = 0,
-                    BattleRoom = 1,
-                    Store = 2
-                }
-                public readonly Type type;
-                private List<ItemStack> _dropped_items = new List<ItemStack>();
-                private List<Entity> _enemies = new List<Entity>();
-                private List<SoldItem> _shelf = new List<SoldItem>();
-
-                public List<ItemStack> dropped_items
-                {
-                    get
-                    {
-                        return _dropped_items;
-                    }
-                    set
-                    {
-                        _dropped_items = value;
-                    }
-                }
-                public List<Entity> enemies
-                {
-                    get
-                    {
-                        if (type == Type.Store || type == Type.BasicRoom)
-                        {
-                            throw new InvalidRoomException("This property does not support current type of room.");
-                        }
-                        return _enemies;
-                    }
-                    set
-                    {
-                        if (type == Type.Store || type == Type.BasicRoom)
-                        {
-                            throw new InvalidRoomException("This property does not support current type of room.");
-                        }
-                        _enemies = value;
-                    }
-                }
-                public List<SoldItem> shelf
-                {
-                    get
-                    {
-                        if (type == Type.BattleRoom || type == Type.BasicRoom)
-                        {
-                            throw new InvalidRoomException("This property does not support current type of room.");
-                        }
-                        return _shelf;
-                    }
-                    set
-                    {
-                        if (type == Type.BattleRoom || type == Type.BasicRoom)
-                        {
-                            throw new InvalidRoomException("This property does not support current type of room.");
-                        }
-                        _shelf = value;
-                    }
+                    public List<SoldItem> shelf = new List<SoldItem>();
                 }
             }
 
@@ -474,8 +398,8 @@ namespace CmdungeonsLib
                     player.attribute_bases.Add("player:inventory_capacity", 20.0);
                 }
                 public Player player = new Player();
-                public Dictionary<string, List<Room>> map = new Dictionary<string, List<Room>>();
-                public Room CurrentRoom
+                public Dictionary<string, List<Room.BasicRoom>> map = new Dictionary<string, List<Room.BasicRoom>>();
+                public Room.BasicRoom CurrentRoom
                 {
                     get
                     {
@@ -506,39 +430,42 @@ namespace CmdungeonsLib
                 {
                     get
                     {
-                        return CurrentRoom.dropped_items;
+                        return CurrentRoom.droppedItems;
                     }
                     set
                     {
-                        map[player.location][player.room_index].dropped_items = value;
+                        map[player.location][player.room_index].droppedItems = value;
                     }
                 }
                 public List<Entity> CurrentEntityList
                 {
                     get
                     {
-                        return CurrentRoom.enemies;
+                        if (CurrentRoom is Room.BattleRoom)
+                        {
+                            return ((Room.BattleRoom)CurrentRoom).enemies;
+                        }
+                        else
+                        {
+                            return new List<Entity>();
+                        }
                     }
                     set
                     {
-                        map[player.location][player.room_index].enemies = value;
+                        if (CurrentRoom is Room.BattleRoom)
+                        {
+                            ((Room.BattleRoom)CurrentRoom).enemies = value;
+                        }
                     }
                 }
             }
         }
         public class DatapackRegistry
         {
-            public class MetaInfo
-            {
-                public int file_format;
-                public string description;
-                public string creator;
-                public string pack_version;
-            }
-            public MetaInfo meta_info = new MetaInfo();
-            public List<string> languages = new List<string>(); //Enabled languages
-            public Dictionary<string, List<string>> data = new Dictionary<string, List<string>>(); //Enabled data files
-                                                                                                   //Key = Category(items, effects, etc.)
+            public int fileFormat;
+            public string descriptionTransKey;
+            public string creator;
+            public string packVersion;
         }
     }
 
@@ -568,34 +495,47 @@ namespace CmdungeonsLib
          *   "A valid name for an entry" must:
          *     - Only contains lowercase or uppercase letters (a-z, A-Z), numbers (0-9), underscores (_) and only one colon (:);
          *     - Both sides of colon is not empty.
-         *     
-         *   Here is the magic pattern: [A-Za-z0-9_]+:{1}[A-Za-z0-9_]+
-         *   If the pattern matches the whole origin string, it will be a valid name.
-         *   
-         *   TODO: Support forward slash (/) for the entries in subfolders.
          */
         {
-            if (RegexMatchedStrings(str, @"[A-Za-z0-9_]+:{1}[A-Za-z0-9_]+") == str)
+            string validChars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_";
+            bool hasColon = false;
+            foreach (var ch in str)
+            {
+                if (ch == ':')
+                {
+                    if (hasColon)
+                    {
+                        return false;
+                    }
+                    else
+                    {
+                        hasColon = true;
+                    }
+                }
+                else if (ch == '/')
+                {
+                    if (hasColon)
+                    {
+                        continue;
+                    }
+                    else
+                    {
+                        return false;
+                    }
+                }
+                else if (!validChars.Contains(ch))
+                {
+                    return false;
+                }
+            }
+            if (str.EndsWith('/'))
+            {
+                return false;
+            }
+            else
             {
                 return true;
             }
-            return false;
-        }
-        public static string RegexMatchedStrings(string input, string pattern)
-        //Find all substrings that match the pattern in the input, and connect them.
-        {
-            MatchCollection mc = Regex.Matches(input, pattern);
-            string[] matches = new string[mc.Count];
-            string result = "";
-            for (int i = 0; i < mc.Count; i++)
-            {
-                matches[i] = mc[i].Groups[0].Value;
-            }
-            foreach (string s in matches)
-            {
-                result = result + s;
-            }
-            return result;
         }
         public static Dictionary<GT_Key, GT_Value> MergeDictionary<GT_Key, GT_Value>(
             Dictionary<GT_Key, GT_Value> first, Dictionary<GT_Key, GT_Value> second)
@@ -623,8 +563,8 @@ namespace CmdungeonsLib
 
             return first;
         }
-        public static void StackItems(ref List<EntryFormats.Log.ItemStack> itemList, EntryFormats.Log.ItemStack stack,
-            int maxCapacity, out EntryFormats.Log.ItemStack itemRemaining)
+        public static void StackItems(ref List<EntryFormat.Log.ItemStack> itemList, EntryFormat.Log.ItemStack stack,
+            int maxCapacity, out EntryFormat.Log.ItemStack itemRemaining)
         {
             int maxStack = stack.GetRegInfo().max_stack;
             for (int i = 0; i < itemList.Count; i++)
@@ -645,7 +585,7 @@ namespace CmdungeonsLib
             }
             while (stack.count > 0 && itemList.Count < maxCapacity)
             {
-                EntryFormats.Log.ItemStack stackTmp = new EntryFormats.Log.ItemStack
+                EntryFormat.Log.ItemStack stackTmp = new EntryFormat.Log.ItemStack
                 {
                     id = stack.id,
                     count = (stack.count > maxStack) ? maxStack : stack.count
@@ -655,7 +595,7 @@ namespace CmdungeonsLib
             }
             itemRemaining = stack;
         }
-        public static void StackItems(ref List<EntryFormats.Log.ItemStack> itemList, EntryFormats.Log.ItemStack stack)
+        public static void StackItems(ref List<EntryFormat.Log.ItemStack> itemList, EntryFormat.Log.ItemStack stack)
         {
             int maxStack = stack.GetRegInfo().max_stack;
             for (int i = 0; i < itemList.Count; i++)
@@ -676,14 +616,14 @@ namespace CmdungeonsLib
             }
             while (stack.count > 0)
             {
-                EntryFormats.Log.ItemStack stackTmp = new EntryFormats.Log.ItemStack();
+                EntryFormat.Log.ItemStack stackTmp = new EntryFormat.Log.ItemStack();
                 stackTmp.id = stack.id;
                 stackTmp.count = (stack.count > maxStack) ? maxStack : stack.count;
                 stack.count -= stackTmp.count;
                 itemList.Add(stackTmp);
             }
         }
-        public static void UpdateItemList(ref List<EntryFormats.Log.ItemStack> itemList)
+        public static void UpdateItemList(ref List<EntryFormat.Log.ItemStack> itemList)
         {
             for (int i = 0; i < itemList.Count; i++)
             {
@@ -698,24 +638,27 @@ namespace CmdungeonsLib
     }
     public class GlobalData
     {
-        public readonly string version = "v.devbuild_20210123";
-        public readonly int[] supportedPackFormat = new int[]{ 1 };
-        public readonly static string[] entryCategories = new string[4] { "item", "effect", "enemy", "level" };
+        public static string Version { get; } = "v.devbuild_20210123";
+        public static int[] SupportedPackFormat { get; } = new int[] { 1 };
+        public static string[] EntryCategories { get; } = new string[4] { "item", "effect", "enemy", "level" };
 
+        public static bool debugModeOn = false;
+        public static List<string> disabledPacks = new List<string>();
+        public static bool safeModeOn = false;
         public static SquidCoreStates squidCoreMain = new SquidCoreStates();
-        public static SquidCoreStates debugStates = new SquidCoreStates();
+        public static SquidCoreStates debugCommandStates = new SquidCoreStates();
         public static Config config = new Config();
-        public static Dictionary<string, EntryFormats.DatapackRegistry> datapackInfo = new Dictionary<string, EntryFormats.DatapackRegistry>();
+        public static Dictionary<string, EntryFormat.DatapackRegistry> datapackInfo = new Dictionary<string, EntryFormat.DatapackRegistry>();
         public class DataFormat
         {
-            public Dictionary<string, EntryFormats.Reg.Item> items = new Dictionary<string, EntryFormats.Reg.Item>();
-            public Dictionary<string, EntryFormats.Reg.Effect> effects = new Dictionary<string, EntryFormats.Reg.Effect>();
-            public Dictionary<string, EntryFormats.Reg.Enemy> enemies = new Dictionary<string, EntryFormats.Reg.Enemy>();
-            public Dictionary<string, EntryFormats.Reg.Level> levels = new Dictionary<string, EntryFormats.Reg.Level>();
+            public Dictionary<string, EntryFormat.Reg.Item> items = new Dictionary<string, EntryFormat.Reg.Item>();
+            public Dictionary<string, EntryFormat.Reg.Effect> effects = new Dictionary<string, EntryFormat.Reg.Effect>();
+            public Dictionary<string, EntryFormat.Reg.Enemy> enemies = new Dictionary<string, EntryFormat.Reg.Enemy>();
+            public Dictionary<string, EntryFormat.Reg.Level> levels = new Dictionary<string, EntryFormat.Reg.Level>();
         }
         public static DataFormat regData = new DataFormat();
         public static Dictionary<string, Dictionary<string, string>> translates = new Dictionary<string, Dictionary<string, string>>();
-        public static EntryFormats.Log.SaveData save = new EntryFormats.Log.SaveData();
+        public static EntryFormat.Log.SaveData save = new EntryFormat.Log.SaveData();
         public static string memorySavesPath = "";
 
     }
