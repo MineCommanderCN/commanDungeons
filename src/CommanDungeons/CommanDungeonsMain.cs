@@ -80,10 +80,28 @@ namespace CommanDungeonsMain
                 {
                     GlobalData.squidCoreMain.Run(strInput);
                 }
+                catch (UnknownCommandException e)
+                {
+                    Console.ForegroundColor = ConsoleColor.Red;
+                    Console.WriteLine(Tools.GetTranslateString("generic.unknown_command"), e.command);
+                    Console.ResetColor();
+                }
+                catch (ArgumentCountOutOfRangeException e)
+                {
+                    Console.ForegroundColor = ConsoleColor.Red;
+                    Console.WriteLine(Tools.GetTranslateString("generic.args_count_out_of_range"), e.argcMin, e.argcMax);
+                    Console.ResetColor();
+                }
+                catch (RegexCheckFailedException e)
+                {
+                    Console.ForegroundColor = ConsoleColor.Red;
+                    Console.WriteLine(Tools.GetTranslateString("generic.regex_check_failed"), e.arg, e.index, e.pattern);
+                    Console.ResetColor();
+                }
                 catch (Exception e)
                 {
                     Console.ForegroundColor = ConsoleColor.Red;
-                    Console.WriteLine(Tools.GetTranslateString("generic.exception_caught"), e.Message);
+                    Console.WriteLine(Tools.GetTranslateString("generic.unexpected_error"), e.ToString());
                     Console.ResetColor();
                 }
             }

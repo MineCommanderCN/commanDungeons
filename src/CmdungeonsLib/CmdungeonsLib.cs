@@ -378,15 +378,6 @@ namespace CmdungeonsLib
 
             public class SaveData
             {
-                public class UnknownLocationException : ApplicationException
-                {
-                    public UnknownLocationException() : base()
-                    {
-                    }
-                    public UnknownLocationException(string message) : base(message)
-                    {
-                    }
-                }
                 public SaveData()
                 {
                     player.id = "generic:player";
@@ -399,65 +390,6 @@ namespace CmdungeonsLib
                 }
                 public Player player = new Player();
                 public Dictionary<string, List<Room.BasicRoom>> map = new Dictionary<string, List<Room.BasicRoom>>();
-                public Room.BasicRoom CurrentRoom
-                {
-                    get
-                    {
-                        if (!map.ContainsKey(player.location))
-                        {
-                            throw new UnknownLocationException("Unknown location.");
-                        }
-                        if (player.room_index < 0)
-                        {
-                            throw new UnknownLocationException("Unknown location.");
-                        }
-                        return map[player.location][player.room_index];
-                    }
-                    set
-                    {
-                        if (!map.ContainsKey(player.location))
-                        {
-                            throw new UnknownLocationException("Unknown location.");
-                        }
-                        if (player.room_index < 0)
-                        {
-                            throw new UnknownLocationException("Unknown location.");
-                        }
-                        map[player.location][player.room_index] = value;
-                    }
-                }
-                public List<ItemStack> CurrentGround
-                {
-                    get
-                    {
-                        return CurrentRoom.droppedItems;
-                    }
-                    set
-                    {
-                        map[player.location][player.room_index].droppedItems = value;
-                    }
-                }
-                public List<Entity> CurrentEntityList
-                {
-                    get
-                    {
-                        if (CurrentRoom is Room.BattleRoom)
-                        {
-                            return ((Room.BattleRoom)CurrentRoom).enemies;
-                        }
-                        else
-                        {
-                            return new List<Entity>();
-                        }
-                    }
-                    set
-                    {
-                        if (CurrentRoom is Room.BattleRoom)
-                        {
-                            ((Room.BattleRoom)CurrentRoom).enemies = value;
-                        }
-                    }
-                }
             }
         }
         public class DatapackRegistry
@@ -661,5 +593,6 @@ namespace CmdungeonsLib
         public static EntryFormat.Log.SaveData save = new EntryFormat.Log.SaveData();
         public static string memorySavesPath = "";
 
+        public static Jurassic.ScriptEngine scriptEngine = new Jurassic.ScriptEngine();
     }
 }

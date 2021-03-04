@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using CmdungeonsLib;
 using SquidCsharp;
+using Jurassic;
 using Newtonsoft.Json;
 using System.Linq;
 using System.IO;
@@ -63,6 +64,8 @@ namespace CommandClassLib
                 ("Dice", 2, 2, Debug_Dice);
             GlobalData.debugCommandStates.RegCommand
                 ("Effect", 4, 4, Debug_Effect);
+            GlobalData.debugCommandStates.RegCommand
+                ("Runjs", 2, 2, Debug_Runjs);
         }
         public static void Cmd_commands(string[] args)
         {
@@ -206,6 +209,7 @@ namespace CommandClassLib
 
 
             RegistCommand();
+            JsMethods.InitScriptEngine();
         }
         public static void Cmd_load(string[] args)
         {
@@ -255,9 +259,7 @@ namespace CommandClassLib
                 }
                 else
                 {
-                    string[] N_args = new string[args.Length - 1];
-                    args.CopyTo(N_args, 1);
-                    GlobalData.debugCommandStates.Run(N_args);
+                    GlobalData.debugCommandStates.Run(args.Skip(1).Take(args.Length).ToArray());
                 }
             }
             else
@@ -269,5 +271,9 @@ namespace CommandClassLib
         public static void Debug_GetTranslateString(string[] args) { }
         public static void Debug_Dice(string[] args) { }
         public static void Debug_Effect(string[] args) { }
+        public static void Debug_Runjs(string[] args)
+        {
+            GlobalData.scriptEngine.ExecuteFile(args[1]);
+        }
     }
 }

@@ -11,8 +11,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CommanDungeons", "CommanDun
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SquidCsharp", "SquidCsharp\SquidCsharp.csproj", "{C39547F6-332E-45B2-9E65-19D90BE5167D}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ScriptParser", "ScriptParser\ScriptParser.csproj", "{814E7A13-191C-4ACD-A7DE-A2E2D20CDAAB}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -35,10 +33,6 @@ Global
 		{C39547F6-332E-45B2-9E65-19D90BE5167D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C39547F6-332E-45B2-9E65-19D90BE5167D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C39547F6-332E-45B2-9E65-19D90BE5167D}.Release|Any CPU.Build.0 = Release|Any CPU
-		{814E7A13-191C-4ACD-A7DE-A2E2D20CDAAB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{814E7A13-191C-4ACD-A7DE-A2E2D20CDAAB}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{814E7A13-191C-4ACD-A7DE-A2E2D20CDAAB}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{814E7A13-191C-4ACD-A7DE-A2E2D20CDAAB}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
