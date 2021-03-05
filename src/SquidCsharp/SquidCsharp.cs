@@ -237,7 +237,8 @@ namespace SquidCsharp
             }
             commandRegistry.Add(link, commandRegistry[command]);
         }
-        public void Run(string[] argList)
+
+        private void p_Run(string[] argList)
         {
             if (argList.Length == 0)
             {
@@ -271,40 +272,13 @@ namespace SquidCsharp
                 throw new UnknownCommandException("Unknown Command", argList[0]);
             }
         }
+        public void Run(string[] argList)
+        {
+            p_Run(argList);
+        }
         public void Run(string command)
         {
-            string[] argList = SquidCsharpLib.Convert(command);
-            if (argList.Length == 0)
-            {
-                return;
-            }
-            if (commandRegistry.ContainsKey(argList[0]))
-            {
-                if (argList.Length < commandRegistry[argList[0]].argcMin || argList.Length > commandRegistry[argList[0]].argcMax)
-                {
-                    throw new ArgumentCountOutOfRangeException("Count of arguments was out of range [" + commandRegistry[argList[0]].argcMin
-                            + "," + commandRegistry[argList[0]].argcMax + "]",
-                            commandRegistry[argList[0]].argcMin, commandRegistry[argList[0]].argcMax);
-                }
-
-                int _counter = 0;
-                foreach (string elem in argList)
-                {
-                    if (!Regex.IsMatch(elem, commandRegistry[argList[0]].argPatterns[_counter]))
-                    {
-                        throw new RegexCheckFailedException("Argument \"" + elem + "\"(at [" + _counter + "]) could not match the regular expression \""
-                            + commandRegistry[argList[0]].argPatterns[_counter] + "\"",
-                            elem, _counter, commandRegistry[argList[0]].argPatterns[_counter]);
-                    }
-                    _counter++;
-                }
-                commandRegistry[argList[0]].commandMethod(argList);
-                //return;
-            }
-            else
-            {
-                throw new UnknownCommandException("Unknown Command '" + argList[0] + "'", argList[0]);
-            }
+            p_Run(SquidCsharpLib.Convert(command));
         }
     }
 }

@@ -1,7 +1,9 @@
 {
     "pack_name": "pack.cmdungeons.vanilla",
     "file_format": 1,
-    "description": "cmdungeons.info.description",
-    "creator": "MineCommander",
-    "pack_version": "Alpha 0.1"
+    "meta_data": {
+        "description": "${packinfo.cmdungeons.description}",
+        "creator": "MineCommander",
+        "pack_version": "Alpha 0.1"
+    }
 }
