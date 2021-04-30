@@ -5,8 +5,6 @@ VisualStudioVersion = 16.0.31005.135
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CmdungeonsLib", "CmdungeonsLib\CmdungeonsLib.csproj", "{4673AE6B-B662-4414-ACF7-204BD9BB7DE1}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CommandClassLib", "CommandClassLib\CommandClassLib.csproj", "{DC4C9566-F7F7-44F6-B605-7313735F7736}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CommanDungeons", "CommanDungeons\CommanDungeons.csproj", "{5F61B975-469F-40D0-A255-C9C649A01D66}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SquidCsharp", "SquidCsharp\SquidCsharp.csproj", "{C39547F6-332E-45B2-9E65-19D90BE5167D}"
@@ -21,10 +19,6 @@ Global
 		{4673AE6B-B662-4414-ACF7-204BD9BB7DE1}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{4673AE6B-B662-4414-ACF7-204BD9BB7DE1}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{4673AE6B-B662-4414-ACF7-204BD9BB7DE1}.Release|Any CPU.Build.0 = Release|Any CPU
-		{DC4C9566-F7F7-44F6-B605-7313735F7736}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{DC4C9566-F7F7-44F6-B605-7313735F7736}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{DC4C9566-F7F7-44F6-B605-7313735F7736}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{DC4C9566-F7F7-44F6-B605-7313735F7736}.Release|Any CPU.Build.0 = Release|Any CPU
 		{5F61B975-469F-40D0-A255-C9C649A01D66}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{5F61B975-469F-40D0-A255-C9C649A01D66}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{5F61B975-469F-40D0-A255-C9C649A01D66}.Release|Any CPU.ActiveCfg = Release|Any CPU

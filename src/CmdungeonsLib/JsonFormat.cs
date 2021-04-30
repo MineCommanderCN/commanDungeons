@@ -16,9 +16,8 @@ namespace CmdungeonsLib
         }
         public class PackRegistry
         {
-            public string pack_name;
             public int file_format;
-            public Hashtable meta_data = new Hashtable();
+            public Dictionary<string, object> metadata = new Dictionary<string, object>();
         }
     }
 }

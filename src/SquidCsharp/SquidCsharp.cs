@@ -38,9 +38,10 @@ namespace SquidCsharp
     public class ArgumentCountOutOfRangeException : ApplicationException
     {
 
-        public int argcMin, argcMax;
-        public ArgumentCountOutOfRangeException(string message, int argcMin, int argcMax) : base(message)
+        public int argCount, argcMin, argcMax;
+        public ArgumentCountOutOfRangeException(string message, int argCount, int argcMin, int argcMax) : base(message)
         {
+            this.argCount = argCount;
             this.argcMin = argcMin;
             this.argcMax = argcMax;
         }
@@ -249,7 +250,7 @@ namespace SquidCsharp
                 if (argList.Length < commandRegistry[argList[0]].argcMin || argList.Length > commandRegistry[argList[0]].argcMax)
                 {
                     throw new ArgumentCountOutOfRangeException("Count of arguments was out of range [" + commandRegistry[argList[0]].argcMin
-                            + "," + commandRegistry[argList[0]].argcMax + "]",
+                            + "," + commandRegistry[argList[0]].argcMax + "]", argList.Length,
                             commandRegistry[argList[0]].argcMin, commandRegistry[argList[0]].argcMax);
                 }
 

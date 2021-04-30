@@ -3,7 +3,7 @@
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <TargetFramework>net5.0</TargetFramework>
-    <StartupObject>CommanDungeonsMain.Program</StartupObject>
+    <StartupObject>CommanDungeons.Program</StartupObject>
     <AutoGenerateBindingRedirects>false</AutoGenerateBindingRedirects>
     <Authors>MineCommander</Authors>
     <RepositoryType>Git</RepositoryType>
@@ -12,8 +12,12 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Jurassic" Version="3.1.0" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\CmdungeonsLib\CmdungeonsLib.csproj" />
-    <ProjectReference Include="..\CommandClassLib\CommandClassLib.csproj" />
     <ProjectReference Include="..\SquidCsharp\SquidCsharp.csproj" />
   </ItemGroup>
 
