@@ -17,7 +17,14 @@ namespace CmdungeonsLib
         public class PackRegistry
         {
             public int file_format;
-            public Dictionary<string, object> metadata = new Dictionary<string, object>();
+            public string author;
+            public struct VersionStruct
+            {
+                public int major, update, patch;
+            }
+            public VersionStruct version;
+            public string description;
+            public Dictionary<string, string> weblinks;
         }
     }
 }

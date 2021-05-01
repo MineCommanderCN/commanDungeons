@@ -142,7 +142,9 @@ namespace CommanDungeons
                     datapackRegistry = new DatapackRegistry
                     {
                         fileFormat = packRegistryJson.file_format,
-                        metadata = packRegistryJson.metadata
+                        author = packRegistryJson.author,
+                        description = packRegistryJson.description,
+                        weblinks = packRegistryJson.weblinks
                     };
                 }
                 catch (Exception e)
@@ -183,6 +185,8 @@ namespace CommanDungeons
                         }
                     }
                 }
+
+                //Load data - items
             }
 
 

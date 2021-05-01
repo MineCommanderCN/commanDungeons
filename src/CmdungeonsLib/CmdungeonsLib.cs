@@ -13,6 +13,16 @@ namespace CmdungeonsLib
         public string packsPath;
         public string language;
     }
+    public class VersionNumber
+    {
+        public int MajorVersion { get; set; }
+        public int UpdateVersion { get; set; }
+        public int PatchVersion { get; set; }
+        public override string ToString()
+        {
+            return string.Format("v{0}.{1}.{2}", MajorVersion, UpdateVersion, PatchVersion);
+        }
+    }
 
     /// <summary>
     /// A stack of items.
@@ -181,7 +191,7 @@ namespace CmdungeonsLib
         }
     }
 
-    public class RegInfo
+    public static class RegInfo
     {
         public class EffectEvent
         {
@@ -240,7 +250,8 @@ namespace CmdungeonsLib
             //(Only for 'equipment' item) Available equipment slot IDs, and the attribute modifiers on each slot.
             public int maxStack = 1;
             //The max count of a stack of the item.
-            public List<EffectEvent> useEvents = new List<EffectEvent>();
+            public string useEvent;
+            //A script path. Run the script when use the item.
         }
         public class Effect
         {
@@ -565,8 +576,10 @@ namespace CmdungeonsLib
     public class DatapackRegistry
     {
         public int fileFormat;
-        public string descriptionTransKey;
-        public Dictionary<string, object> metadata = new Dictionary<string, object>();
+        public string author;
+        public VersionNumber version;
+        public string description;
+        public Dictionary<string, string> weblinks;
     }
 
     public class GlobalData

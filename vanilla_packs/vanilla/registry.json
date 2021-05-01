@@ -1,9 +1,14 @@
 {
-    "pack_name": "pack.cmdungeons.vanilla",
     "file_format": 1,
-    "meta_data": {
-        "description": "${packinfo.cmdungeons.description}",
-        "creator": "MineCommander",
-        "pack_version": "Alpha 0.1"
+    "description": "${packinfo.cmdungeons.description}",
+    "author": "MineCommander",
+    "version": {
+        "major": 0,
+        "update": 0,
+        "patch": 1
+    },
+    "weblinks": {
+        "GitHub": "https://github.com/MineCommanderCN/commanDungeons",
+        "Discord": "https://discord.gg/JjBTMM7umy"
     }
 }
