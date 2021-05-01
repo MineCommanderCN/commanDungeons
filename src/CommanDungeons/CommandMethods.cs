@@ -5,7 +5,9 @@ using SquidCsharp;
 using Jurassic;
 using Newtonsoft.Json;
 using System.Linq;
+using System.Timers;
 using System.IO;
+using System.Diagnostics;
 
 namespace CommanDungeons
 {
@@ -13,109 +15,103 @@ namespace CommanDungeons
     {
         public static void RegistCommand()
         {
-            GlobalData.squidCoreMain.RegCommand
+            GlobalData.Data.squidCoreMain.RegCommand
                 ("test", 2, 2, new List<string> { "", "wrd" }, Cmd_test);
-            GlobalData.squidCoreMain.RegCommand
+            GlobalData.Data.squidCoreMain.RegCommand
                 ("exit", 1, 1, Cmd_exit);
-            GlobalData.squidCoreMain.RegCommand
+            GlobalData.Data.squidCoreMain.RegCommand
                 ("packinfo", 1, 2, Cmd_packinfo);
-            GlobalData.squidCoreMain.RegCommand
+            GlobalData.Data.squidCoreMain.RegCommand
                 ("commands", 1, 1, Cmd_commands);
-            GlobalData.squidCoreMain.RegCommand
-                ("reload", 1, 3, Cmd_reload);
-            GlobalData.squidCoreMain.RegCommand
+            GlobalData.Data.squidCoreMain.RegCommand
+                ("reload", 1, 2, Cmd_reload);
+            GlobalData.Data.squidCoreMain.RegCommand
                 ("debug", 1, 65536, Cmd_debug);
-            GlobalData.squidCoreMain.RegCommand
+            GlobalData.Data.squidCoreMain.RegCommand
                 ("load", 1, 2, Cmd_load);
-            GlobalData.squidCoreMain.RegCommand
+            GlobalData.Data.squidCoreMain.RegCommand
                 ("attack", 1, 2, Cmd_attack);
-            GlobalData.squidCoreMain.Link
+            GlobalData.Data.squidCoreMain.Link
                 ("atk", "attack");
-            GlobalData.squidCoreMain.RegCommand
+            GlobalData.Data.squidCoreMain.RegCommand
                 ("attribute", 2, 3, Cmd_attribute);
-            GlobalData.squidCoreMain.Link
+            GlobalData.Data.squidCoreMain.Link
                 ("atb", "attribute");
-            GlobalData.squidCoreMain.RegCommand
+            GlobalData.Data.squidCoreMain.RegCommand
                 ("ground", 1, 1, Cmd_ground);
-            GlobalData.squidCoreMain.Link
+            GlobalData.Data.squidCoreMain.Link
                 ("grd", "ground");
-            GlobalData.squidCoreMain.RegCommand
+            GlobalData.Data.squidCoreMain.RegCommand
                 ("inventory", 1, 1, Cmd_inventory);
-            GlobalData.squidCoreMain.Link
+            GlobalData.Data.squidCoreMain.Link
                 ("inv", "inventory");
-            GlobalData.squidCoreMain.RegCommand
+            GlobalData.Data.squidCoreMain.RegCommand
                 ("goto", 2, 2, Cmd_goto);
-            GlobalData.squidCoreMain.RegCommand
+            GlobalData.Data.squidCoreMain.RegCommand
                 ("name", 2, 2, Cmd_name);
-            GlobalData.squidCoreMain.RegCommand
+            GlobalData.Data.squidCoreMain.RegCommand
                 ("info", 1, 2, Cmd_info);
-            GlobalData.squidCoreMain.RegCommand
+            GlobalData.Data.squidCoreMain.RegCommand
                 ("effect", 1, 2, Cmd_effect);
-            GlobalData.squidCoreMain.RegCommand
+            GlobalData.Data.squidCoreMain.RegCommand
                 ("home", 1, 1, Cmd_home);
-            GlobalData.squidCoreMain.RegCommand
+            GlobalData.Data.squidCoreMain.RegCommand
                 ("pass", 1, 1, Cmd_pass);
-            GlobalData.squidCoreMain.RegCommand
+            GlobalData.Data.squidCoreMain.RegCommand
                 ("pick", 2, 2, Cmd_pick);
 
-            GlobalData.debugCommandStates.RegCommand
+            GlobalData.Data.debugCommandStates.RegCommand
                 ("GetTranslateString", 2, 65536, Debug_GetTranslateString);
-            GlobalData.debugCommandStates.RegCommand
+            GlobalData.Data.debugCommandStates.RegCommand
                 ("Dice", 2, 2, Debug_Dice);
-            GlobalData.debugCommandStates.RegCommand
+            GlobalData.Data.debugCommandStates.RegCommand
                 ("Effect", 4, 4, Debug_Effect);
-            GlobalData.debugCommandStates.RegCommand
+            GlobalData.Data.debugCommandStates.RegCommand
                 ("Runjs", 2, 2, Debug_Runjs);
         }
         public static void Cmd_commands(string[] args)
         {
-            foreach (var elem in GlobalData.squidCoreMain.commandRegistry)
+            foreach (var elem in GlobalData.Data.squidCoreMain.commandRegistry)
             {
                 Tools.OutputLine(string.Format("{0}  [{1}-{2}]", elem.Key, elem.Value.argcMin, elem.Value.argcMax));
             }
         }
         public static void Cmd_reload(string[] args)
         {
-            bool quiet = false, nolog = false;
-            if (!nolog)
-            {
-                //DO log!
-            }
+            Stopwatch stopwatch = new Stopwatch();
+            stopwatch.Start();
+            bool quiet = false;
 
             if (args.Contains("quiet"))
             {
                 quiet = true;
             }
-            if (args.Contains("nolog"))
-            {
-                nolog = true;
-            }
 
             if (!quiet)
             {
-                Console.WriteLine("Reloading config...");
+                Tools.OutputLine("Reloading config...", Tools.MessageType.Log, GlobalData.Data.LogFileStream);
             }
 
             JsonFormat.Config config = JsonConvert.DeserializeObject<JsonFormat.Config>(File.ReadAllText("config.json"));
-            GlobalData.config.language = config.language;
-            GlobalData.config.packsPath = config.packs_path;
+            GlobalData.Data.config.language = config.language;
+            GlobalData.Data.config.packsPath = config.packs_path;
 
             if (!quiet)
             {
-                Console.WriteLine("Uninstalling data...");
+                Tools.OutputLine("Uninstalling data...", Tools.MessageType.Log, GlobalData.Data.LogFileStream);
             }
-            GlobalData.datapackInfo.Clear();
-            GlobalData.regData = new GlobalData.DataFormat();
-            GlobalData.squidCoreMain.commandRegistry.Clear();
-            GlobalData.translates.Clear();
-            GlobalData.debugCommandStates.commandRegistry.Clear();
+            GlobalData.Data.datapackInfo.Clear();
+            GlobalData.Data.regData = new GlobalData.RegistryData();
+            GlobalData.Data.squidCoreMain.commandRegistry.Clear();
+            GlobalData.Data.translates.Clear();
+            GlobalData.Data.debugCommandStates.commandRegistry.Clear();
 
             if (!quiet)
             {
-                Console.WriteLine("Sacnning for datapacks...");
+                Tools.OutputLine("Sacnning for datapacks...", Tools.MessageType.Log, GlobalData.Data.LogFileStream);
             }
             List<DirectoryInfo> enabledPackDirs = new List<DirectoryInfo>();
-            DirectoryInfo[] pendingPackDirs = new DirectoryInfo(GlobalData.config.packsPath).GetDirectories();
+            DirectoryInfo[] pendingPackDirs = new DirectoryInfo(GlobalData.Data.config.packsPath).GetDirectories();
             foreach (var item in pendingPackDirs)
             {
                 if (File.Exists(item.FullName + "/registry.json"))
@@ -126,13 +122,11 @@ namespace CommanDungeons
 
             if (!quiet)
             {
-                Console.WriteLine("Start Loading...");
+                Tools.OutputLine("Start Loading...", Tools.MessageType.Log, GlobalData.Data.LogFileStream);
             }
             if (enabledPackDirs.Count == 0)
             {
-                Console.ForegroundColor = ConsoleColor.Yellow;
-                Console.WriteLine("[Warning] No datapacks enabled! Please check your 'packs_path' folder.");
-                Console.ResetColor();
+                Tools.OutputLine("No datapacks enabled! Please check your 'packs_path' folder.", Tools.MessageType.Warning, GlobalData.Data.LogFileStream);
             }
             enabledPackDirs.Reverse();
 
@@ -153,9 +147,7 @@ namespace CommanDungeons
                 }
                 catch (Exception e)
                 {
-                    Console.ForegroundColor = ConsoleColor.Red;
-                    Console.WriteLine("[Error] Could not load registry info file from pack '{0}': {1}", packDirInfo.FullName, e.Message);
-                    Console.ResetColor();
+                    Tools.OutputLine(string.Format("Could not load registry info file from pack '{0}': {1}", packDirInfo.FullName, e.Message), Tools.MessageType.Error, GlobalData.Data.LogFileStream);
                 }
 
                 //Load languages
@@ -171,25 +163,23 @@ namespace CommanDungeons
                             string lang = Path.GetFileNameWithoutExtension(language.FullName);
                             Dictionary<string, string> langDict = JsonConvert.DeserializeObject<Dictionary<string, string>>
                                                         (File.ReadAllText(language.FullName));
-                            if (GlobalData.translates.ContainsKey(lang))
+                            if (GlobalData.Data.translates.ContainsKey(lang))
                             {
-                                GlobalData.translates[lang] = Tools.MergeDictionary(GlobalData.translates[lang], langDict);
+                                GlobalData.Data.translates[lang] = Tools.MergeDictionary(GlobalData.Data.translates[lang], langDict);
                             }
                             else
                             {
-                                GlobalData.translates.Add(lang, langDict);
+                                GlobalData.Data.translates.Add(lang, langDict);
                             }
                             if (!quiet)
                             {
-                                Console.WriteLine("Loaded language \"{0}\" from pack \"{1}\"", lang, packDirInfo.FullName);
+                                Tools.OutputLine(string.Format("Loaded language \"{0}\" from pack \"{1}\"", lang, packDirInfo.FullName), Tools.MessageType.Log, GlobalData.Data.LogFileStream);
                             }
                         }
                         catch (Exception e)
                         {
-                            Console.ForegroundColor = ConsoleColor.Red;
-                            Console.WriteLine("[Error] Could not load language '{0}' from pack '{1}': {2}",
-                                Path.GetFileNameWithoutExtension(language.FullName), packDirInfo.FullName, e.Message);
-                            Console.ResetColor();
+                            Tools.OutputLine(string.Format("Could not load language '{0}' from pack '{1}': {2}",
+                                Path.GetFileNameWithoutExtension(language.FullName), packDirInfo.FullName, e.Message), Tools.MessageType.Error, GlobalData.Data.LogFileStream);
                         }
                     }
                 }
@@ -200,6 +190,9 @@ namespace CommanDungeons
 
             RegistCommand();
             JsMethods.InitScriptEngine();
+
+            stopwatch.Stop();
+            Tools.OutputLine("Done! Used " + (double)stopwatch.ElapsedMilliseconds / 1000.0 + "s.", Tools.MessageType.Info, GlobalData.Data.LogFileStream);
         }
         public static void Cmd_load(string[] args)
         {
@@ -212,6 +205,8 @@ namespace CommanDungeons
         public static void Cmd_test(string[] args) { }
         public static void Cmd_exit(string[] args)
         {
+            GlobalData.Data.LogFileStream.Close();
+            GlobalData.Data.LogFileStream.Dispose();
             Environment.Exit(0);
         }
         public static void Cmd_packinfo(string[] args) { }
@@ -228,7 +223,7 @@ namespace CommanDungeons
 
         public static void Cmd_debug(string[] args)
         {
-            if (GlobalData.debugModeOn)
+            if (GlobalData.Data.debugModeOn)
             {
                 if (args.Length == 1)
                 {
@@ -243,13 +238,13 @@ namespace CommanDungeons
                         }
                         else
                         {
-                            GlobalData.debugCommandStates.Run(strInput);
+                            GlobalData.Data.debugCommandStates.Run(strInput);
                         }
                     }
                 }
                 else
                 {
-                    GlobalData.debugCommandStates.Run(args.Skip(1).Take(args.Length).ToArray());
+                    GlobalData.Data.debugCommandStates.Run(args.Skip(1).Take(args.Length).ToArray());
                 }
             }
             else
@@ -263,7 +258,7 @@ namespace CommanDungeons
         public static void Debug_Effect(string[] args) { }
         public static void Debug_Runjs(string[] args)
         {
-            GlobalData.scriptEngine.ExecuteFile(args[1]);
+            GlobalData.Data.scriptEngine.ExecuteFile(args[1]);
         }
     }
 }

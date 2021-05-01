@@ -13,7 +13,7 @@ namespace CommanDungeons
         {
             if (args.Contains("--debug") || args.Contains("-d"))
             {
-                GlobalData.debugModeOn = true;
+                GlobalData.Data.debugModeOn = true;
             }
             if (args.Contains("--disable-datapack"))
             {
@@ -21,7 +21,7 @@ namespace CommanDungeons
                     argIndex < args.Length; argIndex++)
                 {
                     if (args[argIndex].StartsWith('-')) break;
-                    GlobalData.disabledPacks.Add(args[argIndex]);
+                    GlobalData.Data.disabledPacks.Add(args[argIndex]);
                 }
             }
             if (args.Contains("-D"))
@@ -30,32 +30,28 @@ namespace CommanDungeons
                     argIndex < args.Length; argIndex++)
                 {
                     if (args[argIndex].StartsWith('-')) break;
-                    GlobalData.disabledPacks.Add(args[argIndex]);
+                    GlobalData.Data.disabledPacks.Add(args[argIndex]);
                 }
             }
             if (args.Contains("--safemode") || args.Contains("-s"))
             {
-                GlobalData.safeModeOn = true;
+                GlobalData.Data.safeModeOn = true;
             }
-            GlobalData.LogFileName = "logs/" + DateTime.Now.ToLocalTime().ToString("yyyy-MM-dd_HHmmss") + ".log";
-            Directory.CreateDirectory("logs");
-            File.Create(GlobalData.LogFileName).Close();
 
-            Tools.OutputLine("Starting up...");
+
+            Tools.OutputLine("Starting up...", Tools.MessageType.Info, GlobalData.Data.LogFileStream);
             try
             {
                 CommandMethods.Cmd_reload(new string[1]); //First load
             }
             catch (Exception e)
             {
-                Tools.OutputLine(string.Format("[Fatal] Game crashed!\n{0}\nPress any key to exit...", e.Message), Tools.MessageType.Fatal, GlobalData.LogFileName);
+                Tools.OutputLine(string.Format("Game crashed!\n{0}\nPress any key to exit...", e.Message), Tools.MessageType.Fatal, GlobalData.Data.LogFileStream);
                 Console.ReadKey();
                 Environment.Exit(0);
             }
 
-            Tools.OutputLine("All done!", Tools.MessageType.Info);
-
-            Console.WriteLine(Tools.GetTranslateString("generic.welcome"), GlobalData.Version);
+            Tools.OutputLine(string.Format(Tools.GetTranslateString("generic.welcome"), GlobalData.Data.Version));
             for (; ; )
             {
                 Console.Write(">> ");
@@ -66,19 +62,20 @@ namespace CommanDungeons
                 }
                 try
                 {
-                    GlobalData.squidCoreMain.Run(strInput);
+                    Tools.LogLine("Run the command '" + strInput + "'.", Tools.MessageType.Log, GlobalData.Data.LogFileStream);
+                    GlobalData.Data.squidCoreMain.Run(strInput);
                 }
-                catch (UnknownCommandException e)
+                catch (UnknownCommandException)
                 {
-                    Tools.OutputLine(Tools.GetTranslateString("generic.error.unknown_command"), Tools.MessageType.Error, GlobalData.LogFileName);
+                    Tools.OutputLine(Tools.GetTranslateString("generic.error.unknown_command"), Tools.MessageType.Error, GlobalData.Data.LogFileStream);
                 }
                 catch (ArgumentCountOutOfRangeException e)
                 {
-                    Tools.OutputLine(string.Format(Tools.GetTranslateString("generic.error.args_count_out_of_range"), e.argCount, e.argcMin, e.argcMax), Tools.MessageType.Error, GlobalData.LogFileName);
+                    Tools.OutputLine(string.Format(Tools.GetTranslateString("generic.error.args_count_out_of_range"), e.argCount, e.argcMin, e.argcMax), Tools.MessageType.Error, GlobalData.Data.LogFileStream);
                 }
                 catch (RegexCheckFailedException e)
                 {
-                    Tools.OutputLine(string.Format(Tools.GetTranslateString("generic.error.regex_check_failed"), e.index, e.arg, e.pattern), Tools.MessageType.Error, GlobalData.LogFileName);
+                    Tools.OutputLine(string.Format(Tools.GetTranslateString("generic.error.regex_check_failed"), e.index, e.arg, e.pattern), Tools.MessageType.Error, GlobalData.Data.LogFileStream);
                 }
                 catch (Exception e)
                 {

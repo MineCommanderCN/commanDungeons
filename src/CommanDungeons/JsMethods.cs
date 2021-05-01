@@ -13,9 +13,9 @@ namespace CommanDungeons
     {
         public static void InitScriptEngine()
         {
-            GlobalData.scriptEngine.EnableExposedClrTypes = true;
-            GlobalData.scriptEngine.SetGlobalValue("console", new Jurassic.Library.FirebugConsole(GlobalData.scriptEngine));
-            GlobalData.scriptEngine.SetGlobalValue("game", GlobalData.save);
+            GlobalData.Data.scriptEngine.EnableExposedClrTypes = true;
+            GlobalData.Data.scriptEngine.SetGlobalValue("console", new Jurassic.Library.FirebugConsole(GlobalData.Data.scriptEngine));
+            GlobalData.Data.scriptEngine.SetGlobalValue("game", GlobalData.Data.save);
         }
     }
 }
