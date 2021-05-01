@@ -62,7 +62,7 @@ namespace CommanDungeons
                 }
                 try
                 {
-                    Tools.LogLine("Run the command '" + strInput + "'.", Tools.MessageType.Log, GlobalData.Data.LogFileStream);
+                    Tools.LogLine(string.Format("Run the command '{0}'.", strInput), Tools.MessageType.Log, GlobalData.Data.LogFileStream);
                     GlobalData.Data.squidCoreMain.Run(strInput);
                 }
                 catch (UnknownCommandException)
@@ -79,9 +79,7 @@ namespace CommanDungeons
                 }
                 catch (Exception e)
                 {
-                    Console.ForegroundColor = ConsoleColor.Red;
-                    Console.WriteLine(Tools.GetTranslateString("generic.error.unexpected_error"), e.ToString());
-                    Console.ResetColor();
+                    Tools.OutputLine(string.Format(Tools.GetTranslateString("generic.error.unexpected_error"), e.ToString()), Tools.MessageType.Error, GlobalData.Data.LogFileStream);
                 }
             }
 

@@ -6,6 +6,8 @@
 
   <ItemGroup>
     <PackageReference Include="Jurassic" Version="3.1.0" />
+    <PackageReference Include="NbtLib" Version="1.0.1" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
   </ItemGroup>
 
   <ItemGroup>

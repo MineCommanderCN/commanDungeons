@@ -1,9 +1,9 @@
+using NbtLib;
+using Newtonsoft.Json;
+using SquidCsharp;
 using System;
 using System.Collections.Generic;
-using System.Text.RegularExpressions;
-using CmdungeonsLib;
 using System.IO;
-using SquidCsharp;
 using System.Text;
 
 namespace CmdungeonsLib
@@ -21,10 +21,10 @@ namespace CmdungeonsLib
     {
         private string _id;
         private int _count;
+        private NbtCompoundTag _externalData;
 
         /// <summary>
-        /// <para>The ID of the item.</para>
-        /// <para>If you want to update an <see cref="ItemStack"/> object, please change its ID first, then its count.</para>
+        /// The registry ID of the item.
         /// </summary>
         public string ID
         {
@@ -32,19 +32,14 @@ namespace CmdungeonsLib
             set { _id = value; }
         }
         /// <summary>
-        /// <para>The Count of the item. Must be over 0 and under the maxStack of the item.</para>
-        /// <para>If you want to update an <see cref="ItemStack"/> object, please change its ID first, then its count.</para>
+        /// The Count of the item. Must be over 0.
         /// </summary>
         public int Count
         {
             get { return _count; }
             set
             {
-                if (value > this.RegInfo.maxStack)
-                {
-                    throw new Exception("Value is over max stack!");
-                }
-                else if (value < 0)
+                if (value < 0)
                 {
                     throw new Exception("Value is under 0!");
                 }
@@ -54,11 +49,23 @@ namespace CmdungeonsLib
                 }
             }
         }
+        public NbtCompoundTag ExternalData
+        {
+            get { return _externalData; }
+            set { _externalData = value; }
+        }
 
         public ItemStack(string id, int count)
         {
-            _id = id;
-            _count = count;
+            ID = id;
+            Count = count;
+            ExternalData = new NbtCompoundTag();
+        }
+        public ItemStack(string id, int count, NbtCompoundTag externalData)
+        {
+            ID = id;
+            Count = count;
+            ExternalData = externalData;
         }
 
         /// <summary>
@@ -78,6 +85,22 @@ namespace CmdungeonsLib
                 }
             }
         }
+        public override string ToString()
+        {
+            return ToString(16);
+        }
+        public string ToString(int spaces)
+        {
+            string translatedName = Tools.GetTranslateString("item." + ID + ".name");
+            if (translatedName.Length >= spaces)
+            {
+                return translatedName + " x" + Count.ToString();
+            }
+            else
+            {
+                return translatedName + new string(' ', spaces - translatedName.Length) + "x" + Count.ToString();
+            }
+        }
     }
 
     /// <summary>
@@ -91,20 +114,21 @@ namespace CmdungeonsLib
         /// <param name="item"></param>
         public new void Add(ItemStack item)
         {
-            base.Add(new ItemStack(item.ID, 0));
+            base.Add(new ItemStack(item.ID, 0, item.ExternalData));
             foreach (var targetStack in this)
             {
-                if (item.ID == targetStack.ID && targetStack.Count < targetStack.RegInfo.maxStack)
+                if (item.ID == targetStack.ID && item.ExternalData == targetStack.ExternalData && targetStack.Count < targetStack.RegInfo.maxStack)
                 {
                     if (item.Count + targetStack.Count > targetStack.RegInfo.maxStack)
                     {
-                        int restCount = item.Count - (targetStack.RegInfo.maxStack - targetStack.Count);
+                        item.Count -= targetStack.RegInfo.maxStack - targetStack.Count;
                         targetStack.Count = targetStack.RegInfo.maxStack;
-                        Add(new ItemStack(item.ID, restCount));
+                        Add(item);
                     }
-                    else
+                    else if (item.ExternalData == targetStack.ExternalData)
                     {
                         targetStack.Count += item.Count;
+                        CleanUp();
                         return;
                     }
                 }
@@ -141,6 +165,20 @@ namespace CmdungeonsLib
             //Still WIP...
         }
         */
+
+        public override string ToString()
+        {
+            return ToString(16);
+        }
+        public string ToString(int spaces)
+        {
+            string result = "";
+            foreach (var item in this)
+            {
+                result += item.ToString(spaces) + "\n";
+            }
+            return result;
+        }
     }
 
     public class RegInfo
@@ -487,7 +525,7 @@ namespace CmdungeonsLib
         public string player_name = "Player";
         public int gold = 0;
         public int xp = 0;
-        public List<ItemStack> inventory = new List<ItemStack>();
+        public ItemList inventory = new();
         public string location = "";
         public int room_index = -1;
         public List<string> finished_levels = new List<string>();

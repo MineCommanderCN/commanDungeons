@@ -1,7 +1,7 @@
 ﻿{
     "generic.load_done": "加载完成！",
     "generic.welcome": "欢迎来到CommanDungeons {0}！\n输入\"commands\"或\"help\"来获取帮助。\n输入\"name <角色名>\"来创建新角色，或是\"load <存档文件>\"来加载已保存的游戏进度。",
-    "generic.unexpected_error": "野生的异常出现了！\n{0}",
+    "generic.error.unexpected_error": "野生的异常出现了！\n{0}",
     "generic.error.unknown_command": "未知命令，请输入\"commands\"查看命令列表。",
     "generic.error.args_count_out_of_range": "命令参数的数量不正确：检测到{0}个，要求为[{1}-{2}]个",
     "generic.error.regex_check_failed": "位于[{0}]位置的命令参数{1}不能匹配正则表达式：{2}",
