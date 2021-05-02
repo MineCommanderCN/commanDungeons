@@ -8,7 +8,7 @@ A completely open source **command-line** dungeon game engine written by C# lang
 
 [Wiki](https://github.com/MineCommanderCN/commanDungeons/wiki) | [Releases](https://github.com/MineCommanderCN/commanDungeons/releases/latest) | [Discord](https://discord.gg/JjBTMM7umy)
 
-[![Open in Gitpod](https://gitpod.io/button/open-in-gitpod.svg)](https://gitpod.io/#https://github.com/MineCommanderCN/commanDungeons)
+[![Open in Gitpod](https://gitpod.io/button/open-in-gitpod.svg)](https://gitpod.io/#https://github.com/MineCommanderCN/commanDungeons/tree/dev)
 
 ## 如何安装&运行 / How to install & run
 
