@@ -1,5 +1,9 @@
 # 内容包设计规范
 
+**Warning: This document has a lot of features WIP and is written in Chinese only. You can help us develop by contributing.**
+
+**警告：文档中的很多特性都没有实装，仅供参考。**
+
 ## 总体文件规范
 
 ### 编码
@@ -66,9 +70,14 @@
 ### 格式
 
 ```text
-(S) pack_name: 内容包的注册名。原则上不能与其他包重复。一般格式为"pack.(作者、组织或域名).(英文名或简写)"。
 (N) file_format: 内容包版本格式，用于检查内容包是否兼容当前游戏版本。
-{}  meta_data: 元数据辞典。一般需要包含description与creator。同样支持自定义类型的数据，可以在语言文件中添加自定义类型的翻译名。
+(S) author: 包作者。
+(S) description: 包简介。可以使用`${Key}`来引用对应的翻译文本。
+{} version: 用于确定和检查包的版本。
+|- (N) major: 主要版本。
+|- (N) update: 次要版本。
+|- (N) patch: 补丁版本。
+{}  weblinks: 与包相关的网页链接。用户可以通过`datapacks <包名> viewlink <链接名称>`命令来在浏览器里打开链接。
 ```
 
 ## 状态效果 `effect`
