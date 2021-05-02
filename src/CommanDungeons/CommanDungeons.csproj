@@ -2,16 +2,23 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFramework>netcoreapp5.0</TargetFramework>
-    <StartupObject>CommanDungeonsMain.Program</StartupObject>
+    <TargetFramework>net5.0</TargetFramework>
+    <StartupObject>CommanDungeons.Program</StartupObject>
     <AutoGenerateBindingRedirects>false</AutoGenerateBindingRedirects>
+    <Authors>MineCommander</Authors>
+    <RepositoryType>Git</RepositoryType>
+    <RepositoryUrl>https://github.com/MineCommanderCN/commanDungeons</RepositoryUrl>
+    <PackageProjectUrl>https://minecommandercn.github.io/content/cmdungeons/index.html</PackageProjectUrl>
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Jurassic" Version="3.1.0" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\CmdungeonsLib\CmdungeonsLib.csproj" />
-    <ProjectReference Include="..\CommandClassLib\CommandClassLib.csproj" />
     <ProjectReference Include="..\SquidCsharp\SquidCsharp.csproj" />
-    <ProjectReference Include="..\TinyJson\json.csproj" />
   </ItemGroup>
 
 </Project>

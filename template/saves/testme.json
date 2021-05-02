@@ -1,14 +1,9 @@
 {
-    "name": "MineCommander",
-    "gold": 2333,
-    "xp": 0,
-    "inventory": [{
-        "id": "cmdungeons:apple",
-        "count": 1
-    }],
+
     "map": {
         "cmdungeons:testlevel1": [{
-            "entities": [{
+            "type": "battle_room",
+            "enemies": [{
                 "id": "cmdungeons:test1",
                 "health": 15.0,
                 "level": 0,
@@ -27,10 +22,8 @@
             }]
         }]
     },
-    "location": "cmdungeons:testlevel1",
-    "room_index": 0,
-    "finished_levels": [],
-    "player_entity": {
+
+    "player": {
         "id": "generic:player",
         "health": 20.0,
         "level": 0,
@@ -46,6 +39,16 @@
             "time": 9999,
             "level": 9999
         }],
-        "equipment": {}
+        "equipment": {},
+        "location": "cmdungeons:testlevel1",
+        "room_index": 0,
+        "finished_levels": [],
+        "name": "MineCommander",
+        "gold": 2333,
+        "xp": 0,
+        "inventory": [{
+            "id": "cmdungeons:apple",
+            "count": 1
+        }]
     }
 }

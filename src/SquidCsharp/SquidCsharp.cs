@@ -8,7 +8,66 @@ using System.Threading.Tasks;
 
 namespace SquidCsharp
 {
-    public delegate void FuncDele(List<string> args);
+    public class UnknownCommandException : ApplicationException
+    {
+        public string command;
+        public UnknownCommandException(string message, string command) : base(message)
+        {
+            this.command = command;
+        }
+    }
+    public class RegistingException : ApplicationException
+    {
+        public int argcMin, argcMax;
+        public RegistingException(string message, int argcMin, int argcMax) : base(message)
+        {
+            this.argcMin = argcMin;
+            this.argcMax = argcMax;
+        }
+    }
+    public class PatternCountOutOfRangeException : ApplicationException
+    {
+        public int argcMin, argcMax, patternCount;
+        public PatternCountOutOfRangeException(string message, int argcMin, int argcMax, int patternCount) : base(message)
+        {
+            this.argcMin = argcMin;
+            this.argcMax = argcMax;
+            this.patternCount = patternCount;
+        }
+    }
+    public class ArgumentCountOutOfRangeException : ApplicationException
+    {
+
+        public int argCount, argcMin, argcMax;
+        public ArgumentCountOutOfRangeException(string message, int argCount, int argcMin, int argcMax) : base(message)
+        {
+            this.argCount = argCount;
+            this.argcMin = argcMin;
+            this.argcMax = argcMax;
+        }
+    }
+    public class RegexCheckFailedException : ApplicationException
+    {
+        public string arg;
+        public int index;
+        public string pattern;
+        public RegexCheckFailedException(string message, string arg, int index, string pattern) : base(message)
+        {
+            this.arg = arg;
+            this.index = index;
+            this.pattern = pattern;
+        }
+    }
+    public class LinkingSourceNotFoundException : ApplicationException
+    {
+        public string source;
+        public LinkingSourceNotFoundException(string message, string sourceCommand) : base(message)
+        {
+            source = sourceCommand;
+        }
+    }
+
+    public delegate void FuncDele(string[] args);
     public static class SquidCsharpLib
     {
         public struct CommandInfo
@@ -18,7 +77,7 @@ namespace SquidCsharp
             public List<string> argPatterns;  //Regular expression check for arguments at corresponding positions
                                               //对于相应位置的参数的正则表达式检查
         }
-        public static List<string> Convert(string buf)
+        public static string[] Convert(string buf)
         {
             buf.Trim();
             buf += "\n";
@@ -95,7 +154,7 @@ namespace SquidCsharp
                 _counter++;
 
             }
-            return tmp;
+            return tmp.ToArray();
         }
     }
     public class SquidCoreStates
@@ -106,14 +165,7 @@ namespace SquidCsharp
         //命令信息辞典
 
 
-        public class SquidCoreException : ApplicationException
-        //Command registing exception class
-        //命令注册异常类
-        {
-            public SquidCoreException(string message) : base(message)
-            {
-            }
-        }
+
         public void RegCommand(
             string rootCommand,
             int argcMin,
@@ -134,11 +186,13 @@ namespace SquidCsharp
 
             if (argcMin > argcMax)
             {
-                throw new SquidCoreException("Minimum count of arguments (" + argcMin + ") is bigger than maximum count (" + argcMax + ")");
+                throw new RegistingException("Minimum count of arguments (" + argcMin + ") is bigger than maximum count (" + argcMax + ")",
+                    argcMin, argcMax);
             }
             else if (argcMin <= 0 || argcMax <= 0)
             {
-                throw new SquidCoreException("Count of arguments (" + argcMin + " and " + argcMax + ") must greater than 0");
+                throw new RegistingException("Count of arguments (" + argcMin + " and " + argcMax + ") must greater than 0",
+                    argcMin, argcMax);
             }
 
             commandRegistry.Add(rootCommand, tmp);
@@ -160,15 +214,18 @@ namespace SquidCsharp
             tmp.argPatterns = argPatterns;
             if (argcMin > argcMax)
             {
-                throw new SquidCoreException("Minimum count of arguments (" + argcMin + ") is bigger than maximum count (" + argcMax + ")");
+                throw new RegistingException("Minimum count of arguments (" + argcMin + ") is bigger than maximum count (" + argcMax + ")",
+                    argcMin, argcMax);
             }
             else if (argcMin <= 0 || argcMax <= 0)
             {
-                throw new SquidCoreException("Count of arguments (" + argcMin + " and " + argcMax + ") must greater than 0");
+                throw new RegistingException("Count of arguments (" + argcMin + " and " + argcMax + ") must greater than 0",
+                    argcMin, argcMax);
             }
             else if (argPatterns.Count < argcMin || argPatterns.Count > argcMax)
             {
-                throw new SquidCoreException("Count of patterns (" + argPatterns.Count + ") is out of range [" + argcMin + "," + argcMax + "]");
+                throw new PatternCountOutOfRangeException("Count of patterns (" + argPatterns.Count + ") is out of range [" + argcMin + "," + argcMax + "]",
+                    argcMin, argcMax, argPatterns.Count);
             }
 
             commandRegistry.Add(rootCommand, tmp);
@@ -177,22 +234,24 @@ namespace SquidCsharp
         {
             if (!commandRegistry.ContainsKey(command))
             {
-                throw new SquidCoreException("Orginal command \"" + command + "\" not found");
+                throw new LinkingSourceNotFoundException("Source command \"" + command + "\" not found", command);
             }
             commandRegistry.Add(link, commandRegistry[command]);
         }
-        public void Run(List<string> argList)
+
+        private void p_Run(string[] argList)
         {
-            if (argList.Count == 0)
+            if (argList.Length == 0)
             {
                 return;
             }
             if (commandRegistry.ContainsKey(argList[0]))
             {
-                if (argList.Count < commandRegistry[argList[0]].argcMin || argList.Count > commandRegistry[argList[0]].argcMax)
+                if (argList.Length < commandRegistry[argList[0]].argcMin || argList.Length > commandRegistry[argList[0]].argcMax)
                 {
-                    throw new SquidCoreException("Count of arguments was out of range [" + commandRegistry[argList[0]].argcMin
-                            + "," + commandRegistry[argList[0]].argcMax + "]");
+                    throw new ArgumentCountOutOfRangeException("Count of arguments was out of range [" + commandRegistry[argList[0]].argcMin
+                            + "," + commandRegistry[argList[0]].argcMax + "]", argList.Length,
+                            commandRegistry[argList[0]].argcMin, commandRegistry[argList[0]].argcMax);
                 }
 
                 int _counter = 0;
@@ -200,8 +259,9 @@ namespace SquidCsharp
                 {
                     if (!Regex.IsMatch(elem, commandRegistry[argList[0]].argPatterns[_counter]))
                     {
-                        throw new SquidCoreException("Argument \"" + elem + "\"(at [" + _counter + "]) could not match the regular expression \""
-                            + commandRegistry[argList[0]].argPatterns[_counter] + "\"");
+                        throw new RegexCheckFailedException("Argument \"" + elem + "\"(at [" + _counter + "]) could not match the regular expression \""
+                            + commandRegistry[argList[0]].argPatterns[_counter] + "\"",
+                            elem, _counter, commandRegistry[argList[0]].argPatterns[_counter]);
                     }
                     _counter++;
                 }
@@ -210,41 +270,16 @@ namespace SquidCsharp
             }
             else
             {
-                throw new SquidCoreException("Unknown Command");
+                throw new UnknownCommandException("Unknown Command", argList[0]);
             }
+        }
+        public void Run(string[] argList)
+        {
+            p_Run(argList);
         }
         public void Run(string command)
         {
-            List<string> argList = SquidCsharpLib.Convert(command);
-            if (argList.Count == 0)
-            {
-                return;
-            }
-            if (commandRegistry.ContainsKey(argList[0]))
-            {
-                if (argList.Count < commandRegistry[argList[0]].argcMin || argList.Count > commandRegistry[argList[0]].argcMax)
-                {
-                    throw new SquidCoreException("Count of arguments was out of range [" + commandRegistry[argList[0]].argcMin
-                            + "," + commandRegistry[argList[0]].argcMax + "]");
-                }
-
-                int _counter = 0;
-                foreach (string elem in argList)
-                {
-                    if (!Regex.IsMatch(elem, commandRegistry[argList[0]].argPatterns[_counter]))
-                    {
-                        throw new SquidCoreException("Argument \"" + elem + "\"(at [" + _counter + "]) could not match the regular expression \""
-                            + commandRegistry[argList[0]].argPatterns[_counter] + "\"");
-                    }
-                    _counter++;
-                }
-                commandRegistry[argList[0]].commandMethod(argList);
-                //return;
-            }
-            else
-            {
-                throw new SquidCoreException("Unknown Command");
-            }
+            p_Run(SquidCsharpLib.Convert(command));
         }
     }
 }

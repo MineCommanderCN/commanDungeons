@@ -1,12 +1,11 @@
 {
     "type": "equipment",
-    "slots": [
-        "generic:right_hand"
-    ],
     "max_stack": 1,
-    "attribute_modifiers": [{
-        "name": "generic:attack_power",
-        "operation": 0,
-        "amount": 5.0
-    }]
+    "slots": {
+        "generic:right_hand": [{
+            "name": "generic:attack_power",
+            "operation": "directly_add",
+            "amount": 5.0
+        }]
+    }
 }

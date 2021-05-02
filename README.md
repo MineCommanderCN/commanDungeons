@@ -1,14 +1,14 @@
 # commanDungeons
 
+![logo](https://i.loli.net/2021/05/01/BpW4gr9QOU8Hntz.png)
+
 一款由.NET Core平台和C#语言编写、完全开源的**命令行**式地牢闯关游戏引擎。
 
 A completely open source **command-line** dungeon game engine written by C# language and runs on .NET Core platform.
 
-[百科](https://github.com/MineCommanderCN/commanDungeons/wiki) | [发行版下载](https://github.com/MineCommanderCN/commanDungeons/releases/latest)
+[Wiki](https://github.com/MineCommanderCN/commanDungeons/wiki) | [Releases](https://github.com/MineCommanderCN/commanDungeons/releases/latest) | [Discord](https://discord.gg/WyVFGbyjsB)
 
-[Wiki](https://github.com/MineCommanderCN/commanDungeons/wiki) | [Releases](https://github.com/MineCommanderCN/commanDungeons/releases/latest)
-
-[![Open in Gitpod](https://gitpod.io/button/open-in-gitpod.svg)](https://gitpod.io/#https://github.com/MineCommanderCN/commanDungeons)
+[![Open in Gitpod](https://gitpod.io/button/open-in-gitpod.svg)](https://gitpod.io/#https://github.com/MineCommanderCN/commanDungeons/tree/dev)
 
 ## 如何安装&运行 / How to install & run
 
@@ -24,13 +24,13 @@ A completely open source **command-line** dungeon game engine written by C# lang
 
 ## 内容包 / Datapack
 
-~~commanDungeons有社区维护的丰富内容包（我相信将来会有的）~~，原生内容包仅作初步体验游戏的功能 ~~（又名新手教程）~~。
+原生内容包可供玩家体验游戏的基本机制，而玩家可以通过安装其他内容包来拓展游戏的内容。~~你可以在网上下载到丰富的由社区维护的内容包（我相信未来会有的）。~~
 
-~~commanDungeons has a tons of datapacks maintained by community(not so far, but I believe it will)~~, the "vanilla datapack" is only for the first try of the game ~~(aka new player tutorial)~~.
+在我们的官方论坛探索社区内容包：<https://github.com/MineCommanderCN/commanDungeons/discussions/categories/datapacks-内容包>
 
-前往论坛下载社区内容包：<https://github.com/MineCommanderCN/commanDungeons/discussions/categories/datapacks-内容包>
+The vanilla datapack can let players have a try for the basic game mechanism, and players can extend the game content by installing other datapacks. ~~You can download tons of datapacks contributed by community (not so far, but I believe there will be in the futrue).~~
 
-You can go to our official forum and download community datapacks: <https://github.com/MineCommanderCN/commanDungeons/discussions/categories/datapacks-内容包>
+Go to our official forum to explore community datapacks: <https://github.com/MineCommanderCN/commanDungeons/discussions/categories/datapacks-内容包>
 
 内容包制作规范：(WIP)
 
