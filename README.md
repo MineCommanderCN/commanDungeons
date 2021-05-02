@@ -6,7 +6,7 @@
 
 A completely open source **command-line** dungeon game engine written by C# language and runs on .NET Core platform.
 
-[Wiki](https://github.com/MineCommanderCN/commanDungeons/wiki) | [Releases](https://github.com/MineCommanderCN/commanDungeons/releases/latest) | [Discord](https://discord.gg/JjBTMM7umy)
+[Wiki](https://github.com/MineCommanderCN/commanDungeons/wiki) | [Releases](https://github.com/MineCommanderCN/commanDungeons/releases/latest) | [Discord](https://discord.gg/WyVFGbyjsB)
 
 [![Open in Gitpod](https://gitpod.io/button/open-in-gitpod.svg)](https://gitpod.io/#https://github.com/MineCommanderCN/commanDungeons/tree/dev)
 
