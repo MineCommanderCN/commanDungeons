@@ -2,9 +2,9 @@
 
 ![logo](https://i.loli.net/2021/05/01/BpW4gr9QOU8Hntz.png)
 
-一款由.NET Core平台和C#语言编写、完全开源的**命令行**式地牢闯关游戏引擎。（停更至2021.7.1）
+Note: commanDungeons on Github **is no longer receiving updates**. Please go to Gitlab instead: <https://gitlab.com/MineCommander/commanDungeons>
 
-A completely open source **command-line** dungeon game engine written by C# language and runs on .NET Core platform. (Archived until 2021.7.1)
+注意：Github上的commanDungeons**将不再接收更新**。请移步至Gitlab： <https://gitlab.com/MineCommander/commanDungeons>
 
 [Wiki](https://github.com/MineCommanderCN/commanDungeons/wiki) | [Releases](https://github.com/MineCommanderCN/commanDungeons/releases/latest) | [Discord](https://discord.gg/WyVFGbyjsB)
 
